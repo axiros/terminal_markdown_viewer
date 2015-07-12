@@ -37,10 +37,21 @@ Notes:
         If FROM is not found we display the whole file.
 
     Directory Monitor:
-        We check only text file changes.
+        We check only text file changes, monitoring their size.
+
         By default .md, .mdown, .markdown files are checked but you can change
         like -M 'mydir:py,c,md,' where the last empty substrings makes mdv also
         monitor any file w/o extension (like 'README').
+
+        Running actions on changes:
+        If you append to -M a '::<cmd>' we run the command on any change
+        detected (sync, in foreground).
+        The command can contain a placeholder ('_fp_'), which we replace with
+        the path of the changed file.
+
+        Like: mdv -M './mydocs:py,md::open "_fp_"'  which calls the open
+        command with argument the path to the changed file.
+
 
     Theme rollers:
         mdv -T all:  All available code styles on the given file.
@@ -137,6 +148,8 @@ md_sample = ''
 mon_max_files = 1000
 # ------------------------------------------------------------------ End Config
 # below here you have to *know* what u r doing... (since I didn't too much)
+
+cmd_filepath_ph = '_fp_'
 
 def read_themes():
     if not themes:
@@ -784,12 +797,25 @@ def sleep():
 
 def monitor_dir(args):
     """ displaying the changed files """
+
     def show_fp(fp):
         args['MDFILE'] = fp
         print run_args(args)
+        print "(%s)" % col(fp, L)
+        cmd = args.get('change_cmd')
+        if not cmd:
+            return
+        cmd = cmd.replace(cmd_filepath_ph, fp)
+        print col('Running %s' % cmd, H1)
+        # i'm old style guy:
+        if os.system(cmd):
+            print col('(the command failed)', R)
 
     ftree = {}
     d = args.get('-M')
+    # was a change command given?
+    d += '::'
+    d, args['change_cmd'] = d.split('::')[:2]
     args.pop('-M')
     # collides:
     args.pop('-m')
