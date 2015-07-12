@@ -6,6 +6,7 @@ So viewing markdown in a terminal is sometimes required.
 
 Markdown is actually simple enough to be well displayed on modern (256 color) terminals (except images that is).
 
+Here a styling result of mdv, which is a terminal markdown viewer:
 
 ![img](https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/1.png)
 
