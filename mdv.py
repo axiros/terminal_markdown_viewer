@@ -95,7 +95,7 @@ from markdown.extensions import Extension, fenced_code
 from HTMLParser import HTMLParser
 
 # ---------------------------------------------------------------------- Config
-txt_block_cut, code_pref, list_pref, br_ends = '✂', '░ ', '- ', '◈'
+hr_sep, txt_block_cut, code_pref, list_pref, hr_ends = '─', '✂', '░ ', '- ', '◈'
 # ansi cols (default):
 # R: Red (warnings), L: low visi, BG: background, BGL: background light, C=code
 # H1 - H5 = the theme, the numbers are the ansi color codes:
@@ -205,6 +205,7 @@ stng_start, stng_end = '\x09', '\x10'
 emph_start, emph_end = '\x11', '\x12'
 punctuationmark      = '\x13'
 fenced_codemark      = '\x14'
+hr_marker            = '\x15'
 
 def j(p, f):
     return os.path.join(p, f)
@@ -301,10 +302,9 @@ class Tags:
     def hr(_, s, **kw):
         # we want nice line seps:
         hir = kw.get('hir', 1)
-        ind = (hir - 1) * ' '
-        l = term_columns - ((2 * len(ind)) + 2)
-        s = e = col(br_ends, globals()['H%s' % hir])
-        return low('\n%s%s%s%s%s\n' % (ind, s, '─' * l, e, ind))
+        ind = (hir - 1) * left_indent
+        s = e = col(hr_ends, globals()['H%s' % hir])
+        return low('\n%s%s%s%s%s\n' % (ind, s, hr_marker, e, ind))
 
     def code(_, s, from_fenced_block = None, **kw):
         """ md code AND ``` style fenced raw code ends here"""
@@ -630,7 +630,40 @@ class AnsiPrinter(Treeprocessor):
 
         out = []
         formatter(doc, out)
-        self.markdown.ansi = '\n'.join(out)
+        result = set_hr_widths('\n'.join(out))
+        self.markdown.ansi = result
+
+
+def set_hr_widths(result):
+    """
+    We want the hrs indented by hirarchy...
+    A bit 2 much effort to calc, maybe just fixed with 10
+    style seps would have been enough visually:
+    ◈────────────◈
+    """
+    # set all hrs to max width of text:
+    mw = 0
+    hrs = []
+    if not hr_marker in result:
+        return result
+    for line in result.splitlines():
+        if hr_marker in line:
+            hrs.append(line)
+            continue
+        if len(line) < mw:
+            continue
+        l = len(clean_ansi(line))
+        if l > mw:
+            mw = l
+    for hr in hrs:
+        # pos of hr marker is indent, derives full width:
+        # (more indent = less '-'):
+        hcl = clean_ansi(hr)
+        ind = len(hcl) - len(hcl.split(hr_marker, 1)[1]) - 1
+        w = min(term_columns, mw) - 2 * ind
+        hrf = hr.replace(hr_marker, hr_sep * w)
+        result = result.replace(hr, hrf)
+    return result
 
 
 # Then tell markdown about it
