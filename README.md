@@ -62,6 +62,8 @@ mdv is designed to be used well from other (Py2) programs when they have md at h
 
 ## Screenshots
 
+![first](https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/1.png)
+![second](https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/2.png)
 
 
 
