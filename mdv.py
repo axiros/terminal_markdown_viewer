@@ -68,12 +68,13 @@ Notes:
         Setting both to all will probably spin your beach ball, at least on OSX.
 
 """
-import os, sys 
+import os, sys
+is_app = 0
 if __name__ == '__main__':
+    is_app = 1
     # Make Py2 > Py3:
     reload(sys); sys.setdefaultencoding('utf-8')
     # no? see http://stackoverflow.com/a/29832646/4583360 ...
-
 
 # code analysis for hilite:
 try:
@@ -154,6 +155,12 @@ md_sample = ''
 # dir monitor recursion max:
 mon_max_files = 1000
 # ------------------------------------------------------------------ End Config
+
+import logging
+md_logger = logging.getLogger('MARKDOWN')
+md_logger.setLevel(logging.WARNING)
+
+
 # below here you have to *know* what u r doing... (since I didn't too much)
 
 dir_mon_filepath_ph    = '_fp_'
@@ -235,7 +242,8 @@ def set_theme(theme=None, for_code=None):
         _for = ''
         if for_code:
             _for = ' (code)'
-        print >> sys.stderr, low('theme%s: %s (%s)' % (_for, theme,
+        if is_app:
+            print >> sys.stderr, low('theme%s: %s (%s)' % (_for, theme,
                                                        t.get('name')))
         t = t['ct']
         cols = (t[0], t[1], t[2], t[3], t[4])
@@ -249,6 +257,33 @@ def set_theme(theme=None, for_code=None):
     finally:
         if for_code:
             build_hl_by_token()
+
+
+def style_ansi(raw_code, lang=None):
+    """ actual code hilite """
+    lexer = 0
+    if lang:
+        try:
+            lexer = get_lexer_by_name(lang)
+        except ValueError:
+            print col(R, 'Lexer for %s not found' % lang)
+    try:
+        lexer = guess_lexer(raw_code)
+    except:
+        pass
+    if not lexer:
+        lexer = get_lexer_by_name(def_lexer)
+    tokens = lex(raw_code, lexer)
+    cod = []
+    for t, v in tokens:
+        if not v:
+            continue
+        _col = code_hl_tokens.get(t)
+        if _col:
+            cod.append(col(v, _col))
+        else:
+            cod.append(v)
+    return ''.join(cod)
 
 
 def col_bg(c):
@@ -317,29 +352,7 @@ class Tags:
 
         raw_code = s
         if have_pygments:
-            lexer = 0
-            if lang:
-                try:
-                    lexer = get_lexer_by_name(lang)
-                except ValueError:
-                    print col(R, 'Lexer for %s not found' % lang)
-            try:
-                lexer = guess_lexer(raw_code)
-            except:
-                pass
-            if not lexer:
-                lexer = get_lexer_by_name(def_lexer)
-            tokens = lex(raw_code, lexer)
-            cod = []
-            for t, v in tokens:
-                if not v:
-                    continue
-                _col = code_hl_tokens.get(t)
-                if _col:
-                    cod.append(col(v, _col))
-                else:
-                    cod.append(v)
-            s = ''.join(cod)
+            s = style_ansi(raw_code, lang=lang)
 
 
         # outest hir is 2, use it for fenced:
