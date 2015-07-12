@@ -179,6 +179,7 @@ Random results, using the theme roller feature:
 
 ![second](https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/2.png)
 
+Note the table block splitting when the table does not fit (last picture).
 
 
 # Credits
