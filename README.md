@@ -22,7 +22,7 @@ Those can be combined for code output and regular md output, so you have > 40000
 - python2.7
 - py markdown (pip install markdown)
 - this repo
-- alias mdv='<repopath>/mdv.py' within your .bashrc or .zshrc
+- ``alias mdv='<repopath>/mdv.py'`` within your .bashrc or .zshrc
 
 ## Usage
 
