@@ -126,7 +126,7 @@ Notes:
         command with argument the path to the changed file.
 
 
-    Theme rollers:
+    Theme Rollers:
         mdv -T all:  All available code styles on the given file.
         mdv -t all:  All available md   styles on the given file.
                     If file is not given we use a short sample file.
