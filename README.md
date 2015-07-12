@@ -1,7 +1,9 @@
 # Terminal Markdown Viewer
 
-Markdown is actually simple enough to be well displayed on modern (256 color) terminals (except images that is).
+*When you edit multiple md files remotely, like in a larger [mkdocs](http://www.mkdocs.org/) project, context switches between editing terminal(s) and viewing browser may have some efficiency impact. Also sometimes there is just no browser, like via security gateways offering just a fixed set of applications on the hop in machine. Further, reading efficiency and convenience is often significantly improved by using colors.
+This is where mdv, a Python based marked down viewer for the terminal might be a good option.*
 
+Markdown is actually simple enough to be well displayed on modern (256 color) terminals (except images that is).
 
 ![img](https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/1.png)
 
