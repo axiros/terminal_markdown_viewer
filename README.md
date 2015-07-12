@@ -41,6 +41,8 @@ from
 - Hackable (I hope)
 - Useable as lib as well
 - File change monitor
+- Directory change monitor (good when working on multiple files)
+	- which can run arbitrary commands on file edits
  
 
 ## Alternatives
@@ -73,32 +75,68 @@ Further I did not test anything on windows.
 
 ### CLI
 
-    mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [MDFILE]
+```
+~/axc/documentation $ mdv -h
+Usage:
+    mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [-f FROM] [-m] [-M DIR] [MDFILE]
 
-	Options
-
+Options:
     MDFIlE    : path to markdown file
     -t THEME  : key within the color ansi_table.json. 'random' accepted.
     -T C_THEME: pygments theme for code highlight. If not set: Use THEME.
     -l        : light background (not yet supported)
     -L        : display links
     -x        : Do not try guess code lexer (guessing is a bit slow)
+    -f FROM   : Display FROM given substring of the file.
+    -m        : Monitor file for changes and redisplay FROM given substring
+    -M DIR    : Monitor directory for markdown file changes
     -c COLS   : fix columns to this (default: your terminal width)
 
-	Notes
+Notes:
 
-    Call the main function with markdown string at hand to get a formatted one
-    back
+    We use stty tool to derive terminal size.
 
-    Theme Rollers
-    mdv -T all:  All available code styles on the given file.
-    mdv -t all:  All available md   styles on the given file.
-                 If file is not given we use a short sample file.
+    To use mdv.py as lib:
+        Call the main function with markdown string at hand to get a
+        formatted one back.
 
-    So to see all code hilite variations with a given theme:
-        Say C_THEME = all and fix THEME
-    Setting both to all will probably spin your beach ball, at least on OSX.
+    FROM:
+        FROM may contain max lines to display, seperated by colon.
+        Example:
+        -f 'Some Head:10' -> displays 10 lines after 'Some Head'
+        If the substring is not found we set it to the *first* charactor of the
+        file - resulting in output from the top (if you terminal height can be
+        derived correctly through the stty cmd).
 
+    File Monitor:
+        If FROM is not found we display the whole file.
+
+    Directory Monitor:
+        We check only text file changes, monitoring their size.
+
+        By default .md, .mdown, .markdown files are checked but you can change
+        like -M 'mydir:py,c,md,' where the last empty substrings makes mdv also
+        monitor any file w/o extension (like 'README').
+
+        Running actions on changes:
+        If you append to -M a '::<cmd>' we run the command on any change
+        detected (sync, in foreground).
+        The command can contain a placeholder ('_fp_'), which we replace with
+        the path of the changed file.
+
+        Like: mdv -M './mydocs:py,md::open "_fp_"'  which calls the open
+        command with argument the path to the changed file.
+
+
+    Theme Rollers:
+        mdv -T all:  All available code styles on the given file.
+        mdv -t all:  All available md   styles on the given file.
+                    If file is not given we use a short sample file.
+
+        So to see all code hilite variations with a given theme:
+            Say C_THEME = all and fix THEME
+        Setting both to all will probably spin your beach ball, at least on OSX.
+```
 
 *who knows of a docopt to markdown feature ;-)*?
 
