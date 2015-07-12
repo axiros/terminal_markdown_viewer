@@ -3,7 +3,7 @@
 
 """
 Usage:
-    mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [-f FROM] [-m] [-M DIR] [MDFILE]
+    mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [-f FROM] [-m] [-M DIR] [-H] [-A] [MDFILE]
 
 Options:
     MDFILE    : Path to markdown file
@@ -15,7 +15,9 @@ Options:
     -f FROM   : Display FROM given substring of the file.
     -m        : Monitor file for changes and redisplay FROM given substring
     -M DIR    : Monitor directory for markdown file changes
-    -c COLS   : fix columns to this (default: your terminal width)
+    -c COLS   : Fix columns to this (default: your terminal width)
+    -A        : Strip all ansi (no colors then)
+    -H        : Print html version
 
 Notes:
 
@@ -165,9 +167,9 @@ def read_themes():
 
 # can unescape:
 html_parser = HTMLParser()
-
+you_like = 'You like this theme?'
 def make_sample():
-    """ theme roller """
+    """ Generate the theme roller sample markdown """
     if md_sample:
         # user has set another:
         return md_sample
@@ -176,14 +178,15 @@ def make_sample():
     this = open(__file__).read().split('"""', 3)[2].splitlines()[:10]
     _md.append('```python\n""" Test """\n%s\n```' % '\n'.join(this).strip())
     _md.append("""
-| Tables            | Fmt            |
+| Tables        | Fmt |
 | -- | -- |
 | !!! hint: wrapped | 0.1 **strong** |
     """)
     for ad in admons.keys()[:1]:
         _md.append('!!! %s: title\n    this is a %s\n' % (ad, ad.capitalize()))
+    # 'this theme' replaced in the roller (but not at mdv w/o args):
     globals()['md_sample'] = \
-       '\n'.join(_md) + '\n----\nYou like **__id__**, *__name__*?'
+            '\n'.join(_md) + '\n----\n!!! question: %s' % you_like
 
 
 
@@ -630,8 +633,7 @@ class AnsiPrinter(Treeprocessor):
 
         out = []
         formatter(doc, out)
-        result = set_hr_widths('\n'.join(out))
-        self.markdown.ansi = result
+        self.markdown.ansi = '\n'.join(out)
 
 
 def set_hr_widths(result):
@@ -678,7 +680,8 @@ class AnsiPrintExtension(Extension):
 
 
 def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
-         c_guess=-1, display_links=None, from_txt=None, **kw):
+         c_guess=-1, display_links=None, from_txt=None, do_html=None,
+         no_colors=None, **kw):
     """ md is markdown string. alternatively we use filename and read """
 
     args = locals()
@@ -688,6 +691,8 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
             make_sample()
             md = args['md'] = md_sample
             print md
+            print
+            print 'Styling Result'
         else:
             with open(filename) as f:
                 md = f.read()
@@ -699,8 +704,8 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
         themes = read_themes()
         for k, v in themes.items():
             if not filename:
-                args['md'] = md_sample.replace('__id__', k).\
-                                       replace('__name__', v['name'])
+                yl = 'You like *%s*, *%s*?' % (k, v['name'])
+                args['md'] = md_sample.replace(you_like, yl)
             print col('%s%s%s' % ('\n\n', '=' * term_columns,'\n'), L)
             # should really create an iterator here:
             if theme == 'all':
@@ -748,7 +753,9 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
                                        TableExtension(),
                                        fenced_code.FencedCodeExtension()])
     # html?
-    html = MD.convert(md)
+    the_html = MD.convert(md)
+    if do_html:
+        return the_html
 
     # who wants html, here is our result:
     try:
@@ -796,12 +803,22 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
         post = '\n'.join(post.split('\n')[:mon_lines])
         ansi = '\n(...)%s%s%s' % (
                '\n'.join(pre.rsplit('\n', 2)[-2:]), from_txt, post)
+
+    ansi = set_hr_widths(ansi) + '\n'
+    if no_colors:
+        return clean_ansi(ansi)
     return ansi + '\n'
 
-    #return '%s%s%s' % (col_bg(background), MD.ansi, reset_col)
 
 
 
+
+
+
+
+
+# Following just file monitors, not really core feature so the prettyfier:
+# but sometimes good to have at hand:
 # ---------------------------------------------------------------- File Monitor
 def monitor(args):
     """ file monitor mode """
@@ -956,6 +973,8 @@ def run_args(args):
                ,from_txt      = args.get('-f')
                ,c_theme       = args.get('-T')
                ,c_guess       = args.get('-x')
+               ,do_html       = args.get('-H')
+               ,no_colors     = args.get('-A')
                ,display_links = args.get('-L'))
 
 
