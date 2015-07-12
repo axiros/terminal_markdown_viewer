@@ -34,7 +34,7 @@ Markdown is actually simple enough to be well displayed on modern (256 color) te
 	
 	
 	``You`` like **__id__**, *__name__*?
-</code></pre></td><td>
+</code></pre></td><td width="100%">
 
 <img width="100%" src="https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/1.png" />
 
