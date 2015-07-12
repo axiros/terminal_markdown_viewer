@@ -106,7 +106,7 @@ mdv is designed to be used well from other (Py2) programs when they have md at h
 	# calling like this
 	formatted = mdv.main(my_raw_markdown, c_theme=...)  # all CLI options supported
 
-> Note that I set the defaultencoding to utf-8  in __main__. I have this as my default python2 setup and did not test inline usage w/o. Check [this](http://stackoverflow.com/a/29832646/4583360) for risks.
+> Note that I set the defaultencoding to utf-8  in ``__main__``. I have this as my default python2 setup and did not test inline usage w/o. Check [this](http://stackoverflow.com/a/29832646/4583360) for risks.
 	
 #### Customization
 
