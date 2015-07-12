@@ -17,12 +17,14 @@ Those can be combined for code output and regular md output, so you have > 40000
 
 ## Installation
 
+``alias mdv='<terminal_markdown_viewer path>/mdv.py'`` within your .bashrc or .zshrc
+
 ### Requirements
  
 - python2.7
 - py markdown (pip install markdown)
 - this repo
-- ``alias mdv='<repopath>/mdv.py'`` within your .bashrc or .zshrc
+ 
 
 ## Usage
 
