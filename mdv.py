@@ -29,7 +29,7 @@ Notes:
     Setting both to all will probably spin your beach ball, at least on OSX.
 """
 
-# Make Py2 >>> Py3:
+# Makes Py2 > Py3:
 import os, sys; reload(sys); sys.setdefaultencoding('utf-8')
 # no? see http://stackoverflow.com/a/29832646/4583360 ...
 
