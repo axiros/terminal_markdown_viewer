@@ -39,7 +39,7 @@ Those can be combined for code vs regular md output...
 
 The ones I know of (and which made me write mdv ;-) ):
 
-1. There are few from the js community (e.g. [msee](https://www.npmjs.com/package/msee)) but they require nodejs & npm, which I don't have on my servers. Also I personally did not like the styling and the table handling.
+1. There are few from the js community (e.g. [msee](https://www.npmjs.com/package/msee)) but they require nodejs & npm, which I don't have on my servers. Also I personally did not like table handling and missing admonition support.
 
 2. pandoc -> html -> elinks, lynx or pandoc -> man -> groff. (Heavy and hard to use from within other programs. Styling suboptimal)
 
@@ -48,6 +48,8 @@ The ones I know of (and which made me write mdv ;-) ):
 ## Installation
 
 ``alias mdv='<path to this repo>/mdv.py'`` within your .bashrc or .zshrc
+
+No pip currently.
 
 ### Requirements
  
