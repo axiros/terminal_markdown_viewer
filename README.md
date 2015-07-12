@@ -2,6 +2,8 @@
 
 Markdown is actually simple enough to be well displayed on modern (256 color) terminals (except images that is).
 
+![first](https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/1.png)
+
 Regarding color options: mdv has quite a lot, ships with > 200 themes, converted from html to ansi.
 Those can be combined for code output and regular md output, so you have > 40000 themes in total ;-)
 
@@ -95,7 +97,6 @@ Source:
 
 
 
-![first](https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/1.png)
 ![second](https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/2.png)
 
 
