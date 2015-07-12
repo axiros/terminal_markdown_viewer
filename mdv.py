@@ -3,7 +3,7 @@
 
 """
 Usage:
-    mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [MDFILE]
+    mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [-m] [MDFILE]
 
 Options:
     MDFIlE    : path to markdown file
@@ -12,6 +12,7 @@ Options:
     -l        : light background (not yet supported)
     -L        : display links
     -x        : Do not try guess code lexer (guessing is a bit slow)
+    -m        : Monitor file for changes and redisplay
     -c COLS   : fix columns to this (default: your terminal width)
 
 Notes:
@@ -43,7 +44,7 @@ try:
 except ImportError:
     have_pygments = False
 
-
+import time
 import markdown, re
 from docopt import docopt
 import markdown.util
@@ -703,14 +704,44 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
     #return '%s%s%s' % (col_bg(background), MD.ansi, reset_col)
 
 
+def run_args(args):
+    return main(filename      = filename
+               ,theme         = args.get('-t', 'random')
+               ,cols          = args.get('-c')
+               ,c_theme       = args.get('-T')
+               ,c_guess       = args.get('-x')
+               ,display_links = args.get('-L'))
 
 if __name__ == '__main__':
     args = docopt(__doc__, version='mdv v0.1')
+    filename = args.get('MDFILE')
+    if not args.get('-m'):
+        print run_args(args)
+        raise SystemExit
 
-    print main(filename     =args.get('MDFILE')
-              ,theme        =args.get('-t', 'random')
-              ,cols         =args.get('-c')
-              ,c_theme      =args.get('-T')
-              ,c_guess      =args.get('-x')
-              ,display_links=args.get('-L'))
+    # monitor mode:
+    if not filename:
+        print col('Need file argument', 2)
+        raise SystemExit
+
+    last_err = ''
+    last_stat = 0
+    while True:
+        if not os.path.exists(filename):
+            last_err = 'File %s not found. Will continue trying.' % filename
+        else:
+            try:
+                stat = os.stat(filename)[8]
+                if stat != last_stat:
+                    parsed = run_args(args)
+                    print parsed
+                    last_stat = stat
+                last_err = ''
+            except Exception, ex:
+                last_err = str(ex)
+        if last_err:
+            print 'Error: %s' % err
+        time.sleep(1)
+
+
 
