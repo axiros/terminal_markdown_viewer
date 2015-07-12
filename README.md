@@ -171,6 +171,7 @@ Random results, using the theme roller feature:
 
 # Credits
 
-[pygments][http://pygments.org/] (using their lexer)
-[tabulate][https://pypi.python.org/pypi/tabulate]
+[pygments](http://pygments.org/) (using their lexer)
+
+[tabulate](https://pypi.python.org/pypi/tabulate)
 
