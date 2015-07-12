@@ -38,7 +38,7 @@ from
 - 40k theme combinations: mdv ships with > 200 luminocity sorted themes, converted from html themes tables to ansi. Those can be combined for code vs regular md output...
 - Admonitions
 - Tables, incl. wide table handling avoiding "interleaving"
-- Hackable (I hope), all in one module
+- Hackable (I hope), all in [one](mdv.py) module
 - Useable as lib as well
 - File change monitor
 - Little directory change monitor (cames handy when working on multiple files, to get the current one always displayed)
@@ -165,7 +165,7 @@ mdv is designed to be used well from other (Py2) programs when they have md at h
 	
 #### Customization
 
-In mdv.py you can change some config straight forward.
+In [mdv.py](mdv.py) you can change some config straight forward.
 
 ```python
 # ---------------------------------------------------------------------- Config
