@@ -36,7 +36,7 @@ Markdown is actually simple enough to be well displayed on modern (256 color) te
 	``You`` like **__id__**, *__name__*?
 </code></pre></td><td>
 
-<img width="300px" src="https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/1.png" />
+<img width="400px" src="https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/1.png" />
 
 </td></tr></tbody></table>
 Regarding color options: mdv has quite a lot, ships with > 200 themes, converted from html to ansi.
