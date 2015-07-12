@@ -3,7 +3,7 @@
 
 """
 Usage:
-    mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [-m FROM] [MDFILE]
+    mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [-f FROM] [-m] [-M DIR] [MDFILE]
 
 Options:
     MDFIlE    : path to markdown file
@@ -12,26 +12,45 @@ Options:
     -l        : light background (not yet supported)
     -L        : display links
     -x        : Do not try guess code lexer (guessing is a bit slow)
-    -m FROM   : Monitor file for changes and redisplay FROM given substring
+    -f FROM   : Display FROM given substring of the file.
+    -m        : Monitor file for changes and redisplay FROM given substring
+    -M DIR    : Monitor directory for markdown file changes
     -c COLS   : fix columns to this (default: your terminal width)
 
 Notes:
 
-    To use as lib Call the main function with markdown string at hand to get a
-    formatted one back.
+    We use stty tool to derive terminal size.
 
-    Monitor: If FROM is not found we display the whole thing.
-             FROM may contain colon sep.ed lines to display, like
-             -m 'Some Head:10' -> displays 10 lines after 'Some Head'
+    To use mdv.py as lib:
+        Call the main function with markdown string at hand to get a
+        formatted one back.
+
+    FROM:
+        FROM may contain max lines to display, seperated by colon.
+        Example:
+        -f 'Some Head:10' -> displays 10 lines after 'Some Head'
+        If the substring is not found we set it to the *first* charactor of the
+        file - resulting in output from the top (if you terminal height can be
+        derived correctly through the stty cmd).
+
+    File Monitor:
+        If FROM is not found we display the whole file.
+
+    Directory Monitor:
+        We check only text file changes.
+        By default .md, .mdown, .markdown files are checked but you can change
+        like -M 'mydir:py,c,md,' where the last empty substrings makes mdv also
+        monitor any file w/o extension (like 'README').
 
     Theme rollers:
-    mdv -T all:  All available code styles on the given file.
-    mdv -t all:  All available md   styles on the given file.
-                 If file is not given we use a short sample file.
+        mdv -T all:  All available code styles on the given file.
+        mdv -t all:  All available md   styles on the given file.
+                    If file is not given we use a short sample file.
 
-    So to see all code hilite variations with a given theme:
-        Say C_THEME = all and fix THEME
-    Setting both to all will probably spin your beach ball, at least on OSX.
+        So to see all code hilite variations with a given theme:
+            Say C_THEME = all and fix THEME
+        Setting both to all will probably spin your beach ball, at least on OSX.
+
 """
 
 if __name__ == '__main__':
@@ -101,7 +120,7 @@ show_links = None
 # columns(!) - may be set to smaller width:
 try:
     term_rows, term_columns = os.popen('stty size', 'r').read().split()
-    term_columns = int(term_columns)
+    term_columns, term_rows = int(term_columns), int(term_rows)
 except:
     print '!! Could not derive your terminal width !!'
     term_columns = 80
@@ -114,6 +133,8 @@ themes = {}
 # sample for the theme roller feature:
 md_sample = ''
 
+# dir monitor recursion max:
+mon_max_files = 1000
 # ------------------------------------------------------------------ End Config
 # below here you have to *know* what u r doing... (since I didn't too much)
 
@@ -606,7 +627,7 @@ class AnsiPrintExtension(Extension):
 
 
 def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
-         c_guess=-1, display_links=None, **kw):
+         c_guess=-1, display_links=None, from_txt=None, **kw):
     """ md is markdown string. alternatively we use filename and read """
 
     args = locals()
@@ -712,34 +733,29 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
 
     # don't want these: gone through the extension now:
     # ansi = ansi.replace('```', '')
+
+    # sub part display (the -f feature)
+    if from_txt:
+        if not from_txt.split(':', 1)[0] in ansi:
+            # display from top then:
+            from_txt = ansi.strip()[1]
+        from_txt, mon_lines = (from_txt + ':%s' % (term_rows-6)).split(':')[:2]
+        mon_lines = int(mon_lines)
+        pre, post = ansi.split(from_txt, 1)
+        post = '\n'.join(post.split('\n')[:mon_lines])
+        ansi = '\n(...)%s%s%s' % (
+               '\n'.join(pre.rsplit('\n', 2)[-2:]), from_txt, post)
     return ansi + '\n'
 
     #return '%s%s%s' % (col_bg(background), MD.ansi, reset_col)
 
 
-def run_args(args):
-    return main(filename      = filename
-               ,theme         = args.get('-t', 'random')
-               ,cols          = args.get('-c')
-               ,c_theme       = args.get('-T')
-               ,c_guess       = args.get('-x')
-               ,display_links = args.get('-L'))
 
-if __name__ == '__main__':
-    args = docopt(__doc__, version='mdv v0.1')
-    filename = args.get('MDFILE')
-    mon_from = args.get('-m')
-    if not mon_from:
-        print run_args(args)
-        raise SystemExit
-
-    # monitor mode:
+def monitor(args):
+    """ file monitor mode """
     if not filename:
         print col('Need file argument', 2)
         raise SystemExit
-    mon_from, mon_lines = (mon_from + ':%s' % term_rows).split(':')[:2]
-    mon_lines = int(mon_lines)
-
     last_err = ''
     last_stat = 0
     while True:
@@ -750,24 +766,119 @@ if __name__ == '__main__':
                 stat = os.stat(filename)[8]
                 if stat != last_stat:
                     parsed = run_args(args)
-                    if mon_from in parsed:
-                        pre, post = parsed.split(mon_from, 1)
-                        post = '\n'.join(post.split('\n')[:mon_lines])
-                        print '\n(...)%s%s%s\n' % (
-                           '\n'.join(pre.rsplit('\n', 2)[-2:]), mon_from, post)
-                    else:
-                        print parsed
+                    print parsed
                     last_stat = stat
                 last_err = ''
             except Exception, ex:
                 last_err = str(ex)
         if last_err:
             print 'Error: %s' % last_err
-        try:
-            time.sleep(1)
-        except KeyboardInterrupt, ex:
-            print 'Have a nice day!'
-            break
+        sleep()
 
+def sleep():
+    try:
+        time.sleep(1)
+    except KeyboardInterrupt, ex:
+        print 'Have a nice day!'
+        raise SystemExit
+
+def monitor_dir(args):
+    """ displaying the changed files """
+    def show_fp(fp):
+        args['MDFILE'] = fp
+        print run_args(args)
+
+    ftree = {}
+    d = args.get('-M')
+    args.pop('-M')
+    # collides:
+    args.pop('-m')
+    d, exts = (d + ':md,mdown,markdown').split(':')[:2]
+    exts = exts.split(',')
+    if not os.path.exists(d):
+        print col('Does not exist: %s' % d, R)
+        sys.exit(2)
+
+    dir_black_list = ['.', '..']
+    def check_dir(d, ftree):
+        check_youngest = ftree.get('youngest_ts')
+        d = os.path.abspath(d)
+        if d in dir_black_list:
+            return
+
+        if len(ftree) > mon_max_files:
+            # too deep:
+            print col('Max files (%s) reached' % c(mon_max_files, R))
+            dir_black_list.append(d)
+            return
+        try:
+            files = os.listdir(d)
+        except Exception, ex:
+            print '%s when scanning dir %s' % (col(ex, R), d)
+            dir_black_list.append(d)
+            return
+
+        for f in files:
+            fp = j(d, f)
+            if os.path.isfile(fp):
+                f_ext = f.rsplit('.', 1)[-1]
+                if f_ext == f:
+                    f_ext == ''
+                if not f_ext in exts:
+                    continue
+                old = ftree.get(fp)
+                # size:
+                now = os.stat(fp)[6]
+                if check_youngest:
+                    if os.stat(fp)[7] > ftree['youngest_ts']:
+                        ftree['youngest'] = fp
+                        ftree['youngest_ts'] = os.stat(fp)[8]
+                if now == old:
+                    continue
+                # change:
+                ftree[fp] = now
+                if not old:
+                    # At first time we don't display ALL the files...:
+                    continue
+                # no binary. make sure:
+                if 'text' in os.popen('file "%s"' % fp).read():
+                    show_fp(fp)
+            elif os.path.isdir(fp):
+                check_dir(j(d, fp), ftree)
+
+
+    ftree['youngest_ts'] = 1
+    while True:
+        check_dir(d, ftree)
+        if 'youngest_ts' in ftree:
+            ftree.pop('youngest_ts')
+            fp = ftree.get('youngest')
+            if fp:
+                show_fp(fp)
+            else:
+                print 'sth went wrong, no file found'
+        sleep()
+
+
+
+def run_args(args):
+    """ call the lib entry function with CLI args """
+    return main(filename      = args.get('MDFILE')
+               ,theme         = args.get('-t', 'random')
+               ,cols          = args.get('-c')
+               ,from_txt      = args.get('-f')
+               ,c_theme       = args.get('-T')
+               ,c_guess       = args.get('-x')
+               ,display_links = args.get('-L'))
+
+
+if __name__ == '__main__':
+    args = docopt(__doc__, version='mdv v0.1')
+    if args.get('-m'):
+        monitor(args)
+    if args.get('-M'):
+        monitor_dir(args)
+    else:
+        print run_args(args)
 
 
