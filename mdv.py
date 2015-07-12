@@ -3,7 +3,7 @@
 
 """
 Usage:
-    mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [-m] [MDFILE]
+    mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [-m FROM] [MDFILE]
 
 Options:
     MDFIlE    : path to markdown file
@@ -12,13 +12,17 @@ Options:
     -l        : light background (not yet supported)
     -L        : display links
     -x        : Do not try guess code lexer (guessing is a bit slow)
-    -m        : Monitor file for changes and redisplay
+    -m FROM   : Monitor file for changes and redisplay FROM given substring
     -c COLS   : fix columns to this (default: your terminal width)
 
 Notes:
 
-    Call the main function with markdown string at hand to get a formatted one
-    back
+    To use as lib Call the main function with markdown string at hand to get a
+    formatted one back.
+
+    Monitor: If FROM is not found we display the whole thing.
+             FROM may contain colon sep.ed lines to display, like
+             -m 'Some Head:10' -> displays 10 lines after 'Some Head'
 
     Theme rollers:
     mdv -T all:  All available code styles on the given file.
@@ -101,6 +105,7 @@ try:
 except:
     print '!! Could not derive your terminal width !!'
     term_columns = 80
+    term_rows = 200
 
 # could be given, otherwise read from ansi_tables.json:
 themes = {}
@@ -139,7 +144,7 @@ def make_sample():
     for ad in admons.keys()[:1]:
         _md.append('!!! %s: title\n    this is a %s\n' % (ad, ad.capitalize()))
     globals()['md_sample'] = \
-              '\n'.join(_md) + '\n\n``You`` like **__id__**, *__name__*?\n'
+       '\n'.join(_md) + '\n----\nYou like **__id__**, *__name__*?'
 
 
 
@@ -707,7 +712,7 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
 
     # don't want these: gone through the extension now:
     # ansi = ansi.replace('```', '')
-    return ansi
+    return ansi + '\n'
 
     #return '%s%s%s' % (col_bg(background), MD.ansi, reset_col)
 
@@ -723,7 +728,8 @@ def run_args(args):
 if __name__ == '__main__':
     args = docopt(__doc__, version='mdv v0.1')
     filename = args.get('MDFILE')
-    if not args.get('-m'):
+    mon_from = args.get('-m')
+    if not mon_from:
         print run_args(args)
         raise SystemExit
 
@@ -731,6 +737,8 @@ if __name__ == '__main__':
     if not filename:
         print col('Need file argument', 2)
         raise SystemExit
+    mon_from, mon_lines = (mon_from + ':%s' % term_rows).split(':')[:2]
+    mon_lines = int(mon_lines)
 
     last_err = ''
     last_stat = 0
@@ -742,14 +750,24 @@ if __name__ == '__main__':
                 stat = os.stat(filename)[8]
                 if stat != last_stat:
                     parsed = run_args(args)
-                    print parsed
+                    if mon_from in parsed:
+                        pre, post = parsed.split(mon_from, 1)
+                        post = '\n'.join(post.split('\n')[:mon_lines])
+                        print '\n(...)%s%s%s\n' % (
+                           '\n'.join(pre.rsplit('\n', 2)[-2:]), mon_from, post)
+                    else:
+                        print parsed
                     last_stat = stat
                 last_err = ''
             except Exception, ex:
                 last_err = str(ex)
         if last_err:
             print 'Error: %s' % last_err
-        time.sleep(1)
+        try:
+            time.sleep(1)
+        except KeyboardInterrupt, ex:
+            print 'Have a nice day!'
+            break
 
 
 
