@@ -6,11 +6,11 @@ Usage:
     mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [-f FROM] [-m] [-M DIR] [MDFILE]
 
 Options:
-    MDFIlE    : path to markdown file
-    -t THEME  : key within the color ansi_table.json. 'random' accepted.
-    -T C_THEME: pygments theme for code highlight. If not set: Use THEME.
-    -l        : light background (not yet supported)
-    -L        : display links
+    MDFIlE    : Path to markdown file
+    -t THEME  : Key within the color ansi_table.json. 'random' accepted.
+    -T C_THEME: Theme for code highlight. If not set: Use THEME.
+    -l        : Light background (not yet supported)
+    -L        : Display links
     -x        : Do not try guess code lexer (guessing is a bit slow)
     -f FROM   : Display FROM given substring of the file.
     -m        : Monitor file for changes and redisplay FROM given substring
