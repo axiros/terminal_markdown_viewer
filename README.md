@@ -24,7 +24,9 @@ Those can be combined for code output and regular md output, so you have > 40000
 - python2.7
 - py markdown (pip install markdown)
 - this repo
- 
+
+Further a 256 color terminal (for now best with dark background) and font support for a few special separator characters (which you could change in mdv.py).
+
 
 ## Usage
 
