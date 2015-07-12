@@ -80,7 +80,7 @@ Further I did not test anything on windows.
 
 ### CLI
 
-```python
+```shell
 Usage:
     mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [-f FROM] [-m] [-M DIR] [-H] [-A] [MDFILE]
 
@@ -158,13 +158,13 @@ Notes:
 mdv is designed to be used well from other (Py2) programs when they have md at hand which should be displayed to the user:
 
 ```python
-	import mdv
-	
-	# config like this:
-	mdv.term_columns = 60
-	
-	# calling like this
-	formatted = mdv.main(my_raw_markdown, c_theme=...)  # all CLI options supported
+import mdv
+
+# config like this:
+mdv.term_columns = 60
+
+# calling like this
+formatted = mdv.main(my_raw_markdown, c_theme=...)  # all CLI options supported
 ```
 
 > Note that I set the defaultencoding to utf-8  in ``__main__``. I have this as my default python2 setup and did not test inline usage w/o. Check [this](http://stackoverflow.com/a/29832646/4583360) for risks.
@@ -177,9 +177,9 @@ Here is how:
 
 Write a normal click module with a function but w/o a doc string as shown:
 ```python
-	@pass_context                                                                   
- 	def cli(ctx, action, name, host, port, user, msg):           
-		""" docu from module __doc__ """
+@pass_context                                                                   
+ def cli(ctx, action, name, host, port, user, msg):           
+	""" docu from module __doc__ """
 ```
 
 On module level you provide markdown for it, like:
@@ -201,18 +201,20 @@ which you set at click module import time:
 
 Lastly do this in your app module:
 
-	from click.formatting import HelpFormatter
-	def write_text(self, text):
-	    """ since markdown pretty out on cli i found no tool I built
-	    my own """
-	    if not text.strip().startswith('#'):
-	        return write_colored(self, text)
-	    from axc.markdown.mdv import main as mdv
-	    self.buffer.append(mdv(md=text, theme=os.environ['AXC_THEME']))  # supply a theme ID or get random
-	    
-	HelpFormatter.write_text = write_text
+```python
+from click.formatting import HelpFormatter
+def write_text(self, text):
+    """ since markdown pretty out on cli i found no tool I built
+    my own """
+    if not text.strip().startswith('#'):
+        return write_colored(self, text)
+    from axc.markdown.mdv import main as mdv
+    self.buffer.append(mdv(md=text, theme=os.environ['AXC_THEME']))  # supply a theme ID or get random
+    
+HelpFormatter.write_text = write_text
+```
 
-The output I like then a lot better:	
+The output has then colors:
 
 ![](samples/3.png)
 
