@@ -3,6 +3,7 @@
 Markdown is actually simple enough to be well displayed on modern (256 color) terminals (except images that is).
 
 ![first](https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/1.png)
+
 *sorry for the aggressive promotion of setdefaultencoding, hope it does not hurt anybody's feelings. I'm only on posix and there it just rocks*
 
 Regarding color options: mdv has quite a lot, ships with > 200 themes, converted from html to ansi.
