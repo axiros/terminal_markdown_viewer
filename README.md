@@ -68,7 +68,7 @@ mdv is designed to be used well from other (Py2) programs when they have md at h
 
 ## Screenshots
 
-Source:
+### Source
 
 	# Header 1
 	## Header 2
@@ -98,7 +98,9 @@ Source:
 	
 	``You`` like **__id__**, *__name__*?
 
+### Results
 
+Random results, using the theme roller feature:
 
 ![second](https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/2.png)
 
