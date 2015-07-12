@@ -80,7 +80,7 @@ Further I did not test anything on windows.
 
 ### CLI
 
-```
+```python
 Usage:
     mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [-f FROM] [-m] [-M DIR] [-H] [-A] [MDFILE]
 
@@ -157,6 +157,7 @@ Notes:
 
 mdv is designed to be used well from other (Py2) programs when they have md at hand which should be displayed to the user:
 
+```python
 	import mdv
 	
 	# config like this:
@@ -164,6 +165,7 @@ mdv is designed to be used well from other (Py2) programs when they have md at h
 	
 	# calling like this
 	formatted = mdv.main(my_raw_markdown, c_theme=...)  # all CLI options supported
+```
 
 > Note that I set the defaultencoding to utf-8  in ``__main__``. I have this as my default python2 setup and did not test inline usage w/o. Check [this](http://stackoverflow.com/a/29832646/4583360) for risks.
 	
@@ -174,13 +176,15 @@ Armin Ronacher's [click](http://click.pocoo.org) is a great framework for writin
 Here is how:
 
 Write a normal click module with a function but w/o a doc string as shown:
-
+```python
 	@pass_context                                                                   
  	def cli(ctx, action, name, host, port, user, msg):           
 		""" docu from module __doc__ """
+```
 
 On module level you provide markdown for it, like:
-```
+
+```shell
 ~/axc/plugins/zodb_sub $ cat zodb.py | head 
 """
 # Fetch and push ZODB trees
