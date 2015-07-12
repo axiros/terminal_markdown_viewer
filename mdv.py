@@ -34,6 +34,7 @@ if __name__ == '__main__':
     import os, sys; reload(sys); sys.setdefaultencoding('utf-8')
     # no? see http://stackoverflow.com/a/29832646/4583360 ...
 
+
 # code analysis for hilite:
 try:
     from pygments import lex, token

@@ -2,19 +2,48 @@
 
 Markdown is actually simple enough to be well displayed on modern (256 color) terminals (except images that is).
 
-![first](https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/1.png)
+![](https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/1.png)
 
+from 
+
+	### Source
+	# Header 1
+	## Header 2
+	### Header 3
+	#### Header 4
+	##### Header 5
+	###### Header 6
+	```python
+	""" Test """
+	# Make Py2 >>> Py3:
+	import os, sys; reload(sys); sys.setdefaultencoding('utf-8')
+	# no? see http://stackoverflow.com/a/29832646/4583360 ...
+	
+	# code analysis for hilite:
+	try:
+	    from pygments import lex, token
+	    from pygments.lexers import get_lexer_by_name, guess_lexer
+	```
+	
+	| Tables | Fmt |
+	| -- | -- |
+	| !!! hint: wrapped | 0.1 **strong** |
+	    
+	!!! note: title
+	    this is a Note
 
 Regarding color options: mdv has quite a lot, ships with > 200 themes, converted from html to ansi.
-Those can be combined for code output and regular md output, so you have > 40000 themes in total ;-)
+Those can be combined for code vs regular md output...
 
 ## Alternatives
+
+The ones I know of (and which made me write mdv ;-) ):
 
 1. There are few from the js community (e.g. [msee](https://www.npmjs.com/package/msee)) but they require nodejs & npm, which I don't have on my servers. Also I personally did not like the styling and the table handling.
 
 2. pandoc -> html -> elinks, lynx or pandoc -> man -> groff. (Heavy and hard to use from within other programs. Styling suboptimal)
 
-3. vimcat (hard to use inline in other programs, slow)
+3. vimcat (Also heavy and hard to use inline in other programs)
 
 ## Installation
 
@@ -63,11 +92,21 @@ Further I did not test anything on windows.
 
 *who knows of a docopt to markdown converter ;-)*?
 
+> Regarding the strange theme ids: Those numbers are the calculated total luminocity of the 5 theme colors.
+
 ### Inline
 
 mdv is designed to be used well from other (Py2) programs when they have md at hand which should be displayed to the user:
 
-	from mdv import main   # all options there
+	import mdv
+	
+	# config like this:
+	mdv.term_columns = 60
+	
+	# calling like this
+	formatted = mdv.main(my_raw_markdown, c_theme=...)  # all CLI options supported
+
+> Note that I set the defaultencoding to utf-8  in __main__. I have this as my default python2 setup and did not test inline usage w/o. Check [this](http://stackoverflow.com/a/29832646/4583360) for risks.
 	
 #### Customization
 
@@ -135,42 +174,11 @@ Should you need yet additional themes, add them to ``ansi_tables.json`` file by 
 
 ## Screenshots
 
-### Source
-
-	# Header 1
-	## Header 2
-	### Header 3
-	#### Header 4
-	##### Header 5
-	###### Header 6
-	```python
-	""" Test """
-	# Make Py2 >>> Py3:
-	import os, sys; reload(sys); sys.setdefaultencoding('utf-8')
-	# no? see http://stackoverflow.com/a/29832646/4583360 ...
-	
-	# code analysis for hilite:
-	try:
-	    from pygments import lex, token
-	    from pygments.lexers import get_lexer_by_name, guess_lexer
-	```
-	
-	| Tables            | Fmt            |
-	| -- | -- |
-	| !!! hint: wrapped | 0.1 **strong** |
-	    
-	!!! note: title
-	    this is a Note
-	
-	
-	``You`` like **__id__**, *__name__*?
-
-### Results
-
 Random results, using the theme roller feature:
 
 ![second](https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/2.png)
 
+Note the table block splitting when the table does not fit (last picture).
 
 
 # Credits
