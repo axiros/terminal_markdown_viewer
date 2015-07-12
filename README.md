@@ -42,6 +42,7 @@ from
 - Hackable (I hope), all in [one](mdv.py) module
 - Useable as lib as well
 - File change monitor
+- Smart text wrapping
 - Little directory change monitor (cames handy when working on multiple files, to get the current one always displayed)
 	- which can run arbitrary commands on file changes
 	- which passes filepath, raw and prettyfied content to the other command
@@ -168,7 +169,7 @@ mdv is designed to be used well from other (Py2) programs when they have md at h
 	
 ### Sample Inline Use Case: click module docu
 
-Armin Ronacher's [click][http://click.pocoo.org] is a great framework for writing larger CLI apps - but its help texts are a bit boring, intended to be customized.
+Armin Ronacher's [click](http://click.pocoo.org) is a great framework for writing larger CLI apps - but its help texts are a bit boring, intended to be customized.
 
 Here is how:
 
