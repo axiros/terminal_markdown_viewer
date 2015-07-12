@@ -72,7 +72,7 @@ mdv is designed to be used well from other (Py2) programs when they have md at h
 	import mdv
 	
 	# config like this:
-	mdv.def_lexer = '...'
+	mdv.term_columns = 60
 	
 	# calling like this
 	formatted = mdv.main(my_raw_markdown, c_theme=...)  # all CLI options supported
