@@ -1,7 +1,6 @@
 # Terminal Markdown Viewer
 
-*When you edit multiple md files remotely, like in a larger [mkdocs](http://www.mkdocs.org/) project, context switches between editing terminal(s) and viewing browser may have some efficiency impact. Also sometimes there is just no browser, like via security gateways offering just a fixed set of applications on the hop in machine. Further, reading efficiency and convenience is often significantly improved by using colors.
-This is where mdv, a Python based marked down viewer for the terminal might be a good option.*
+*When you edit multiple md files remotely, like in a larger [mkdocs](http://www.mkdocs.org/) project, context switches between editing terminal(s) and viewing browser may have some efficiency impact. Also sometimes there is just no browser, like via security gateways offering just a fixed set of applications on the hop in machine. Further, reading efficiency and convenience is often significantly improved by using colors. And lastly, using such a thing for cli applications might improve user output, e.g. for help texts. This is where mdv, a Python based marked down viewer for the terminal might be a good option.*
 
 Markdown is actually simple enough to be well displayed on modern (256 color) terminals (except images that is).
 
@@ -43,6 +42,7 @@ from
 - Hackable (I hope), all in [one](mdv.py) module
 - Useable as lib as well
 - File change monitor
+- Smart text wrapping
 - Little directory change monitor (cames handy when working on multiple files, to get the current one always displayed)
 	- which can run arbitrary commands on file changes
 	- which passes filepath, raw and prettyfied content to the other command
@@ -52,7 +52,7 @@ from
 
 The ones I know of (and which made me write mdv ;-) ):
 
-1. There are few from the js community (e.g. [msee](https://www.npmjs.com/package/msee)) but they require nodejs & npm, which I don't have on my servers. Also I personally did not like table handling and missing admonition support.
+1. There are few from the js community (e.g. [msee](https://www.npmjs.com/package/msee), ansidown, ansimd and also nd) but they require nodejs & npm, which I don't have on my servers. Also I personally wanted table handling and admonition support throughout and prob. too old to hack other peoples' js (struggling enough with my own).
 
 2. pandoc -> html -> elinks, lynx or pandoc -> groff -> man. (Heavy and hard to use from within other programs. Styling suboptimal)
 
@@ -72,13 +72,15 @@ No pip currently.
 
 Further a 256 color terminal (for now best with dark background) and font support for a few special separator characters (which you could change in mdv.py).
 
+> For light terms you'd just need to revert the 5 colors from the themes, since they are sorted by luminocity.
+
 Further I did not test anything on windows.
 
 ## Usage
 
 ### CLI
 
-```
+```markdown
 Usage:
     mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [-f FROM] [-m] [-M DIR] [-H] [-A] [MDFILE]
 
@@ -155,15 +157,75 @@ Notes:
 
 mdv is designed to be used well from other (Py2) programs when they have md at hand which should be displayed to the user:
 
-	import mdv
-	
-	# config like this:
-	mdv.term_columns = 60
-	
-	# calling like this
-	formatted = mdv.main(my_raw_markdown, c_theme=...)  # all CLI options supported
+```python
+import mdv
+
+# config like this:
+mdv.term_columns = 60
+
+# calling like this
+formatted = mdv.main(my_raw_markdown, c_theme=...)  # all CLI options supported
+```
 
 > Note that I set the defaultencoding to utf-8  in ``__main__``. I have this as my default python2 setup and did not test inline usage w/o. Check [this](http://stackoverflow.com/a/29832646/4583360) for risks.
+	
+### Sample Inline Use Case: click module docu
+
+Armin Ronacher's [click](http://click.pocoo.org) is a great framework for writing larger CLI apps - but its help texts are a bit boring, intended to be customized.
+
+Here is how:
+
+Write a normal click module with a function but w/o a doc string as shown:
+```python
+@pass_context                                                                   
+ def cli(ctx, action, name, host, port, user, msg):           
+	""" docu from module __doc__ """
+```
+
+On module level you provide markdown for it, like:
+
+```shell
+~/axc/plugins/zodb_sub $ cat zodb.py | head 
+"""
+# Fetch and push ZODB trees
+
+## ACTION: < info | pull | push | merge | dump | serve>
+
+- info:  Requests server availability information
+(...)
+```
+which you set at click module import time:
+
+	mod.cli.help = mod.__doc__
+	
+
+Lastly do this in your app module:
+
+```python
+from click.formatting import HelpFormatter
+def write_text(self, text):
+    """ since markdown pretty out on cli I found no good tool I built my own """
+    # poor man's md detection:
+    if not text.strip().startswith('#'):
+        return orig_write_text(self, text)
+    from axc.markdown.mdv import main as mdv
+    self.buffer.append(mdv(md=text, theme=os.environ['AXC_THEME']))  # supply a theme ID or get random
+
+HelpFormatter.orig_write_text = HelpFormatter.write_text    
+HelpFormatter.write_text = write_text
+```
+
+The output has then colors:
+
+![](samples/3.png)
+
+and at smaller terms rewraps nicely:
+
+![](samples/4.png)
+
+Further, having markdown in the module ``__doc__`` makes it simple to add into a global project docu framework, like mkdocs.	
+	
+	
 	
 #### Customization
 
