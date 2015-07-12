@@ -65,6 +65,8 @@ Further I did not test anything on windows.
 
 *who knows of a docopt to markdown converter ;-)*?
 
+> Regarding the strange theme ids: Those numbers are the calculated total luminocity of the 5 theme colors.
+
 ### Inline
 
 mdv is designed to be used well from other (Py2) programs when they have md at hand which should be displayed to the user:
