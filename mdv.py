@@ -590,17 +590,26 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
          c_guess=-1, display_links=None, **kw):
     """ md is markdown string. alternatively we use filename and read """
 
+    args = locals()
+    if not md:
+        if not filename:
+            print 'Using sample markdown'
+            make_sample()
+            md = args['md'] = md_sample
+        else:
+            with open(filename) as f:
+                md = f.read()
+
+    global term_columns
     # style rolers requested?
     if c_theme == 'all' or theme == 'all':
-        args = locals()
         args.pop('kw')
-        make_sample()
         themes = read_themes()
         for k, v in themes.items():
             if not filename:
                 args['md'] = md_sample.replace('__id__', k).\
                                        replace('__name__', v['name'])
-            print col('%s%s%s' % ('\n\n', '=' * 80,'\n'), L)
+            print col('%s%s%s' % ('\n\n', '=' * term_columns,'\n'), L)
             # should really create an iterator here:
             if theme == 'all':
                 args['theme'] = k
@@ -610,7 +619,6 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
         return ''
 
     if cols:
-        global term_columns
         term_columns = int(cols)
 
     global show_links
@@ -621,13 +629,6 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
         global background, color
         background = BGL
         color = T
-
-    if filename and not md:
-        with open(filename) as f:
-            md = f.read()
-    if not md:
-        print(col('No markdown around', R))
-        raise SystemExit
 
     set_theme(theme)
 
