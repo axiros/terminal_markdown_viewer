@@ -33,8 +33,15 @@ from
 	!!! note: title
 	    this is a Note
 
-Regarding color options: mdv has quite a lot, ships with > 200 themes, converted from html to ansi.
-Those can be combined for code vs regular md output...
+### Noteable Features
+
+- 40k theme combinations: mdv ships with > 200 luminocity sorted themes, converted from html themes tables to ansi. Those can be combined for code vs regular md output...
+- Admonitions
+- Tables, incl. wide table handling avoiding "interleaving"
+- Hackable (I hope)
+- Useable as lib as well
+- File change monitor
+ 
 
 ## Alternatives
 
