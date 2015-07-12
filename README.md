@@ -179,6 +179,10 @@ Random results, using the theme roller feature:
 
 [tabulate](https://pypi.python.org/pypi/tabulate)
 
+and, naturally, the [python markdown project][https://pythonhosted.org/Markdown/authors.html]
+
+
+
 
 ### Lastly
 
