@@ -64,6 +64,69 @@ Those can be combined for code output and regular md output, so you have > 40000
 mdv is designed to be used well from other (Py2) programs when they have md at hand which should be displayed to the user:
 
 	from mdv import main   # all options there
+	
+#### Customization
+
+In mdv.py you can change some config straight forward.
+
+```python
+# ---------------------------------------------------------------------- Config
+txt_block_cut, code_pref, list_pref, br_ends = '✂', '░ ', '- ', '◈'
+# ansi cols (default):
+# R: Red (warnings), L: low visi, BG: background, BGL: background light, C=code
+# H1 - H5 = the theme, the numbers are the ansi color codes:
+H1,  H2,  H3,  H4,  H5, R,   L,  BG, BGL, T,   TL, C   = \
+231, 153, 117, 109, 65, 124, 59, 16, 188, 188, 59, 102
+# Code (C is fallback if we have no lexer). Default: Same theme:
+CH1, CH2, CH3, CH4, CH5 = H1, H2, H3, H4, H5
+
+code_hl = { "Keyword" : 'CH3', "Name" : 'CH1',
+            "Comment" : 'L',  "String": 'CH4',
+            "Error"   : 'R',  "Number": 'CH4',
+            "Operator": 'CH5',
+            "Generic" : 'CH2'
+            }
+
+admons = {'note'     : 'H3', 'warning': 'R',
+          'attention': 'H1', 'hint'   : 'H4',
+          'summary'  : 'H1', 'hint'   : 'H4',
+          'question' : 'H5', 'danger' : 'R',
+          'caution'  : 'H2'
+         }
+
+def_lexer = 'python'
+guess_lexer = True
+# also global. but not in use, BG handling can get pretty involved, to do with
+# taste, since we don't know the term backg....:
+background = BG
+
+# normal text color:
+color = T
+
+show_links = None
+
+# columns(!) - may be set to smaller width:
+try:
+    term_rows, term_columns = os.popen('stty size', 'r').read().split()
+    term_columns = int(term_columns)
+except:
+    print '!! Could not derive your terminal width !!'
+    term_columns = 80
+
+# could be given, otherwise read from ansi_tables.json:
+themes = {}
+
+
+# sample for the theme roller feature:
+md_sample = ''
+
+# ------------------------------------------------------------------ End Config
+```
+
+Any importing module can overwrite those module global variables as well.
+
+Should you need yet additional themes, add them to ``ansi_tables.json`` file by adding your ansi codes there.
+
 
 
 ## Screenshots
@@ -105,4 +168,9 @@ Random results, using the theme roller feature:
 ![second](https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/2.png)
 
 
+
+# Credits
+
+[pygments][http://pygments.org/] (using their lexer)
+[tabulate][https://pypi.python.org/pypi/tabulate]
 
