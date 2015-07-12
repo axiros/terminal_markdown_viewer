@@ -2,11 +2,14 @@
 
 Markdown is actually simple enough to be well displayed on modern (256 color) terminals (except images that is).
 
+Regarding color options: mdv has quite a lot, ships with > 200 themes, converted from html to ansi.
+Those can be combined for code output and regular md output, so you have > 40000 themes in total ;-)
+
 ## Alternatives
 
-1. There are few (e.g. [msee](https://www.npmjs.com/package/msee)) from the js community but they require nodejs & npm, which I don't have on my servers. Also I did not like the styling.
+1. There are few from the js community (e.g. [msee](https://www.npmjs.com/package/msee)) but they require nodejs & npm, which I don't have on my servers. Also I personally did not like the styling and the table handling.
 
-2. pandoc -> html -> elinks, lynx or pandoc -> man -> groff
+2. pandoc -> html -> elinks, lynx or pandoc -> man -> groff. A bit heavy and hard to use from within other programs.
 
 
 ## Installation
@@ -19,6 +22,7 @@ Markdown is actually simple enough to be well displayed on modern (256 color) te
 
 ## Usage
 
+### CLI
 
     mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [MDFILE]
 
@@ -49,6 +53,15 @@ Markdown is actually simple enough to be well displayed on modern (256 color) te
 
 *who knows of a docopt to markdown converter ;-)*?
 
+### Inline
+
+mdv is designed to be used well from other (Py2) programs when they have md at hand which should be displayed to the user:
+
+	from mdv import main   # all options there
+
+
 ## Screenshots
+
+
 
 
