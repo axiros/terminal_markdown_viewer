@@ -10,6 +10,8 @@ Those can be combined for code output and regular md output, so you have > 40000
 
 ## Alternatives
 
+The ones I know of (and which made me write mdv ;-) ):
+
 1. There are few from the js community (e.g. [msee](https://www.npmjs.com/package/msee)) but they require nodejs & npm, which I don't have on my servers. Also I personally did not like the styling and the table handling.
 
 2. pandoc -> html -> elinks, lynx or pandoc -> man -> groff. (Heavy and hard to use from within other programs. Styling suboptimal)
