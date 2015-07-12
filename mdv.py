@@ -671,10 +671,18 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
                                        TableExtension(),
                                        fenced_code.FencedCodeExtension()])
     # html?
-    MD.convert(md)
+    html = MD.convert(md)
 
     # who wants html, here is our result:
-    out = MD.ansi
+    try:
+        ansi = MD.ansi
+    except:
+        if html:
+            # can this happen? At least show:
+            print "we have markdown result but no ansi."
+            print html
+        else:
+            ansi = 'n.a. (no parsing result)'
 
     # The RAW html within source, incl. fenced code blocks:
     # phs are numbered like this in the md, we replace back:
@@ -695,11 +703,11 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
             else:
                 lang = ''
             raw = tags.code(raw.strip(), from_fenced_block=1, lang=lang)
-        out = out.replace(PH % nr, raw)
+        ansi = ansi.replace(PH % nr, raw)
 
     # don't want these: gone through the extension now:
-    # out = out.replace('```', '')
-    return out
+    # ansi = ansi.replace('```', '')
+    return ansi
 
     #return '%s%s%s' % (col_bg(background), MD.ansi, reset_col)
 
@@ -740,7 +748,7 @@ if __name__ == '__main__':
             except Exception, ex:
                 last_err = str(ex)
         if last_err:
-            print 'Error: %s' % err
+            print 'Error: %s' % last_err
         time.sleep(1)
 
 
