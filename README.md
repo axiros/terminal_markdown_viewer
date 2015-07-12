@@ -80,7 +80,7 @@ Further I did not test anything on windows.
 
 ### CLI
 
-```shell
+```
 Usage:
     mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [-f FROM] [-m] [-M DIR] [-H] [-A] [MDFILE]
 
