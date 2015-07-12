@@ -52,7 +52,7 @@ The ones I know of (and which made me write mdv ;-) ):
 
 1. There are few from the js community (e.g. [msee](https://www.npmjs.com/package/msee)) but they require nodejs & npm, which I don't have on my servers. Also I personally did not like table handling and missing admonition support.
 
-2. pandoc -> html -> elinks, lynx or pandoc -> man -> groff. (Heavy and hard to use from within other programs. Styling suboptimal)
+2. pandoc -> html -> elinks, lynx or pandoc -> groff -> man. (Heavy and hard to use from within other programs. Styling suboptimal)
 
 3. vimcat (Also heavy and hard to use inline in other programs)
 
