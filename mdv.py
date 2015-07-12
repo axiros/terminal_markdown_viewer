@@ -593,9 +593,10 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
     args = locals()
     if not md:
         if not filename:
-            print 'Using sample markdown'
+            print 'Using sample markdown:'
             make_sample()
             md = args['md'] = md_sample
+            print md
         else:
             with open(filename) as f:
                 md = f.read()
