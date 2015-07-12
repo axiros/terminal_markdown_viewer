@@ -6,7 +6,7 @@ Usage:
     mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [-f FROM] [-m] [-M DIR] [MDFILE]
 
 Options:
-    MDFIlE    : Path to markdown file
+    MDFILE    : Path to markdown file
     -t THEME  : Key within the color ansi_table.json. 'random' accepted.
     -T C_THEME: Theme for code highlight. If not set: Use THEME.
     -l        : Light background (not yet supported)
