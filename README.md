@@ -41,6 +41,8 @@ from
 - Hackable (I hope)
 - Useable as lib as well
 - File change monitor
+- Directory change monitor (good when working on multiple files)
+	- which can run arbitrary commands on file edits
  
 
 ## Alternatives
