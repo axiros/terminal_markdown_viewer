@@ -204,13 +204,14 @@ Lastly do this in your app module:
 ```python
 from click.formatting import HelpFormatter
 def write_text(self, text):
-    """ since markdown pretty out on cli i found no tool I built
-    my own """
+    """ since markdown pretty out on cli I found no good tool I built my own """
+    # poor man's md detection:
     if not text.strip().startswith('#'):
-        return write_colored(self, text)
+        return orig_write_text(self, text)
     from axc.markdown.mdv import main as mdv
     self.buffer.append(mdv(md=text, theme=os.environ['AXC_THEME']))  # supply a theme ID or get random
-    
+
+HelpFormatter.orig_write_text = HelpFormatter.write_text    
 HelpFormatter.write_text = write_text
 ```
 
