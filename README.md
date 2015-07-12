@@ -186,4 +186,4 @@ and, naturally, the [python markdown project](https://pythonhosted.org/Markdown/
 
 ### Lastly
 
-*sorry for the aggressive promotion of setdefaultencoding, hope it does not hurt anybody's feelings;-) I'm only on posix and there it just rocks.*
+*sorry for the aggressive promotion of setdefaultencoding, hope it does not hurt anybody's feelings;-) I'm only on posix and don't deal with last century encodings. Py2's text handling with it just rocks, far better than on 3, imho.*
