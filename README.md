@@ -92,7 +92,7 @@ Further I did not test anything on windows.
     Setting both to all will probably spin your beach ball, at least on OSX.
 
 
-*who knows of a docopt to markdown converter ;-)*?
+*who knows of a docopt to markdown feature ;-)*?
 
 > Regarding the strange theme ids: Those numbers are the calculated total luminocity of the 5 theme colors.
 
