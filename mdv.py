@@ -30,7 +30,7 @@ Notes:
 """
 
 if __name__ == '__main__':
-    # Make Py2 >>> Py3:
+    # Make Py2 > Py3:
     import os, sys; reload(sys); sys.setdefaultencoding('utf-8')
     # no? see http://stackoverflow.com/a/29832646/4583360 ...
 
@@ -86,6 +86,8 @@ guess_lexer = True
 # taste, since we don't know the term backg....:
 background = BG
 
+# hirarchical indentation by:
+left_indent = '  '
 # normal text color:
 color = T
 
@@ -458,7 +460,7 @@ class AnsiPrinter(Treeprocessor):
                     body_pref = ' ' * len(pref)
                     el.set('pref', '')
 
-                ind = '  ' * hir
+                ind = left_indent * hir
                 if el.tag in self.header_tags:
                     # header level:
                     hl = int(el.tag[1:])
@@ -536,7 +538,16 @@ class AnsiPrinter(Treeprocessor):
                 if w <= cols:
                     t = tbl.splitlines()
                     borders(t)
-                    out.extend(t)
+                    # center:
+                    ind = (cols - w) / 2
+                    # too much:
+                    ind = hir
+                    tt = []
+                    for line in t:
+                        tt.append('%s%s' % (ind * left_indent, line))
+
+
+                    out.extend(tt)
                 else:
                     # TABLE CUTTING WHEN NOT WIDTH FIT
                     # oh snap, the table bigger than our screen. hmm.
@@ -638,6 +649,12 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
     if not c_guess == -1:
         global guess_lexer
         guess_lexer = c_guess
+
+    if not c_theme:
+        c_theme = theme or 'default'
+
+    if c_theme == 'None':
+        c_theme = None
 
     if c_theme:
         set_theme(c_theme, for_code=1)
