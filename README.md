@@ -2,40 +2,36 @@
 
 Markdown is actually simple enough to be well displayed on modern (256 color) terminals (except images that is).
 
-<table><thead><tr><th>Source</th><th>Rendering</th></tr></thead>
-<tbody><tr><td>
-<pre><code>
-### Source
-# Header 1
-## Header 2
-### Header 3
-#### Header 4
-##### Header 5
-###### Header 6
-```python
-""" Test """
-# Make Py2 >>> Py3:
-import os, sys; reload(sys); sys.setdefaultencoding('utf-8')
-# no? see http://stackoverflow.com/a/29832646/4583360 ...
+![](https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/1.png")
 
-# code analysis for hilite:
-try:
-    from pygments import lex, token
-    from pygments.lexers import get_lexer_by_name, guess_lexer
-```
+from 
 
-| Tables            | Fmt            |
-| -- | -- |
-| !!! hint: wrapped | 0.1 **strong** |
-    
-!!! note: title
-    this is a Note
+	### Source
+	# Header 1
+	## Header 2
+	### Header 3
+	#### Header 4
+	##### Header 5
+	###### Header 6
+	```python
+	""" Test """
+	# Make Py2 >>> Py3:
+	import os, sys; reload(sys); sys.setdefaultencoding('utf-8')
+	# no? see http://stackoverflow.com/a/29832646/4583360 ...
+	
+	# code analysis for hilite:
+	try:
+	    from pygments import lex, token
+	    from pygments.lexers import get_lexer_by_name, guess_lexer
+	```
+	
+	| Tables            | Fmt            |
+	| -- | -- |
+	| !!! hint: wrapped | 0.1 **strong** |
+	    
+	!!! note: title
+	    this is a Note
 
-</code></pre></td><td>
-
-<img minwidth="600px" src="https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/1.png" />
-
-</td></tr></tbody></table>
 Regarding color options: mdv has quite a lot, ships with > 200 themes, converted from html to ansi.
 Those can be combined for code output and regular md output, so you have > 40000 themes in total ;-)
 
