@@ -33,7 +33,7 @@ from
 	    this is a Note
 
 Regarding color options: mdv has quite a lot, ships with > 200 themes, converted from html to ansi.
-Those can be combined for code output and regular md output, so you have > 40000 themes in total ;-)
+Those can be combined for code output and regular md output, so you have > 40000 themes in total...
 
 ## Alternatives
 
