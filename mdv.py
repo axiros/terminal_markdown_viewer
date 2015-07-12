@@ -67,6 +67,11 @@ Notes:
             Say C_THEME = all and fix THEME
         Setting both to all will probably spin your beach ball, at least on OSX.
 
+    Lastly: Using docopt, so this docstring is building the options checker.
+    -> That's why this app can't currently use itself for showing the docu.
+    Have to find a way to trick docopt to parse md ;-)
+
+
 """
 import os, sys
 is_app = 0
