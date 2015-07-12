@@ -69,7 +69,13 @@ Further I did not test anything on windows.
 
 mdv is designed to be used well from other (Py2) programs when they have md at hand which should be displayed to the user:
 
-	from mdv import main   # all options there
+	import mdv
+	
+	# config like this:
+	mdv.def_lexer = '...'
+	
+	# calling like this
+	formatted = mdv.main(my_raw_markdown, c_theme=...)  # all CLI options supported
 	
 #### Customization
 
