@@ -905,7 +905,7 @@ def monitor_dir(args):
 
     dir_black_list = ['.', '..']
     def check_dir(d, ftree):
-        check_youngest = ftree.get('youngest_ts')
+        check_latest = ftree.get('latest_ts')
         d = os.path.abspath(d)
         if d in dir_black_list:
             return
@@ -933,10 +933,10 @@ def monitor_dir(args):
                 old = ftree.get(fp)
                 # size:
                 now = os.stat(fp)[6]
-                if check_youngest:
-                    if os.stat(fp)[7] > ftree['youngest_ts']:
-                        ftree['youngest'] = fp
-                        ftree['youngest_ts'] = os.stat(fp)[8]
+                if check_latest:
+                    if os.stat(fp)[7] > ftree['latest_ts']:
+                        ftree['latest'] = fp
+                        ftree['latest_ts'] = os.stat(fp)[8]
                 if now == old:
                     continue
                 # change:
@@ -951,12 +951,12 @@ def monitor_dir(args):
                 check_dir(j(d, fp), ftree)
 
 
-    ftree['youngest_ts'] = 1
+    ftree['latest_ts'] = 1
     while True:
         check_dir(d, ftree)
-        if 'youngest_ts' in ftree:
-            ftree.pop('youngest_ts')
-            fp = ftree.get('youngest')
+        if 'latest_ts' in ftree:
+            ftree.pop('latest_ts')
+            fp = ftree.get('latest')
             if fp:
                 show_fp(fp)
             else:
