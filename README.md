@@ -2,7 +2,7 @@
 
 Markdown is actually simple enough to be well displayed on modern (256 color) terminals (except images that is).
 
-![](https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/1.png")
+![](https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/1.png)
 
 from 
 
