@@ -33,7 +33,7 @@ from
 	    this is a Note
 
 Regarding color options: mdv has quite a lot, ships with > 200 themes, converted from html to ansi.
-Those can be combined for code output and regular md output, so you have > 40000 themes in total...
+Those can be combined for code vs regular md output...
 
 ## Alternatives
 
@@ -43,7 +43,7 @@ The ones I know of (and which made me write mdv ;-) ):
 
 2. pandoc -> html -> elinks, lynx or pandoc -> man -> groff. (Heavy and hard to use from within other programs. Styling suboptimal)
 
-3. vimcat (hard to use inline in other programs, slow)
+3. vimcat (Also heavy and hard to use inline in other programs)
 
 ## Installation
 
