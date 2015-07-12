@@ -73,6 +73,7 @@ Further I did not test anything on windows.
 
 ### CLI
 
+```
 ~/axc/documentation $ mdv -h
 Usage:
     mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [-f FROM] [-m] [-M DIR] [MDFILE]
@@ -133,7 +134,7 @@ Notes:
         So to see all code hilite variations with a given theme:
             Say C_THEME = all and fix THEME
         Setting both to all will probably spin your beach ball, at least on OSX.
-
+```
 
 *who knows of a docopt to markdown feature ;-)*?
 
