@@ -78,7 +78,7 @@ Further I did not test anything on windows.
 
 ```
 Usage:
-    mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [-f FROM] [-m] [-M DIR] [MDFILE]
+    mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [-f FROM] [-m] [-M DIR] [-H] [-A] [MDFILE]
 
 Options:
     MDFILE    : Path to markdown file
@@ -90,7 +90,9 @@ Options:
     -f FROM   : Display FROM given substring of the file.
     -m        : Monitor file for changes and redisplay FROM given substring
     -M DIR    : Monitor directory for markdown file changes
-    -c COLS   : fix columns to this (default: your terminal width)
+    -c COLS   : Fix columns to this (default: your terminal width)
+    -A        : Strip all ansi (no colors then)
+    -H        : Print html version
 
 Notes:
 
@@ -139,6 +141,8 @@ Notes:
         So to see all code hilite variations with a given theme:
             Say C_THEME = all and fix THEME
         Setting both to all will probably spin your beach ball, at least on OSX.
+
+
 ```
 
 *who knows of a docopt to markdown feature ;-)*?
