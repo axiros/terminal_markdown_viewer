@@ -60,7 +60,10 @@ The ones I know of (and which made me write mdv ;-) ):
 
 ## Installation
 
-``alias mdv='<path to this repo>/mdv.py'`` within your .bashrc or .zshrc
+Manual, no package. I.e.:
+
+	alias mdv='<path to this repo>/mdv.py # within your .bashrc or .zshrc or
+	ln -s <path to this repo>/mdv.py ./bin/mdv # within your $PATH
 
 No pip currently.
 
