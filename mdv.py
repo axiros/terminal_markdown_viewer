@@ -46,8 +46,11 @@ Notes:
         Running actions on changes:
         If you append to -M a '::<cmd>' we run the command on any change
         detected (sync, in foreground).
-        The command can contain a placeholder ('_fp_'), which we replace with
-        the path of the changed file.
+        The command can contain placeholders:
+            _fp_    : Will be replaced with filepath
+            _raw_   : Will be replaced with the base64 encoded raw content
+                      of the file
+            _pretty_: Will be replaced with the base64 encoded prettyfied output
 
         Like: mdv -M './mydocs:py,md::open "_fp_"'  which calls the open
         command with argument the path to the changed file.
@@ -149,7 +152,9 @@ mon_max_files = 1000
 # ------------------------------------------------------------------ End Config
 # below here you have to *know* what u r doing... (since I didn't too much)
 
-cmd_filepath_ph = '_fp_'
+dir_mon_filepath_ph    = '_fp_'
+dir_mon_content_raw    = '_raw_'
+dir_mon_content_pretty = '_pretty_'
 
 def read_themes():
     if not themes:
@@ -764,6 +769,7 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
 
 
 
+# ---------------------------------------------------------------- File Monitor
 def monitor(args):
     """ file monitor mode """
     if not filename:
@@ -795,21 +801,43 @@ def sleep():
         print 'Have a nice day!'
         raise SystemExit
 
+
+# ----------------------------------------------------------- Directory Monitor
+def run_changed_file_cmd(cmd, fp, pretty):
+    """ running commands on changes.
+        pretty the parsed file
+    """
+    with open(fp) as f:
+        raw = f.read()
+    # go sure regarding quotes:
+    for ph in (dir_mon_filepath_ph, dir_mon_content_raw,
+                dir_mon_content_pretty):
+        if ph in cmd and not ('"%s"' % ph) in cmd \
+                        and not ("'%s'" % ph) in cmd:
+            cmd = cmd.replace(ph, '"%s"' % ph)
+
+    cmd = cmd.replace(dir_mon_filepath_ph, fp)
+    print col('Running %s' % cmd, H1)
+    for r, what in ((dir_mon_content_raw, raw),
+                    (dir_mon_content_pretty, pretty)):
+        cmd = cmd.replace(r, what.encode('base64'))
+
+    # yeah, i know, sub bla bla...
+    if os.system(cmd):
+        print col('(the command failed)', R)
+
+
 def monitor_dir(args):
     """ displaying the changed files """
 
     def show_fp(fp):
         args['MDFILE'] = fp
-        print run_args(args)
+        pretty = run_args(args)
+        print pretty
         print "(%s)" % col(fp, L)
         cmd = args.get('change_cmd')
-        if not cmd:
-            return
-        cmd = cmd.replace(cmd_filepath_ph, fp)
-        print col('Running %s' % cmd, H1)
-        # i'm old style guy:
-        if os.system(cmd):
-            print col('(the command failed)', R)
+        if cmd:
+            run_changed_file_cmd(cmd, fp=fp, pretty=pretty)
 
     ftree = {}
     d = args.get('-M')
