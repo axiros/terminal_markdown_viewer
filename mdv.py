@@ -68,10 +68,10 @@ Notes:
         Setting both to all will probably spin your beach ball, at least on OSX.
 
 """
-
+import os, sys 
 if __name__ == '__main__':
     # Make Py2 > Py3:
-    import os, sys; reload(sys); sys.setdefaultencoding('utf-8')
+    reload(sys); sys.setdefaultencoding('utf-8')
     # no? see http://stackoverflow.com/a/29832646/4583360 ...
 
 
@@ -83,6 +83,7 @@ try:
 except ImportError:
     have_pygments = False
 
+import os
 import time
 import markdown, re
 from docopt import docopt
@@ -138,6 +139,7 @@ try:
     term_rows, term_columns = os.popen('stty size', 'r').read().split()
     term_columns, term_rows = int(term_columns), int(term_rows)
 except:
+    import pdb; pdb.set_trace()
     print '!! Could not derive your terminal width !!'
     term_columns = 80
     term_rows = 200
