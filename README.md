@@ -25,7 +25,7 @@ from
 	    from pygments.lexers import get_lexer_by_name, guess_lexer
 	```
 	
-	| Tables            | Fmt            |
+	| Tables | Fmt |
 	| -- | -- |
 	| !!! hint: wrapped | 0.1 **strong** |
 	    
