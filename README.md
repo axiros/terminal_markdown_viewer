@@ -302,6 +302,16 @@ Random results, using the theme roller feature:
 
 Note the table block splitting when the table does not fit (last picture).
 
+## TODO
+
+- Lines separators not optimal ([nd](https://www.npmjs.com/package/nd) does better)
+- Some inline tags shown as html (nested lis)
+- Test light colorscheme
+- Dimming
+- A few grey scale and 8 color themes
+- Sorting of the json by luminance
+- Some themes have black as darkest color, change to dark grey
+
 
 # Credits
 
