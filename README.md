@@ -34,9 +34,11 @@ from
 	!!! note: title
 	    this is a Note
 
+----
 
-> mdv is a weekend hack and in a pre-release state: It still requires optimizations and testing regarding its output. 
+> mdv is a weekend hack and in a pre-release/proof of concept state: While for simple structures it does its job quite well, it still requires optimizations and testing regarding its output, for more complex markdown. Guess I'll invest another weekend soon.
 
+----
 
 ### Noteable Features
 
@@ -61,6 +63,8 @@ The ones I know of (and which made me write mdv ;-) ):
 2. pandoc -> html -> elinks, lynx or pandoc -> groff -> man. (Heavy and hard to use from within other programs. Styling suboptimal)
 
 3. vimcat (Also heavy and hard to use inline in other programs)
+
+Summary: For production ready robust markdown viewing (e.g. for your customers) I recommend nd still, due to the early state of mdv. For playing around, especially with theming or when with Python, this one might be a valid alternative to look at.
 
 ## Installation
 
