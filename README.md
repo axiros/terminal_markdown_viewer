@@ -1,6 +1,6 @@
 # Terminal Markdown Viewer
 
-*When you edit multiple md files remotely, like in a larger [mkdocs](http://www.mkdocs.org/) project, context switches between editing terminal(s) and viewing browser may have some efficiency impact. Also sometimes there is just no browser, like via security gateways offering just a fixed set of applications on the hop in machine. Further, reading efficiency and convenience is often significantly improved by using colors. And lastly, using such a thing for cli applications might improve user output, e.g. for help texts. This is where mdv, a Python based marked down viewer for the terminal might be a good option.*
+*When you edit multiple md files remotely, like in a larger [mkdocs](http://www.mkdocs.org/) project, context switches between editing terminal(s) and viewing browser may have some efficiency impact. Also sometimes there is just no browser, like via security gateways offering just a fixed set of applications on the hop in machine. Further, reading efficiency and convenience is often significantly improved by using colors. And lastly, using such a thing for cli applications might improve user output, e.g. for help texts. This is where mdv, a Python based mark down viewer for the terminal might be a good option.*
 
 Markdown is actually simple enough to be well displayed on modern (256 color) terminals (except images that is).
 
@@ -60,7 +60,10 @@ The ones I know of (and which made me write mdv ;-) ):
 
 ## Installation
 
-``alias mdv='<path to this repo>/mdv.py'`` within your .bashrc or .zshrc
+Manual, no package. I.e.:
+
+	alias mdv='<path to this repo>/mdv.py # within your .bashrc or .zshrc or
+	ln -s <path to this repo>/mdv.py ./bin/mdv # within your $PATH
 
 No pip currently.
 
@@ -313,4 +316,4 @@ and, naturally, the [python markdown project](https://pythonhosted.org/Markdown/
 
 ### Lastly
 
-*sorry for the aggressive promotion of setdefaultencoding in the example shot, hope it does not hurt anybody's feelings;-) I'm only on posix and don't deal with last century encodings. Py2's text handling with it just rocks, far better than on 3, imho.*
+*sorry for the aggressive promotion of setdefaultencoding in the example shot, hope it does not hurt anybody's feelings;-) I'm only on posix and don't deal with last century encodings. Py2's text handling with it just rocks.*
