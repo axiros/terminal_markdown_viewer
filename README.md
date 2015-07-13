@@ -2,7 +2,7 @@
 
 *When you edit multiple md files remotely, like in a larger [mkdocs](http://www.mkdocs.org/) project, context switches between editing terminal(s) and viewing browser may have some efficiency impact. Also sometimes there is just no browser, like via security gateways offering just a fixed set of applications on the hop in machine. Further, reading efficiency and convenience is often significantly improved by using colors. And lastly, using such a thing for cli applications might improve user output, e.g. for help texts. This is where mdv, a Python based mark down viewer for the terminal might be a good option.*
 
-Markdown is actually simple enough to be well displayed on modern (256 color) terminals (except images that is).
+Markdown is "simple" enough to be well displayed on modern (256 color) terminals (except images that is).
 
 ![img](https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/1.png)
 
@@ -34,12 +34,16 @@ from
 	!!! note: title
 	    this is a Note
 
+
+> mdv is a weekend hack and in a pre-release state: It still requires optimizations and testing regarding its output. 
+
+
 ### Noteable Features
 
 - 40k theme combinations: mdv ships with > 200 luminocity sorted themes, converted from html themes tables to ansi. Those can be combined for code vs regular md output...
 - Admonitions
 - Tables, incl. wide table handling avoiding "interleaving"
-- Hackable (I hope), all in [one](mdv.py) module
+- Somewhat hackable, all in [one](mdv.py) module
 - Useable as lib as well
 - File change monitor
 - Smart text wrapping
@@ -304,6 +308,7 @@ Note the table block splitting when the table does not fit (last picture).
 
 ## TODO
 
+- Refactor the implementation, using a config class
 - Lines separators not optimal ([nd](https://www.npmjs.com/package/nd) does better)
 - Some inline tags shown as html (nested lis)
 - Test light colorscheme
