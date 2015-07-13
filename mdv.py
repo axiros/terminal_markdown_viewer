@@ -73,7 +73,8 @@ Notes:
 
 
 """
-import os, sys
+import os
+import sys
 is_app = 0
 if __name__ == '__main__':
     is_app = 1
@@ -84,7 +85,8 @@ if __name__ == '__main__':
 # code analysis for hilite:
 try:
     from pygments import lex, token
-    from pygments.lexers import get_lexer_by_name, guess_lexer
+    from pygments.lexers import get_lexer_by_name
+    from pygments.lexers import guess_lexer as pyg_guess_lexer
     have_pygments = True
 except ImportError:
     have_pygments = False
@@ -145,7 +147,6 @@ try:
     term_rows, term_columns = os.popen('stty size', 'r').read().split()
     term_columns, term_rows = int(term_columns), int(term_rows)
 except:
-    import pdb; pdb.set_trace()
     print '!! Could not derive your terminal width !!'
     term_columns = 80
     term_rows = 200
@@ -272,10 +273,13 @@ def style_ansi(raw_code, lang=None):
             lexer = get_lexer_by_name(lang)
         except ValueError:
             print col(R, 'Lexer for %s not found' % lang)
-    try:
-        lexer = guess_lexer(raw_code)
-    except:
-        pass
+    lexer = None
+    if not lexer:
+        try:
+            if guess_lexer:
+                lexer = pyg_guess_lexer(raw_code)
+        except:
+            pass
     if not lexer:
         lexer = get_lexer_by_name(def_lexer)
     tokens = lex(raw_code, lexer)
@@ -700,7 +704,7 @@ class AnsiPrintExtension(Extension):
 
 
 def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
-         c_guess=-1, display_links=None, from_txt=None, do_html=None,
+         c_no_guess=None, display_links=None, from_txt=None, do_html=None,
          no_colors=None, **kw):
     """ md is markdown string. alternatively we use filename and read """
 
@@ -749,9 +753,8 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
 
     set_theme(theme)
 
-    if not c_guess == -1:
-        global guess_lexer
-        guess_lexer = c_guess
+    global guess_lexer
+    guess_lexer = not c_no_guess
 
     if not c_theme:
         c_theme = theme or 'default'
@@ -992,7 +995,7 @@ def run_args(args):
                ,cols          = args.get('-c')
                ,from_txt      = args.get('-f')
                ,c_theme       = args.get('-T')
-               ,c_guess       = args.get('-x')
+               ,c_no_guess    = args.get('-x')
                ,do_html       = args.get('-H')
                ,no_colors     = args.get('-A')
                ,display_links = args.get('-L'))
