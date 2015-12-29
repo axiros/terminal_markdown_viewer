@@ -121,7 +121,7 @@ Notes:
         FROM may contain max lines to display, seperated by colon.
         Example:
         -f 'Some Head:10' -> displays 10 lines after 'Some Head'
-        If the substring is not found we set it to the *first* charactor of the
+        If the substring is not found we set it to the *first* character of the
         file - resulting in output from the top (if you terminal height can be
         derived correctly through the stty cmd).
 
