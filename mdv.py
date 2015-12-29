@@ -845,6 +845,7 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
 # ---------------------------------------------------------------- File Monitor
 def monitor(args):
     """ file monitor mode """
+    filename = args.get('MDFILE')
     if not filename:
         print col('Need file argument', 2)
         raise SystemExit
