@@ -79,6 +79,8 @@ No pip currently.
  
 - python2.7
 - py markdown (pip install markdown)
+- py pygments (pip install pygments)
+- py yaml (pip install yaml)
 - this repo
 
 Further a 256 color terminal (for now best with dark background) and font support for a few special separator characters (which you could change in mdv.py).

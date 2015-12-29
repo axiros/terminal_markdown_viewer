@@ -987,6 +987,22 @@ def monitor_dir(args):
         sleep()
 
 
+def load_yaml_config():
+    import yaml
+    cfg = yaml.load('{}')
+    config_file = os.path.expanduser("~/.mdv")
+    if os.path.exists(config_file):
+        with open (config_file, "r") as mdvconfig:
+            try:
+                cfg = yaml.load(mdvconfig)
+            except IOError:
+                pass
+    return cfg
+
+def merge(a, b):
+    c = a.copy()
+    c.update(b)
+    return c
 
 def run_args(args):
     """ call the lib entry function with CLI args """
@@ -1003,11 +1019,10 @@ def run_args(args):
 
 if __name__ == '__main__':
     args = docopt(__doc__, version='mdv v0.1')
+    args = merge(args, load_yaml_config())
     if args.get('-m'):
         monitor(args)
     if args.get('-M'):
         monitor_dir(args)
     else:
         print run_args(args)
-
-
