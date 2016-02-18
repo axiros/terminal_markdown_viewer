@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 # coding: utf-8
 
 """
@@ -114,6 +114,8 @@ H1,  H2,  H3,  H4,  H5, R,   L,  BG, BGL, T,   TL, C   = \
 231, 153, 117, 109, 65, 124, 59, 16, 188, 188, 59, 102
 # Code (C is fallback if we have no lexer). Default: Same theme:
 CH1, CH2, CH3, CH4, CH5 = H1, H2, H3, H4, H5
+# Light background (T, L)
+LBGT, LBGL = 88, 224
 
 code_hl = { "Keyword" : 'CH3', "Name" : 'CH1',
             "Comment" : 'L',  "String": 'CH4',
@@ -718,8 +720,11 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
             print
             print 'Styling Result'
         else:
-            with open(filename) as f:
-                md = f.read()
+            if filename == '-':
+                md = sys.stdin.read()
+            else:
+                with open(filename) as f:
+                    md = f.read()
 
     global term_columns
     # style rolers requested?
@@ -747,9 +752,12 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
 
     if bg and bg == 'light':
         # not in use rite now:
-        global background, color
+        global background, color, T, LBGT, LBGL
         background = BGL
         color = T
+        T = LBGT
+        L = LBGL
+
 
     set_theme(theme)
 
@@ -1008,14 +1016,16 @@ def merge(a, b):
 def run_args(args):
     """ call the lib entry function with CLI args """
     return main(filename      = args.get('MDFILE')
-               ,theme         = args.get('-t', 'random')
+               ,theme         = args.get('THEME', 'light' if
+                                    args.get('-l') else 'random')
                ,cols          = args.get('-c')
                ,from_txt      = args.get('-f')
                ,c_theme       = args.get('-T')
                ,c_no_guess    = args.get('-x')
                ,do_html       = args.get('-H')
                ,no_colors     = args.get('-A')
-               ,display_links = args.get('-L'))
+               ,display_links = args.get('-L')
+               ,bg            = 'light' if args.get('-l') else '')
 
 
 if __name__ == '__main__':
