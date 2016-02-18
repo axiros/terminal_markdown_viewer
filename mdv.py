@@ -718,8 +718,11 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
             print
             print 'Styling Result'
         else:
-            with open(filename) as f:
-                md = f.read()
+            if filename == '-':
+                md = sys.stdin.read()
+            else:
+                with open(filename) as f:
+                    md = f.read()
 
     global term_columns
     # style rolers requested?
