@@ -68,10 +68,15 @@ Summary: For production ready robust markdown viewing (e.g. for your customers) 
 
 ## Installation
 
-Manual, no package. I.e.:
+Distribution via setuptools. If setuptools is not installed, run:
 
-	alias mdv='<path to this repo>/mdv.py # within your .bashrc or .zshrc or
-	ln -s <path to this repo>/mdv.py ./bin/mdv # within your $PATH
+    pip install setuptools
+
+
+Use the setup.py provided inside, I.e. run as root:
+
+	./setup.py install 
+    (or ./setup.py install --user to install only for the current user)
 
 No pip currently.
 
