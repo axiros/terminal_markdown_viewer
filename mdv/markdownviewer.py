@@ -118,11 +118,11 @@ import markdown.util
 from markdown.util import etree
 from markdown.extensions.tables import TableExtension
 from random import randint
-from tabulate import tabulate
+from .tabulate import tabulate
 from json import loads
 from markdown.treeprocessors import Treeprocessor
 from markdown.extensions import Extension, fenced_code
-from HTMLParser import HTMLParser
+from html.parser import HTMLParser
 
 # ---------------------------------------------------------------------- Config
 hr_sep, txt_block_cut, code_pref, list_pref, hr_ends = '─', '✂', '| ', '- ', '◈'
@@ -168,7 +168,7 @@ try:
     term_columns, term_rows = int(term_columns), int(term_rows)
 except:
     if not '-' in sys.argv:
-        print '!! Could not derive your terminal width !!'
+        print('!! Could not derive your terminal width !!')
     term_columns = 80
     term_rows = 200
 
@@ -218,7 +218,7 @@ def make_sample():
 | -- | -- |
 | !!! hint: wrapped | 0.1 **strong** |
     """)
-    for ad in admons.keys()[:1]:
+    for ad in list(admons.keys())[:1]:
         _md.append('!!! %s: title\n    this is a %s\n' % (ad, ad.capitalize()))
     # 'this theme' replaced in the roller (but not at mdv w/o args):
     globals()['md_sample'] = \
@@ -229,7 +229,7 @@ def make_sample():
 code_hl_tokens = {}
 def build_hl_by_token():
     # replace code strs with tokens:
-    for k, col in code_hl.items():
+    for k, col in list(code_hl.items()):
         code_hl_tokens[getattr(token, k)] = globals()[col]
 
 
@@ -261,7 +261,7 @@ def set_theme(theme=None, for_code=None, theme_info=None):
         themes = read_themes()
         if theme == 'random':
             rand = randint(0, len(themes)-1)
-            theme = themes.keys()[rand]
+            theme = list(themes.keys())[rand]
         t = themes.get(theme)
         if not t or len(t.get('ct')) != 5:
             # leave defaults:
@@ -269,10 +269,8 @@ def set_theme(theme=None, for_code=None, theme_info=None):
         _for = ''
         if for_code:
             _for = ' (code)'
-
         if theme_info:
-            print low('theme%s: %s (%s)' % (_for, theme, t.get('name')))
-
+            print(low('theme%s: %s (%s)' % (_for, theme, t.get('name'))))
         t = t['ct']
         cols = (t[0], t[1], t[2], t[3], t[4])
         if for_code:
@@ -294,8 +292,7 @@ def style_ansi(raw_code, lang=None):
         try:
             lexer = get_lexer_by_name(lang)
         except ValueError:
-            print col(R, 'Lexer for %s not found' % lang)
-
+            print(col(R, 'Lexer for %s not found' % lang))
     if not lexer:
         try:
             if guess_lexer:
@@ -498,7 +495,7 @@ def split_blocks(text_block, w, cols, part_fmter=None):
         ts.append(parts)
 
     blocks = []
-    for block_part_nr in xrange(len(ts[0])):
+    for block_part_nr in range(len(ts[0])):
         tpart = []
         for lines_block in ts:
             tpart.append(lines_block[block_part_nr])
@@ -519,7 +516,7 @@ class AnsiPrinter(Treeprocessor):
     def run(self, doc):
         tags = Tags()
         def get_attr(el, attr):
-            for c in el.items():
+            for c in list(el.items()):
                 if c[0] == attr:
                     return c[1]
             return ''
@@ -631,7 +628,7 @@ class AnsiPrinter(Treeprocessor):
                     out.append(tag_fmt_func(t, hir=hir))
                 if show_links:
                     for l in 'src', 'href':
-                        if l in el.keys():
+                        if l in list(el.keys()):
                             out[-1] += low('(%s) ' % get_attr(el, l))
 
                 if admon:
@@ -845,12 +842,12 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
     args = locals()
     if not md:
         if not filename:
-            print 'Using sample markdown:'
+            print('Using sample markdown:')
             make_sample()
             md = args['md'] = md_sample
-            print md
-            print
-            print 'Styling Result'
+            print(md)
+            print()
+            print('Styling Result')
         else:
             if filename == '-':
                 md = sys.stdin.read()
@@ -863,17 +860,17 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
     if c_theme == 'all' or theme == 'all':
         args.pop('kw')
         themes = read_themes()
-        for k, v in themes.items():
+        for k, v in list(themes.items()):
             if not filename:
                 yl = 'You like *%s*, *%s*?' % (k, v['name'])
                 args['md'] = md_sample.replace(you_like, yl)
-            print col('%s%s%s' % ('\n\n', '=' * term_columns,'\n'), L)
+            print(col('%s%s%s' % ('\n\n', '=' * term_columns,'\n'), L))
             # should really create an iterator here:
             if theme == 'all':
                 args['theme'] = k
             else:
                 args['c_theme'] = k
-            print main(**args)
+            print(main(**args))
         return ''
 
     if cols:
@@ -905,7 +902,7 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
     if c_theme or c_guess:
         # info:
         if not have_pygments:
-            print col('No pygments, can not analyze code for hilite', R)
+            print(col('No pygments, can not analyze code for hilite', R))
 
 
     # Create an instance of the Markdown class with the new extension
@@ -925,8 +922,8 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
     except:
         if html:
             # can this happen? At least show:
-            print "we have markdown result but no ansi."
-            print html
+            print("we have markdown result but no ansi.")
+            print(html)
         else:
             ansi = 'n.a. (no parsing result)'
 
@@ -986,7 +983,7 @@ def monitor(args):
     """ file monitor mode """
     filename = args.get('MDFILE')
     if not filename:
-        print col('Need file argument', 2)
+        print(col('Need file argument', 2))
         raise SystemExit
     last_err = ''
     last_stat = 0
@@ -998,20 +995,20 @@ def monitor(args):
                 stat = os.stat(filename)[8]
                 if stat != last_stat:
                     parsed = run_args(args)
-                    print parsed
+                    print(parsed)
                     last_stat = stat
                 last_err = ''
-            except Exception, ex:
+            except Exception as ex:
                 last_err = str(ex)
         if last_err:
-            print 'Error: %s' % last_err
+            print('Error: %s' % last_err)
         sleep()
 
 def sleep():
     try:
         time.sleep(1)
-    except KeyboardInterrupt, ex:
-        print 'Have a nice day!'
+    except KeyboardInterrupt as ex:
+        print('Have a nice day!')
         raise SystemExit
 
 
@@ -1030,14 +1027,14 @@ def run_changed_file_cmd(cmd, fp, pretty):
             cmd = cmd.replace(ph, '"%s"' % ph)
 
     cmd = cmd.replace(dir_mon_filepath_ph, fp)
-    print col('Running %s' % cmd, H1)
+    print(col('Running %s' % cmd, H1))
     for r, what in ((dir_mon_content_raw, raw),
                     (dir_mon_content_pretty, pretty)):
         cmd = cmd.replace(r, what.encode('base64'))
 
     # yeah, i know, sub bla bla...
     if os.system(cmd):
-        print col('(the command failed)', R)
+        print(col('(the command failed)', R))
 
 
 def monitor_dir(args):
@@ -1046,8 +1043,8 @@ def monitor_dir(args):
     def show_fp(fp):
         args['MDFILE'] = fp
         pretty = run_args(args)
-        print pretty
-        print "(%s)" % col(fp, L)
+        print(pretty)
+        print("(%s)" % col(fp, L))
         cmd = args.get('change_cmd')
         if cmd:
             run_changed_file_cmd(cmd, fp=fp, pretty=pretty)
@@ -1063,7 +1060,7 @@ def monitor_dir(args):
     d, exts = (d + ':md,mdown,markdown').split(':')[:2]
     exts = exts.split(',')
     if not os.path.exists(d):
-        print col('Does not exist: %s' % d, R)
+        print(col('Does not exist: %s' % d, R))
         sys.exit(2)
 
     dir_black_list = ['.', '..']
@@ -1075,13 +1072,13 @@ def monitor_dir(args):
 
         if len(ftree) > mon_max_files:
             # too deep:
-            print col('Max files (%s) reached' % col(mon_max_files, R))
+            print(col('Max files (%s) reached' % col(mon_max_files, R)))
             dir_black_list.append(d)
             return
         try:
             files = os.listdir(d)
-        except Exception, ex:
-            print '%s when scanning dir %s' % (col(ex, R), d)
+        except Exception as ex:
+            print('%s when scanning dir %s' % (col(ex, R), d))
             dir_black_list.append(d)
             return
 
@@ -1123,7 +1120,7 @@ def monitor_dir(args):
             if fp:
                 show_fp(fp)
             else:
-                print 'sth went wrong, no file found'
+                print('sth went wrong, no file found')
         sleep()
 
 
@@ -1184,7 +1181,7 @@ def run():
     if args.get('-M'):
         monitor_dir(args)
     else:
-        print run_args(args)
+        print(run_args(args))
 
 if __name__ == '__main__':
     # the setup tools version calls directly run, this is for git checkouts:
