@@ -228,7 +228,7 @@ hr_marker            = '\x15'
 def j(p, f):
     return os.path.join(p, f)
 
-mydir = os.path.abspath(__file__).rsplit('/', 1)[0]
+mydir = os.path.realpath(__file__).rsplit(os.path.sep, 1)[0]
 
 def set_theme(theme=None, for_code=None):
     """ set md and code theme """
