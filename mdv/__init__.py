@@ -1,3 +1,3 @@
 # coding: utf-8
 
-from mdv import run, main, __version__
+from markdownviewer import run, main, __version__
