@@ -8,6 +8,8 @@ A continuous delivery pipeline for FIXME
 
 ## Files
 
+test
+
 * `/`
     * `project.clj` contains dependencies and build configuration for Leiningen
 

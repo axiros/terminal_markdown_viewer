@@ -391,7 +391,7 @@ def is_text_node(el):
     """ """
     s = etree.tostring(el)
     if el.tag == 'li':
-        if '<ul>' in s:
+        if '<ul>' in s and 0:
             return 0, 0
 
     # strip our tag:
@@ -503,7 +503,7 @@ class AnsiPrinter(Treeprocessor):
             # for c in el.getchildren()[3].getchildren(): print c.text, c
             """
             ss = etree.tostring
-            done_inline = 0
+            is_txt_and_inline_markup = 0
 
             if el.tag == 'hr':
                 return out.append(tags.hr('', hir=hir))
@@ -512,16 +512,15 @@ class AnsiPrinter(Treeprocessor):
                 el.text = el.text or ''
                 # <a attributes>foo... -> we want "foo....". Is it a sub
                 # tag or inline text?
-                done_inline, html = is_text_node(el)
+                is_txt_and_inline_markup, html = is_text_node(el)
 
-                if done_inline:
+                if is_txt_and_inline_markup:
                     t = html.rsplit('<', 1)[0]
-                    t = t.replace('<code>'  , code_start).replace(
-                                 '</code>'  , code_end)
-                    t = t.replace('<strong>', stng_start).replace(
-                                 '</strong>', stng_end)
-                    t = t.replace('<em>'    , emph_start).replace(
-                                 '</em>'    , emph_end)
+                    for tg, start, end in (('code'  , code_start, code_end)
+                                          ,('strong', stng_start, stng_end)
+                                          ,('em'    , emph_start, emph_end)):
+                        t = t.replace('<%s>'  % tg, start)
+                        t = t.replace('</%s>' % tg, end)
                     t = html_parser.unescape(t)
                 else:
                     t = el.text
@@ -587,7 +586,16 @@ class AnsiPrinter(Treeprocessor):
 
             # have children?
             #    nr for ols:
-            if done_inline:
+            if is_txt_and_inline_markup:
+                if el.tag == 'li':
+                    childs = el.getchildren()
+                    if childs and childs[-1].tag == 'ul':
+                        ul = childs[-1]
+                        # do we have a nested sublist? the li was inline formattet,
+                        # split all from <ul> off and format it as own tag:
+                        # (ul always at the end of an li)
+                        out[-1] = out[-1].split('<ul>', 1)[0]
+                        formatter(ul, out, hir+1, parent=el)
                 return
 
             if el.tag == 'table':
@@ -793,8 +801,9 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
     MD = markdown.Markdown(extensions=[AnsiPrintExtension(),
                                        TableExtension(),
                                        fenced_code.FencedCodeExtension()])
-    # html?
+    md = md.replace('<ul>', '\n<ul>')
     the_html = MD.convert(md)
+    # html?
     if do_html:
         return the_html
 
