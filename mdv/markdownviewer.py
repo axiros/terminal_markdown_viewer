@@ -247,9 +247,10 @@ def set_theme(theme=None, for_code=None):
         _for = ''
         if for_code:
             _for = ' (code)'
-        if is_app:
-            print >> sys.stderr, low('theme%s: %s (%s)' % (_for, theme,
-                                                       t.get('name')))
+        # nobody wants this output of the themes:
+        #if is_app:
+        #    print >> sys.stderr, low('theme%s: %s (%s)' % (_for, theme,
+        #                                               t.get('name')))
         t = t['ct']
         cols = (t[0], t[1], t[2], t[3], t[4])
         if for_code:
