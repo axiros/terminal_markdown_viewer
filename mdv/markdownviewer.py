@@ -331,6 +331,12 @@ def plain(s, **kw):
     return col(s, T)
 
 
+def sh(out):
+    ''' debug tool'''
+    for l in out:
+        print l
+
+
 # --------------------------------------------------------- Tag formatter funcs
 class Tags:
     """ can be overwritten in derivations. """
@@ -383,9 +389,11 @@ class Tags:
 inlines = '<em>', '<code>', '<strong>'
 def is_text_node(el):
     """ """
+    s = etree.tostring(el)
+    if el.tag == 'li' and '<ul>' in s:
+        return 0, 0
     # strip our tag:
-    html = etree.tostring(el).split('<%s' % el.tag, 1)[1].split('>',
-            1)[1].rsplit('>', 1)[0]
+    html = s.split('<%s' % el.tag, 1)[1].split('>', 1)[1].rsplit('>', 1)[0]
     # do we start with another tagged child which is NOT in inlines:?
     if not html.startswith('<'):
         return 1, html
@@ -399,7 +407,7 @@ def is_text_node(el):
 def rewrap(el, t, ind, pref):
     """ Reasonably smart rewrapping checking punctuations """
     global term_columns
-    cols = term_columns - len(ind + pref)
+    cols = max(term_columns - len(ind + pref), 5)
     if el.tag == 'code' or len(t) <= cols:
         return t
     # wrapping:
@@ -431,8 +439,7 @@ def rewrap(el, t, ind, pref):
     # now:
     parts = []
     for part in t.splitlines():
-        parts.extend([part[i:i+cols] \
-                        for i in range(0, len(part), cols)])
+        parts.extend([part[i:i+cols] for i in range(0, len(part), cols)])
     # last remove leading ' ' (if '\n' came just before):
     t = []
     for p in parts:
@@ -621,8 +628,6 @@ class AnsiPrinter(Treeprocessor):
                     tt = []
                     for line in t:
                         tt.append('%s%s' % (ind * left_indent, line))
-
-
                     out.extend(tt)
                 else:
                     # TABLE CUTTING WHEN NOT WIDTH FIT
@@ -656,8 +661,8 @@ class AnsiPrinter(Treeprocessor):
                 # handle the ``` style unindented code blocks -> parsed as p:
                 is_code = None
                 formatter(c, out, hir+1, parent=el)
-            if el.tag == 'ul' or el.tag == 'ol' and not out[-1] == '\n':
-                out.append('\n')
+            #if el.tag == 'ul' or el.tag == 'ol' and not out[-1] == '\n':
+            #    out.append('\n')
 
         out = []
         formatter(doc, out)
