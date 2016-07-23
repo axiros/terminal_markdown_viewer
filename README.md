@@ -36,7 +36,7 @@ from
 
 ----
 
-> mdv is a weekend hack and in a pre-release/proof of concept state: While for simple structures it does its job quite well, it still requires optimizations and testing regarding its output, for more complex markdown. Guess I'll invest another weekend soon.
+> mdv is a weekend hack and in a pre-release/proof of concept state: While for simple structures it does its job quite well, it still requires optimizations and testing regarding its output, for more complex markdown.
 
 ----
 
@@ -75,7 +75,7 @@ Distribution via setuptools. If setuptools is not installed, run:
 
 Use the setup.py provided inside, I.e. run as root:
 
-	./setup.py install 
+	sudo ./setup.py install
     (or ./setup.py install --user to install only for the current user)
 
 No pip currently.
@@ -103,7 +103,7 @@ Usage:
     mdv [-t THEME] [-T C_THEME] [-x] [-l] [-L] [-c COLS] [-f FROM] [-m] [-M DIR] [-H] [-A] [MDFILE]
 
 Options:
-    MDFILE    : Path to markdown file
+    MDFILE    : Path to markdown file or '-' for usage within a pipe.
     -t THEME  : Key within the color ansi_table.json. 'random' accepted.
     -T C_THEME: Theme for code highlight. If not set: Use THEME.
     -l        : Light background (not yet supported)
@@ -196,7 +196,7 @@ Here is how:
 Write a normal click module with a function but w/o a doc string as shown:
 ```python
 @pass_context                                                                   
- def cli(ctx, action, name, host, port, user, msg):           
+def cli(ctx, action, name, host, port, user, msg):           
 	""" docu from module __doc__ """
 ```
 
@@ -242,12 +242,17 @@ and at smaller terms rewraps nicely:
 ![](samples/4.png)
 
 Further, having markdown in the module ``__doc__`` makes it simple to add into a global project docu framework, like mkdocs.	
-	
-	
-	
+
+
+
 #### Customization
 
-In [mdv.py](mdv.py) you can change some config straight forward.
+You can supply all CLI args in `$HOME/.mdv`, in yaml format.
+
+More flex you have via `$HOME/.mdv.py`, which is execed if present, when
+running `main`.
+
+Alternatively, in [mdv.py](mdv.py) you can change some config straight forward.
 
 ```python
 # ---------------------------------------------------------------------- Config
@@ -327,7 +332,7 @@ Note the table block splitting when the table does not fit (last picture).
 - A few grey scale and 8 color themes
 - Sorting of the json by luminance
 - Some themes have black as darkest color, change to dark grey
-
+- Common Mark instead of markdown.
 
 # Credits
 
@@ -337,7 +342,24 @@ Note the table block splitting when the table does not fit (last picture).
 
 and, naturally, the [python markdown project](https://pythonhosted.org/Markdown/authors.html)
 
+Update: Next version will be CommonMark based though...
 
+
+## Updates
+
+### July 2016:
+
+Sort of an excuse for the long long time w/o an update:
+I did actually start working on a more solid version based on CommonMark but
+that went a bit out of scope, into a general html terminal viewer, still unfinished, though.
+
+So at least here an update containing the stuff you guys sent as PRs, thanks all!!
+
+- installation and dependencies via a setup.py (thanks
+  [Martin](https://github.com/althonos)
+- supporting `echo -e "# foo\n## bar" | mdv -` and a 'light' theme (thanks
+  [Stanislav](https://github.com/seletskiy)
+- and a few other improvements regarding python2.7, file location and pyyaml, thanks all.
 
 
 ### Lastly

@@ -8,7 +8,7 @@ Usage:
 Options:
     MDFILE    : Path to markdown file
     -t THEME  : Key within the color ansi_table.json. 'random' accepted.
-    -T C_THEME: Theme for code highlight. If not set: Use THEME.
+    -T C_THEME: Theme for code highlight. If not set: Using THEME.
     -l        : Light background (not yet supported)
     -L        : Display links
     -x        : Do not try guess code lexer (guessing is a bit slow)
@@ -21,17 +21,17 @@ Options:
 
 Notes:
 
-    We use stty tool to derive terminal size.
+    We use stty tool to derive terminal size. If you pipe into mdv we use 80 cols.
 
     To use mdv.py as lib:
         Call the main function with markdown string at hand to get a
-        formatted one back.
+        formatted one back. Sorry then for no Py3 support, accepting PRs if they don't screw Py2.
 
     FROM:
         FROM may contain max lines to display, seperated by colon.
         Example:
         -f 'Some Head:10' -> displays 10 lines after 'Some Head'
-        If the substring is not found we set it to the *first* charactor of the
+        If the substring is not found we set it to the *first* character of the
         file - resulting in output from the top (if you terminal height can be
         derived correctly through the stty cmd).
 
@@ -78,13 +78,8 @@ __version__ = "1.0.0"
 
 import os
 import sys
-is_app = 0
-#if __name__ == '__main__':
-#    is_app = 1
-#    # Make Py2 > Py3:
-#    reload(sys); sys.setdefaultencoding('utf-8')
-#    # no? see http://stackoverflow.com/a/29832646/4583360 ...
 
+is_app = 0
 # code analysis for hilite:
 try:
     from pygments import lex, token
@@ -147,10 +142,11 @@ show_links = None
 
 # columns(!) - may be set to smaller width:
 try:
-    term_rows, term_columns = os.popen('stty size', 'r').read().split()
+    term_rows, term_columns = os.popen('stty size 2>/dev/null', 'r').read().split()
     term_columns, term_rows = int(term_columns), int(term_rows)
 except:
-    print '!! Could not derive your terminal width !!'
+    if not '-' in sys.argv:
+        print '!! Could not derive your terminal width !!'
     term_columns = 80
     term_rows = 200
 
@@ -231,7 +227,7 @@ hr_marker            = '\x15'
 def j(p, f):
     return os.path.join(p, f)
 
-mydir = os.path.abspath(__file__).rsplit('/', 1)[0]
+mydir = os.path.realpath(__file__).rsplit(os.path.sep, 1)[0]
 
 def set_theme(theme=None, for_code=None):
     """ set md and code theme """
@@ -290,7 +286,7 @@ def style_ansi(raw_code, lang=None):
     for t, v in tokens:
         if not v:
             continue
-        _col = code_hl_tokens.get(t)
+        _col = code_hl_tokens.get(t) # color
         if _col:
             cod.append(col(v, _col))
         else:
@@ -410,6 +406,10 @@ def rewrap(el, t, ind, pref):
     # marks. the others we rewrap:
 
     puncs =  ',', '.', '?', '!', '-', ':'
+    # this is a code replacement marker of markdown.py. Don't split the
+    # replacement marker:
+    if t.startswith('\x02') and t.endswith('\x03'):
+        return t
     parts = []
     origp = t.splitlines()
     if len(origp) > 1:
@@ -711,6 +711,10 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
          no_colors=None, **kw):
     """ md is markdown string. alternatively we use filename and read """
 
+    py_config_file = os.path.expanduser("~/.mdv.py")
+    if os.path.exists(py_config_file):
+        execfile(py_config_file, globals(), locals())
+
     args = locals()
     if not md:
         if not filename:
@@ -721,8 +725,11 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
             print
             print 'Styling Result'
         else:
-            with open(filename) as f:
-                md = f.read()
+            if filename == '-':
+                md = sys.stdin.read()
+            else:
+                with open(filename) as f:
+                    md = f.read()
 
     global term_columns
     # style rolers requested?
@@ -1021,10 +1028,13 @@ def run_args(args):
                ,display_links = args.get('-L'))
 
 def run():
+    global is_app
     is_app = 1
-    # Make Py2 > Py3:
-    reload(sys); sys.setdefaultencoding('utf-8')
-    # no? see http://stackoverflow.com/a/29832646/4583360 ...
+    if sys.version_info[0] == 2:
+        # Make Py2 > Py3:
+        reload(sys); sys.setdefaultencoding('utf-8')
+        # no? see http://stackoverflow.com/a/29832646/4583360 ...
+
     args = docopt(__doc__, version='mdv v0.1')
     args = merge(args, load_yaml_config())
     if args.get('-m'):
@@ -1035,4 +1045,5 @@ def run():
         print run_args(args)
 
 if __name__ == '__main__':
+    import pdb; pdb.set_trace()
     run()
