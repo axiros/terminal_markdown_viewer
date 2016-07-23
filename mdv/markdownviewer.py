@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 # coding: utf-8
 
 """
@@ -69,18 +69,21 @@ Notes:
 
     Lastly: Using docopt, so this docstring is building the options checker.
     -> That's why this app can't currently use itself for showing the docu.
-    Have to find a way to trick docopt to parse md ;-)
+    Have to find versiona way to trick docopt to parse md ;-)
 
 
 """
+
+__version__ = "1.0.0"
+
 import os
 import sys
 is_app = 0
-if __name__ == '__main__':
-    is_app = 1
-    # Make Py2 > Py3:
-    reload(sys); sys.setdefaultencoding('utf-8')
-    # no? see http://stackoverflow.com/a/29832646/4583360 ...
+#if __name__ == '__main__':
+#    is_app = 1
+#    # Make Py2 > Py3:
+#    reload(sys); sys.setdefaultencoding('utf-8')
+#    # no? see http://stackoverflow.com/a/29832646/4583360 ...
 
 # code analysis for hilite:
 try:
@@ -1017,8 +1020,11 @@ def run_args(args):
                ,no_colors     = args.get('-A')
                ,display_links = args.get('-L'))
 
-
-if __name__ == '__main__':
+def run():
+    is_app = 1
+    # Make Py2 > Py3:
+    reload(sys); sys.setdefaultencoding('utf-8')
+    # no? see http://stackoverflow.com/a/29832646/4583360 ...
     args = docopt(__doc__, version='mdv v0.1')
     args = merge(args, load_yaml_config())
     if args.get('-m'):
@@ -1027,3 +1033,6 @@ if __name__ == '__main__':
         monitor_dir(args)
     else:
         print run_args(args)
+
+if __name__ == '__main__':
+    run()
