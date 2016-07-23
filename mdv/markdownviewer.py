@@ -390,8 +390,10 @@ inlines = '<em>', '<code>', '<strong>'
 def is_text_node(el):
     """ """
     s = etree.tostring(el)
-    if el.tag == 'li' and '<ul>' in s:
-        return 0, 0
+    if el.tag == 'li':
+        if '<ul>' in s:
+            return 0, 0
+
     # strip our tag:
     html = s.split('<%s' % el.tag, 1)[1].split('>', 1)[1].rsplit('>', 1)[0]
     # do we start with another tagged child which is NOT in inlines:?
@@ -506,7 +508,7 @@ class AnsiPrinter(Treeprocessor):
             if el.tag == 'hr':
                 return out.append(tags.hr('', hir=hir))
 
-            if el.text or el.tag == 'p':
+            if el.text or el.tag == 'p' or el.tag == 'li':
                 el.text = el.text or ''
                 # <a attributes>foo... -> we want "foo....". Is it a sub
                 # tag or inline text?
