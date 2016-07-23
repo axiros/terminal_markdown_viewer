@@ -1045,5 +1045,5 @@ def run():
         print run_args(args)
 
 if __name__ == '__main__':
-    import pdb; pdb.set_trace()
+    # the setup tools version calls directly run, this is for git checkouts:
     run()
