@@ -14,7 +14,7 @@
     -l        : Light background (not yet supported)
     -L        : Display links
     -x        : Do not try guess code lexer (guessing is a bit slow)
-    -X Lexer  : Default lexer name (default: python)
+    -X Lexer  : Default lexer name (default: python). Set -x to use it always.
     -f FROM   : Display FROM given substring of the file.
     -m        : Monitor file for changes and redisplay FROM given substring
     -M DIR    : Monitor directory for markdown file changes
