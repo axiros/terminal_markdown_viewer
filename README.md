@@ -47,7 +47,7 @@ from
 
 ----
 
-> mdv is a hack and proof of concept: While for simple structures it does
+> mdv is a proof of concept hack: While for simple structures it does
 its job quite well, for complex markdown you want to use other tools.
 
 ----
