@@ -13,6 +13,31 @@ e.g. for help texts.
 This is where mdv, a Python based mark down viewer for the terminal might be
 a good option.
 
+<!-- toc -->
+
+- [Terminal Markdown Viewer](#terminal-markdown-viewer)
+	- [Features](#features)
+	- [Alternatives](#alternatives)
+	- [Installation](#installation)
+		- [Requirements](#requirements)
+			- [WTF 2.7 ?!](#wtf-27)
+		- [Setup](#setup)
+	- [Usage](#usage)
+		- [CLI](#cli)
+		- [Inline](#inline)
+		- [Sample Inline Use Case: click module docu](#sample-inline-use-case-click-module-docu)
+	- [Customization](#customization)
+	- [Screenshots](#screenshots)
+	- [TODO](#todo)
+	- [Credits](#credits)
+	- [Updates](#updates)
+		- [July 2016:](#july-2016)
+		- [Lastly](#lastly)
+
+<!-- tocstop -->
+
+
+
 Markdown is "simple" enough to be well displayed on modern (256 color) terminals (except images that is).
 
 <img src="./samples/1.png" width=500>
@@ -86,7 +111,7 @@ its job quite well, for complex markdown you want to use other tools.
 ----
 
 
-### Noteable Features
+## Features
 
 - Tons of theme combinations: mdv ships with > 200 luminocity sorted themes, converted from html themes tables to ansi. Those can be combined for code vs regular markdown output...
 - Admonitions
@@ -111,6 +136,8 @@ The ones I know of (and which made me write mdv ;-) ):
 
 Summary: For production ready robust markdown viewing (e.g. for your customers) I recommend nd still, due to the early state of mdv. For playing around, especially with theming or when with Python, this one might be a valid alternative to look at.
 
+## Installation
+
 ### Requirements
 
 - python2.7
@@ -124,7 +151,7 @@ Further a 256 color terminal (for now best with dark background) and font suppor
 
 I did not test anything on windows.
 
-### WTF 2.7 ?!
+#### WTF 2.7 ?!
 
 Except for some print brackets there is no reason it would not run in 3 and I'd
 pull if anybody sent me a version for 2 and 3. I myself won't do it though, will
@@ -132,7 +159,7 @@ never work in a language w/o bytestrings and the most important type based on
 [funny enumerated](http://utf8everywhere.org/#characters) symbols.
 
 
-## Installation
+### Setup
 
 Distribution via setuptools. If setuptools is not installed, run:
 
@@ -323,7 +350,7 @@ Further, having markdown in the module ``__doc__`` makes it simple to add into a
 
 
 
-#### Customization
+## Customization
 
 You can supply all CLI args in `$HOME/.mdv`, in yaml format.
 
@@ -402,7 +429,7 @@ Note the table block splitting when the table does not fit (last picture).
 - Some themes have black as darkest color, change to dark grey
 - Common Mark instead of markdown
 
-# Credits
+## Credits
 
 [pygments](http://pygments.org/) (using their lexer)
 
