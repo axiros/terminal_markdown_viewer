@@ -238,9 +238,9 @@ def clean_ansi(s):
     # if someone does not want the color foo:
     return ansi_escape.sub('', s)
 
-# markers:
+# markers: tab is 09, omit that
 code_start, code_end = '\x07', '\x08'
-stng_start, stng_end = '\x09', '\x10'
+stng_start, stng_end = '\x16', '\x10'
 emph_start, emph_end = '\x11', '\x12'
 punctuationmark      = '\x13'
 fenced_codemark      = '\x14'
@@ -439,41 +439,42 @@ def rewrap(el, t, ind, pref):
         return t
 
     dedented = textwrap.dedent(t).strip()
-    return textwrap.fill(dedented, width=cols)
+    ret =  textwrap.fill(dedented, width=cols)
+    return ret
 
     # forgot why I didn't use textwrap from the beginning. In case there is a
     # reason I leave the old code here:
-    ## wrapping:
-    ## we want to keep existing linebreaks after punctuation
-    ## marks. the others we rewrap:
+    # wrapping:
+    # we want to keep existing linebreaks after punctuation
+    # marks. the others we rewrap:
 
-    #puncs =  ',', '.', '?', '!', '-', ':'
-    #parts = []
-    #origp = t.splitlines()
-    #if len(origp) > 1:
-    #    pos = -1
-    #    while pos < len(origp) - 1:
-    #        pos += 1
-    #        # last char punctuation?
-    #        if origp[pos][-1] not in puncs and \
-    #                not pos == len(origp) -1:
-    #            # concat:
-    #            parts.append(origp[pos].strip() + ' ' + \
-    #                        origp[pos+1].strip())
-    #            pos += 1
-    #        else:
-    #            parts.append(origp[pos].strip())
-    #    t = '\n'.join(parts)
-    ## having only the linebreaks with puncs before we rewrap
-    ## now:
-    #parts = []
-    #for part in t.splitlines():
-    #    parts.extend([part[i:i+cols] for i in range(0, len(part), cols)])
-    ## last remove leading ' ' (if '\n' came just before):
-    #t = []
-    #for p in parts:
-    #    t.append(p.strip())
-    #return '\n'.join(t)
+    puncs =  ',', '.', '?', '!', '-', ':'
+    parts = []
+    origp = t.splitlines()
+    if len(origp) > 1:
+        pos = -1
+        while pos < len(origp) - 1:
+            pos += 1
+            # last char punctuation?
+            if origp[pos][-1] not in puncs and \
+                    not pos == len(origp) -1:
+                # concat:
+                parts.append(origp[pos].strip() + ' ' + \
+                            origp[pos+1].strip())
+                pos += 1
+            else:
+                parts.append(origp[pos].strip())
+        t = '\n'.join(parts)
+    # having only the linebreaks with puncs before we rewrap
+    # now:
+    parts = []
+    for part in t.splitlines():
+        parts.extend([part[i:i+cols] for i in range(0, len(part), cols)])
+    # last remove leading ' ' (if '\n' came just before):
+    t = []
+    for p in parts:
+        t.append(p.strip())
+    return '\n'.join(t)
 
 
 
@@ -535,7 +536,7 @@ class AnsiPrinter(Treeprocessor):
             if el.tag == 'hr':
                 return out.append(tags.hr('', hir=hir))
 
-            if el.text or el.tag == 'p' or el.tag == 'li':
+            if el.text or el.tag == 'p' or el.tag == 'li' or el.tag.startswith('h'):
                 el.text = el.text or ''
                 # <a attributes>foo... -> we want "foo....". Is it a sub
                 # tag or inline text?
