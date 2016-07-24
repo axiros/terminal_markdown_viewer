@@ -20,7 +20,7 @@ a good option.
 	- [Alternatives](#alternatives)
 	- [Installation](#installation)
 		- [Requirements](#requirements)
-			- [2.7 ?!](#27)
+			- [2.7 ?!](#py27)
 		- [Setup](#setup)
 	- [Usage](#usage)
 		- [CLI](#cli)
@@ -151,7 +151,7 @@ Further a 256 color terminal (for now best with dark background) and font suppor
 
 I did not test anything on windows.
 
-#### 2.7 ?!
+#### Py2.7?!
 
 Except for some print brackets there is no reason it would not run in 3 and I'd
 pull if anybody sent me a version for 2 and 3. I myself won't do it though, will
@@ -460,6 +460,7 @@ So at least here an update containing the stuff you guys sent as PRs, thanks all
 Also:
 
 - fixed the most obvious bugs with nested ordered and unordered lists
+- fixed bold marker
 - different color highlighting for the list markers
 - added a source code highlighting mode, which highlights also docstrings in markdown (`-C <mode>`)
 - some tests in the tests folder
