@@ -769,8 +769,11 @@ def do_code_hilite(md, what='ALL'):
                 mdstart = line.rstrip()[:-1]
                 mode = md_mode
                 block = []
+                if mdstart == '/*':
+                    mdstart = '*/'
                 blocks.append([md_mode, block])
                 continue
+
         elif line.rstrip() == mdstart:
             if what == 'DOC':
                 # only module level docstring:
@@ -779,18 +782,21 @@ def do_code_hilite(md, what='ALL'):
             block = []
             blocks.append([code_mode, block])
             continue
+
         if mode == code_mode:
             if what in ('ALL', 'CODE'):
                 block.append(line)
+
         elif what != 'CODE':
             block.append(line)
 
     out = []
     for mode, block in blocks:
-        if not block:
+        b = '\n'.join(block)
+        if not b:
             continue
         if mode == code_mode:
-            out.append('```python\n%s\n```' % '\n'.join(block))
+            out.append('```\n%s\n```' % b)
         else:
             out.append('\n'.join(block))
     return '\n'.join(out)
