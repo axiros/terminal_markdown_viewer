@@ -15,7 +15,7 @@ a good option.
 
 Markdown is "simple" enough to be well displayed on modern (256 color) terminals (except images that is).
 
-![img](https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/1.png)
+![img](./samples/1.png)
 
 from
 
@@ -44,6 +44,39 @@ from
 
 	!!! note: title
 	    this is a Note
+
+
+You can also use mdv as a **source code** viewer, best when you have docstrings with markdown in your code:
+
+![](./samples/5.png)
+
+from
+
+```python
+~/terminal_markdown_viewer $ cat setup.py
+#!/usr/bin/env python2.7
+# coding: utf-8
+
+"""_
+# Mdv installation
+
+## Usage
+
+    [sudo] ./setup.py install
+
+----
+"""
+
+from setuptools import setup, find_packages
+
+import mdv
+
+setup(
+    name='mdv',
+    version=mdv.__version__,
+
+```
+(the '_' after the docstring telling mdv that markdown follows)
 
 ----
 
