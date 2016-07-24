@@ -129,7 +129,7 @@ I did not test anything on windows.
 Except for some print brackets there is no reason it would not run in 3 and I'd
 pull if anybody sent me a version for 2 and 3. I myself won't do it though, will
 never work in a language w/o bytestrings and the most important type based on
-[funny enumerated](http://utf8everywhere.org/) symbols.
+[funny enumerated](http://utf8everywhere.org/#characters) symbols.
 
 
 ## Installation
