@@ -47,7 +47,8 @@ from
 
 ----
 
-> mdv is a weekend hack and in a pre-release/proof of concept state: While for simple structures it does its job quite well, it still requires optimizations and testing regarding its output, for more complex markdown.
+> mdv is a hack and proof of concept: While for simple structures it does
+its job quite well, for complex markdown you want to use other tools.
 
 ----
 
