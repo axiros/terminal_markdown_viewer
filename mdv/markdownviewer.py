@@ -19,7 +19,7 @@
     -m        : Monitor file for changes and redisplay FROM given substring
     -M DIR    : Monitor directory for markdown file changes
     -c COLS   : Fix columns to this (default: your terminal width)
-    -C MODE   : Sourcecode highlighting mode.
+    -C [MODE] : Sourcecode highlighting mode [default: ALL]
     -A        : Strip all ansi (no colors then)
     -i        : Show theme infos with output
     -H        : Print html version
@@ -755,6 +755,8 @@ def do_code_hilite(md, what='ALL'):
     the file contains mainly code and md is within docstrings
     what in  ALL|CODE|DOC|MOD
     '''
+    if what not in ('ALL', 'CODE', 'DOC', 'MOD'):
+        what = 'ALL'
     code_mode, md_mode = 1, 2
     blocks, block, mode = [], [], code_mode
     blocks.append([mode, block])

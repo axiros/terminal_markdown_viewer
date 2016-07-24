@@ -1,6 +1,17 @@
 #!/usr/bin/env python2.7
 # coding: utf-8
 
+"""_
+# Mdv installation
+
+## Usage
+
+    [sudo] ./setup.py install
+
+----
+"""
+
+
 from setuptools import setup, find_packages
 
 import mdv
