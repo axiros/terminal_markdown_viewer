@@ -188,13 +188,13 @@ resulting in output from the top (if your terminal height can be derived correct
 
 ## Code Highlighting
 
-Set -C <ALL|CODE|DOC|MOD> for source code highlighting of source code files.
+Set -C <all|code|doc|mod> for source code highlighting of source code files.
 Mark inline markdown with a '_' following the docstring beginnings.
 
-- ALL: Show markdown docstrings AND code
-- CODE: Only Code
-- DOC: Only docstrings with markdown
-- MOD: Only the module level docstring
+- all: Show markdown docstrings AND code (default if you say, e.g. `-C.`)
+- code: Only Code
+- doc: Only docstrings with markdown
+- mod: Only the module level docstring
 
 
 ## File Monitor:

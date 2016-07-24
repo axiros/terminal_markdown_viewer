@@ -19,7 +19,7 @@
     -m        : Monitor file for changes and redisplay FROM given substring
     -M DIR    : Monitor directory for markdown file changes
     -c COLS   : Fix columns to this (default: your terminal width)
-    -C [MODE] : Sourcecode highlighting mode [default: ALL]
+    -C [MODE] : Sourcecode highlighting mode
     -A        : Strip all ansi (no colors then)
     -i        : Show theme infos with output
     -H        : Print html version
@@ -45,13 +45,13 @@ resulting in output from the top (if your terminal height can be derived correct
 
 ## Code Highlighting
 
-Set -C <ALL|CODE|DOC|MOD> for source code highlighting of source code files.
+Set -C <all|code|doc|mod> for source code highlighting of source code files.
 Mark inline markdown with a '_' following the docstring beginnings.
 
-- ALL: Show markdown docstrings AND code
-- CODE: Only Code
-- DOC: Only docstrings with markdown
-- MOD: Only the module level docstring
+- all: Show markdown docstrings AND code (default, if you say e.g. -C.)
+- code: Only Code
+- doc: Only docstrings with markdown
+- mod: Only the module level docstring
 
 
 ## File Monitor:
@@ -749,14 +749,14 @@ class AnsiPrintExtension(Extension):
 
 
 
-def do_code_hilite(md, what='ALL'):
+def do_code_hilite(md, what='all'):
     '''
     "inverse" mode for source code highlighting:
     the file contains mainly code and md is within docstrings
-    what in  ALL|CODE|DOC|MOD
+    what in  all, code, doc, mod
     '''
-    if what not in ('ALL', 'CODE', 'DOC', 'MOD'):
-        what = 'ALL'
+    if what not in ('all', 'code', 'doc', 'mod'):
+        what = 'all'
     code_mode, md_mode = 1, 2
     blocks, block, mode = [], [], code_mode
     blocks.append([mode, block])
@@ -775,7 +775,7 @@ def do_code_hilite(md, what='ALL'):
                 continue
 
         elif line.rstrip() == mdstart:
-            if what == 'DOC':
+            if what == 'doc':
                 # only module level docstring:
                 break
             mode = code_mode
@@ -784,10 +784,10 @@ def do_code_hilite(md, what='ALL'):
             continue
 
         if mode == code_mode:
-            if what in ('ALL', 'CODE'):
+            if what in ('all', 'code'):
                 block.append(line)
 
-        elif what != 'CODE':
+        elif what != 'code':
             block.append(line)
 
     out = []
