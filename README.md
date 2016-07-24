@@ -124,6 +124,13 @@ Further a 256 color terminal (for now best with dark background) and font suppor
 
 I did not test anything on windows.
 
+### WTF 2.7 ?!
+
+Except for some print brackets there is no reason it would not run in 3 and I'd
+pull if anybody sent me a version for 2 and 3. I myself won't do it though, will
+never work in a language w/o bytestrings and the most important type based on
+[funny enumerated](http://utf8everywhere.org/) symbols.
+
 
 ## Installation
 
@@ -258,7 +265,8 @@ formatted = mdv.main(my_raw_markdown, c_theme=...)
 
 ### Sample Inline Use Case: click module docu
 
-Armin Ronacher's [click](http://click.pocoo.org) is a great framework for writing larger CLI apps - but its help texts are a bit boring, intended to be customized.
+[Armin Ronacher's](http://lucumr.pocoo.org/2014/5/12/everything-about-unicode/)
+[click](http://click.pocoo.org) is a great framework for writing larger CLI apps - but its help texts are a bit boring, intended to be customized.
 
 Here is how:
 
