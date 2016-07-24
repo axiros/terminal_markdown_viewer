@@ -15,7 +15,7 @@ a good option.
 
 Markdown is "simple" enough to be well displayed on modern (256 color) terminals (except images that is).
 
-![img](./samples/1.png)
+<img src="./samples/1.png" width=500>
 
 from
 
