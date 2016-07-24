@@ -395,7 +395,7 @@ Also:
 - added a source code highlighting mode, which highlights also docstrings in markdown (`-C <mode>`)
 - some tests in the tests folder
 - using `textwrap` now for the wrapping, to avoid these word breaks a few complained about
-- you can supply the default lexer now, e.g. -X javascript
+- you can supply the default lexer now, e.g. `-X javascript [-x]`
 
 
 
