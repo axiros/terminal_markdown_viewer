@@ -292,7 +292,7 @@ formatted = mdv.main(my_raw_markdown, c_theme=...)
 
 ### Sample Inline Use Case: click module docu
 
-[Armin Ronacher's](http://lucumr.pocoo.org/2014/5/12/everything-about-unicode/)
+[Armin Ronacher](http://lucumr.pocoo.org/2014/5/12/everything-about-unicode/)'s
 [click](http://click.pocoo.org) is a great framework for writing larger CLI apps - but its help texts are a bit boring, intended to be customized.
 
 Here is how:
