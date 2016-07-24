@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+print 'Please inspect visually.'
 import os, sys
 sys.argv.append('')
 # substring match on filenames, if not given run all:
