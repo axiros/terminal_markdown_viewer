@@ -20,7 +20,7 @@ a good option.
 	- [Alternatives](#alternatives)
 	- [Installation](#installation)
 		- [Requirements](#requirements)
-			- [2.7 ?!](#27-)
+			- [2.7 ?!](#27)
 		- [Setup](#setup)
 	- [Usage](#usage)
 		- [CLI](#cli)
