@@ -20,7 +20,7 @@ a good option.
 	- [Alternatives](#alternatives)
 	- [Installation](#installation)
 		- [Requirements](#requirements)
-			- [WTF 2.7 ?!](#wtf-27)
+			- [2.7 ?!](#27)
 		- [Setup](#setup)
 	- [Usage](#usage)
 		- [CLI](#cli)
@@ -151,7 +151,7 @@ Further a 256 color terminal (for now best with dark background) and font suppor
 
 I did not test anything on windows.
 
-#### WTF 2.7 ?!
+#### 2.7 ?!
 
 Except for some print brackets there is no reason it would not run in 3 and I'd
 pull if anybody sent me a version for 2 and 3. I myself won't do it though, will
