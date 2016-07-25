@@ -107,7 +107,6 @@ setup(
 
 > mdv is a proof of concept hack: While for simple structures it does
 its job quite well, for complex markdown you want to use other tools.
-
 ----
 
 
