@@ -10,7 +10,7 @@ by using colors.
 And lastly, using such a thing for cli applications might improve user output,
 e.g. for help texts.
 
-This is where mdv, a Python based mark down viewer for the terminal might be
+This is where mdv, a Python based Markdown viewer for the terminal might be
 a good option.
 
 <!-- toc -->
