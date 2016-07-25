@@ -137,7 +137,21 @@ Summary: For production ready robust markdown viewing (e.g. for your customers) 
 
 ## Installation
 
-### Requirements
+    pip install mdv
+
+(2.7 version of pip)
+If you get `no attribute HTML_PLACEHOLDER`: update your markdown package.
+
+
+#### Py2.7?!
+
+Except for some print brackets there is no reason it would not run in 3 and I'd
+pull if anybody sent me a version for 2 and 3. I myself won't do it though, will
+never work in a language w/o bytestrings and the most important type based on
+[funny enumerated](http://utf8everywhere.org/#characters) symbols.
+
+
+### Manual Install: Requirements
 
 - python2.7
 - py markdown (pip install markdown)
@@ -150,15 +164,7 @@ Further a 256 color terminal (for now best with dark background) and font suppor
 
 I did not test anything on windows.
 
-#### Py2.7?!
-
-Except for some print brackets there is no reason it would not run in 3 and I'd
-pull if anybody sent me a version for 2 and 3. I myself won't do it though, will
-never work in a language w/o bytestrings and the most important type based on
-[funny enumerated](http://utf8everywhere.org/#characters) symbols.
-
-
-### Setup
+### Manual Install: Setup
 
 Distribution via setuptools. If setuptools is not installed, run:
 
@@ -170,7 +176,6 @@ Use the setup.py provided inside, I.e. run:
 	sudo ./setup.py install
     (or ./setup.py install --user to install only for the current user)
 
-No pip currently.
 
 
 ## Usage
@@ -465,6 +470,8 @@ Also:
 - some tests in the tests folder
 - using `textwrap` now for the wrapping, to avoid these word breaks a few complained about
 - you can supply the default lexer now, e.g. `-X javascript [-x]`
+- fixed but with not rendered strong texts
+- pip install mdv
 
 
 
