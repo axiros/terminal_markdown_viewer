@@ -156,7 +156,7 @@ never work in a language w/o bytestrings and the most important type based on
 - python2.7
 - py markdown (pip install markdown)
 - py pygments (pip install pygments)
-- py yaml (pip install yaml)
+- py yaml (pip install pyyaml)
 
 Further a 256 color terminal (for now best with dark background) and font support for a few special separator characters (which you could change via config).
 
