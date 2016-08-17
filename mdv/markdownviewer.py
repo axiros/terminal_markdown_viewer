@@ -535,7 +535,11 @@ class AnsiPrinter(Treeprocessor):
             if el.tag == 'hr':
                 return out.append(tags.hr('', hir=hir))
 
-            if el.text or el.tag == 'p' or el.tag == 'li' or el.tag.startswith('h'):
+            if el.text or                       \
+               el.tag == 'p' or                 \
+               el.tag == 'li' or                \
+               el.tag.startswith('h'):
+
                 el.text = el.text or ''
                 # <a attributes>foo... -> we want "foo....". Is it a sub
                 # tag or inline text?
@@ -604,8 +608,12 @@ class AnsiPrinter(Treeprocessor):
                 #    pref = ''
 
                 # calling the class Tags  functions
+                # IF the parent is li and we have a linebreak then the renderer
+                # delivers <li><p>foo</p> instead of <li>foo, i.e. we have to
+                # omit the linebreak and append the text of p to the previous
+                # result, (i.e. the list separator):
                 tag_fmt_func = getattr(tags, el.tag, plain)
-                if parent and type(parent) == type(el) and parent.tag == 'li' and \
+                if type(parent) == type(el) and parent.tag == 'li' and \
                         not parent.text and el.tag == 'p':
                     _out = tag_fmt_func(t.lstrip(), hir=hir)
                     out[-1] += _out
