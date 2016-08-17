@@ -100,7 +100,6 @@ __version__ = "1.0.0"
 import os
 import sys
 import textwrap
-
 is_app = 0
 # code analysis for hilite:
 try:
@@ -605,7 +604,13 @@ class AnsiPrinter(Treeprocessor):
                 #    pref = ''
 
                 # calling the class Tags  functions
-                out.append(getattr(tags, el.tag, plain)(t, hir=hir))
+                tag_fmt_func = getattr(tags, el.tag, plain)
+                if parent and parent.tag == 'li' and \
+                        not parent.text and el.tag == 'p':
+                    _out = tag_fmt_func(t.lstrip(), hir=hir)
+                    out[-1] += _out
+                else:
+                    out.append(tag_fmt_func(t, hir=hir))
                 if show_links:
                     for l in 'src', 'href':
                         if l in el.keys():
@@ -693,7 +698,7 @@ class AnsiPrinter(Treeprocessor):
 
             nr = 0
             for c in el:
-                if el.tag == 'ul' or el.tag == 'li':
+                if el.tag == 'ul': # or el.tag == 'li':
                     c.set('pref', list_pref)
                 elif el.tag == 'ol':
                     nr += 1
