@@ -605,7 +605,7 @@ class AnsiPrinter(Treeprocessor):
 
                 # calling the class Tags  functions
                 tag_fmt_func = getattr(tags, el.tag, plain)
-                if parent and parent.tag == 'li' and \
+                if parent and type(parent) == type(el) and parent.tag == 'li' and \
                         not parent.text and el.tag == 'p':
                     _out = tag_fmt_func(t.lstrip(), hir=hir)
                     out[-1] += _out
