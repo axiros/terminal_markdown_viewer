@@ -145,6 +145,7 @@ admons = {'note'     : 'H3', 'warning': 'R',
           'attention': 'H1', 'hint'   : 'H4',
           'summary'  : 'H1', 'hint'   : 'H4',
           'question' : 'H5', 'danger' : 'R',
+          'dev'      : 'H5', 'hint'   : 'H4',
           'caution'  : 'H2'
          }
 
@@ -560,12 +561,21 @@ class AnsiPrinter(Treeprocessor):
                 admon = ''
                 pref = body_pref = ''
                 if t.startswith('!!! '):
+                    # we allow admons with spaces. so check for startswith:
+                    _ad = None
                     for k in admons:
                         if t[4:].startswith(k):
-                            pref = body_pref = '┃ '
-                            pref +=  (k.capitalize())
-                            admon = k
-                            t = t.split(k, 1)[1]
+                            _ad = k
+                            break
+                    # not found - markup using hte first one's color:
+                    if not _ad:
+                        k = t[4:].split(' ', 1)[0]
+                        admons[k] = admons.values()[0]
+
+                    pref = body_pref = '┃ '
+                    pref +=  (k.capitalize())
+                    admon = k
+                    t = t.split(k, 1)[1]
 
                 # set the parent, e.g. nrs in ols:
                 if el.get('pref'):
@@ -1179,3 +1189,4 @@ def run():
 if __name__ == '__main__':
     # the setup tools version calls directly run, this is for git checkouts:
     run()
+
