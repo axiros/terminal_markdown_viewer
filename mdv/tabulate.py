@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # https://bitbucket.org/astanin/python-tabulate/raw/7e3afe2f7170ccdb7de8c3c264471140d09523ba/tabulate.py
 
+from __future__ import print_function
+
 """Pretty-print tabular data."""
 
 
@@ -11,7 +13,7 @@ import re
 
 
 if python_version_tuple()[0] < "3":
-    from itertools import zip_longest
+    from itertools import izip_longest
     from functools import partial
     _none_type = type(None)
     _int_type = int

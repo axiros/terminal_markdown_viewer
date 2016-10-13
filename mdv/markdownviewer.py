@@ -118,7 +118,7 @@ import markdown.util
 from markdown.util import etree
 from markdown.extensions.tables import TableExtension
 from random import randint
-from .tabulate import tabulate
+from tabulate import tabulate
 from json import loads
 from markdown.treeprocessors import Treeprocessor
 from markdown.extensions import Extension, fenced_code
@@ -353,7 +353,7 @@ def plain(s, **kw):
 def sh(out):
     ''' debug tool'''
     for l in out:
-        print l
+        print(l)
 
 
 # --------------------------------------------------------- Tag formatter funcs
@@ -410,9 +410,9 @@ class Tags:
 inlines = '<em>', '<code>', '<strong>'
 def is_text_node(el):
     """ """
-    s = etree.tostring(el)
+    s = str(etree.tostring(el))
     # strip our tag:
-    html = s.split('<%s' % el.tag, 1)[1].split('>', 1)[1].rsplit('>', 1)[0]
+    html = s.split('<{}'.format(el.tag), 1)[1].split('>', 1)[1].rsplit('>', 1)[0]
     # do we start with another tagged child which is NOT in inlines:?
     if not html.startswith('<'):
         return 1, html
@@ -1166,7 +1166,7 @@ def run():
 
     doc = __doc__[1:]
     if '-h' in sys.argv or '--help' in sys.argv:
-        print main(md=doc, c_no_guess=1, theme=909.0365, c_theme=579.6579, c_def_lexer='yaml')
+        print(main(md=doc, c_no_guess=1, theme=909.0365, c_theme=579.6579, c_def_lexer='yaml'))
         sys.exit(0)
 
     # our docstring markdown to docopt:
