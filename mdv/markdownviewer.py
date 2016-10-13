@@ -1075,7 +1075,7 @@ def monitor_dir(args):
 
         if len(ftree) > mon_max_files:
             # too deep:
-            print col('Max files (%s) reached' % c(mon_max_files, R))
+            print col('Max files (%s) reached' % col(mon_max_files, R))
             dir_black_list.append(d)
             return
         try:
