@@ -106,6 +106,7 @@ setup(
 ----
 
 > mdv is a proof of concept hack: While for simple structures it does its job quite well, for complex markdown you want to use other tools.
+> Especially for inlined html it simply fails.
 
 ----
 
@@ -261,18 +262,25 @@ Like: mdv -M './mydocs:py,md::open "_fp_"'  which calls the open
 command with argument the path to the changed file.
 
 
-## Theme rollers:
+## Themes
+
+### Theme Rollers
 
 
-    mdv -T all:  All available code styles on the given file.
-    mdv -t all:  All available md   styles on the given file.
-                If file is not given we use a short sample file.
+    mdv -T all [file]:  All available code styles on the given file.
+    mdv -t all [file]:  All available md   styles on the given file.
+                        If file is not given we use a short sample file.
 
 So to see all code hilite variations with a given theme:
 
 Say C_THEME = all and fix THEME
 
 Setting both to all will probably spin your beach ball...
+
+### Environ Vars
+
+`$MDV_THEME` and `$MDV_CODE_THEME` are understood, e.g. `export
+MDV_THEME=729.8953` in your .bashrc will give you a consistent color scheme.
 
 
 ```

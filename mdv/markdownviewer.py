@@ -275,8 +275,9 @@ def set_theme(theme=None, for_code=None, theme_info=None):
     try:
         if theme == dec['dflt']:
             for k in dec['env']:
-                if k in os.environ:
-                    theme = os.environ[k]
+                ek = os.environ.get(k)
+                if ek:
+                    theme = ek
                     break
         if theme == dec['dflt']:
             theme = dec['on_dflt']
