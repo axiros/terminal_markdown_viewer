@@ -108,7 +108,7 @@ Setting both to all will probably spin your beach ball...
 
 """
 
-__version__ = "1.0.0"
+__version__ = "1.4.0"
 
 import os
 import sys

@@ -18,7 +18,7 @@ import mdv
 
 setup(
     name='mdv',
-    version=mdv.__version__,
+    version=mdv.__version__
     packages=find_packages(),
     author="Axiros GmbH",
     author_email="gk@axiros.com",
@@ -27,7 +27,7 @@ setup(
     install_requires=["pyyaml", "pygments", "markdown", "docopt"],
     include_package_data=True,
     url='http://github.com/axiros/terminal_markdown_viewer',
-    download_url='http://github.com/axiros/terminal_markdown_viewer/tarball/0.3',
+    download_url='http://github.com/axiros/terminal_markdown_viewer/tarball/1.4',
     keywords = ['markdown', 'markup', 'terminal', 'hilighting', 'syntax', 'source code'],
     classifiers=[
         "Programming Language :: Python",
