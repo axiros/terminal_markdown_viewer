@@ -5,7 +5,7 @@
 # Usage:
 
     mdv [-t THEME] [-T C_THEME] [-i] [-x] [-X Lexer] [-l] [-L] [-c COLS] \
-            [-f FROM] [-m] [-C MODE] [-M DIR] [-H] [-A] [MDFILE]
+            [-f FROM] [-m] [-C MODE] [-M DIR] [-H] [-A] [-b TABL] [MDFILE]
 
 # Options:
 
@@ -22,12 +22,16 @@
     -c COLS   : Fix columns to this (default: your terminal width)
     -C [MODE] : Sourcecode highlighting mode
     -A        : Strip all ansi (no colors then)
+    -b [TABL] : Set tab_length to sth. different than 4 [default: 4]
     -i        : Show theme infos with output
     -H        : Print html version
 
 # Notes:
 
-We use stty tool to derive terminal size. If you pipe into mdv we use 80 cols.
+- We use stty tool to derive terminal size. If you pipe into mdv we use 80 cols.
+- Setting tab_length away from 4 violates
+  [markdown](https://pythonhosted.org/Markdown/). But since many editors allow
+  to produce such source we allow it via that flag.
 
 ## Themes
 
@@ -885,8 +889,9 @@ def do_code_hilite(md, what='all'):
 def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
          c_no_guess=None, display_links=None, from_txt=None, do_html=None,
          code_hilite=None, c_def_lexer=None,
-         theme_info=None, no_colors=None, **kw):
+         theme_info=None, no_colors=None, tab_length=4, **kw):
     """ md is markdown string. alternatively we use filename and read """
+    tab_length = tab_length or 4
     global def_lexer
     if c_def_lexer:
         def_lexer = c_def_lexer
@@ -965,7 +970,8 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
 
 
     # Create an instance of the Markdown class with the new extension
-    MD = markdown.Markdown(extensions=[AnsiPrintExtension(),
+    MD = markdown.Markdown(tab_length=int(tab_length),
+                           extensions=[AnsiPrintExtension(),
                                        TableExtension(),
                                        fenced_code.FencedCodeExtension()])
     if code_hilite:
@@ -1207,7 +1213,9 @@ def run_args(args):
                ,do_html       = args.get('-H')
                ,theme_info    = args.get('-i')
                ,no_colors     = args.get('-A')
-               ,display_links = args.get('-L'))
+               ,display_links = args.get('-L')
+               ,tab_length    = args.get('-b', 4)
+               )
 
 def run():
     global is_app
