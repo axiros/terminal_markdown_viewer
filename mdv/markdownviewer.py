@@ -888,6 +888,10 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
     global term_columns
     # style rolers requested?
     if c_theme == 'all' or theme == 'all':
+        if c_theme == 'all':
+            os.environ['AXC_CODE_THEME'] = os.environ['MDV_CODE_THEME'] = ''
+        if theme == 'all':
+            os.environ['AXC_THEME'] = os.environ['MDV_THEME'] = ''
         args.pop('kw')
         themes = read_themes()
         for k, v in themes.items():
