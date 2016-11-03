@@ -151,6 +151,12 @@ pull if anybody sent me a version for 2 and 3. I myself won't do it though, will
 never work in a language w/o bytestrings and the most important type based on
 [funny enumerated](http://utf8everywhere.org/#characters) symbols.
 
+Update: With 1.4 it now basically runs in Python3 in the sense of no compile
+time errors - but the rendering result still is not really usable. Maybe
+somebody is inclinded to fix that, I'm on Py2 still.
+
+Changed the shebang to `/usr/bin/env python` though.
+
 
 ### Manual Install: Requirements
 
