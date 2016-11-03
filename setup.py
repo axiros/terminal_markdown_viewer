@@ -27,7 +27,7 @@ setup(
     install_requires=["pyyaml", "pygments", "markdown", "docopt"],
     include_package_data=True,
     url='http://github.com/axiros/terminal_markdown_viewer',
-    download_url='http://github.com/axiros/terminal_markdown_viewer/tarball/1.4',
+    download_url='http://github.com/axiros/terminal_markdown_viewer/tarball/1.4.0',
     keywords = ['markdown', 'markup', 'terminal', 'hilighting', 'syntax', 'source code'],
     classifiers=[
         "Programming Language :: Python",
