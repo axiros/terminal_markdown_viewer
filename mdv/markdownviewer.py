@@ -28,6 +28,13 @@
 
 We use stty tool to derive terminal size. If you pipe into mdv we use 80 cols.
 
+## Themes
+
+environ variables `$MDV_THEME` and `$MDV_CODE_THEME` are understood:
+
+    export MDV_THEME=729.8953; mdv foo.md
+
+
 ## To use mdv.py as lib:
 
 Call the main function with markdown string at hand to get a
@@ -123,6 +130,7 @@ from json import loads
 from markdown.treeprocessors import Treeprocessor
 from markdown.extensions import Extension, fenced_code
 from HTMLParser import HTMLParser
+env = os.environ.get
 
 # ---------------------------------------------------------------------- Config
 hr_sep, txt_block_cut, code_pref, list_pref, hr_ends = '─', '✂', '| ', '- ', '◈'
@@ -163,14 +171,17 @@ color = T
 show_links = None
 
 # columns(!) - may be set to smaller width:
-try:
-    term_rows, term_columns = os.popen('stty size 2>/dev/null', 'r').read().split()
-    term_columns, term_rows = int(term_columns), int(term_rows)
-except:
-    if not '-' in sys.argv:
-        print '!! Could not derive your terminal width !!'
-    term_columns = 80
-    term_rows = 200
+# could be exported by the shell, normally not in subprocesses:
+term_columns, term_rows = env('COLUMNS'), env('LINES')
+if not term_columns:
+    try:
+        term_rows, term_columns = os.popen('stty size 2>/dev/null', 'r').read().split()
+        term_columns, term_rows = int(term_columns), int(term_rows)
+    except:
+        if not '-' in sys.argv:
+            print '!! Could not derive your terminal width !!'
+        term_columns = 80
+        term_rows = 200
 
 # could be given, otherwise read from ansi_tables.json:
 themes = {}
@@ -253,10 +264,26 @@ mydir = os.path.realpath(__file__).rsplit(os.path.sep, 1)[0]
 
 def set_theme(theme=None, for_code=None, theme_info=None):
     """ set md and code theme """
+    # for md the default is None and should return the 'random' theme
+    # for code the default is 'default' and should return the default theme.
+    # historical reasons...
+    dec = {False: {'dflt': None, 'on_dflt': 'random',
+                   'env': ('MDV_THEME', 'AXC_THEME')},
+           True: {'dflt': 'default', 'on_dflt': None,
+                    'env': ('MDV_CODE_THEME', 'AXC_CODE_THEME')}}
+    dec = dec[bool(for_code)]
     try:
-        if theme == 'default':
+        if theme == dec['dflt']:
+            for k in dec['env']:
+                if k in os.environ:
+                    theme = os.environ[k]
+                    break
+        if theme == dec['dflt']:
+            theme = dec['on_dflt']
+        if not theme:
             return
-        theme = str(theme or os.environ.get('AXC_THEME', 'random'))
+
+        theme = str(theme)
         # all the themes from here:
         themes = read_themes()
         if theme == 'random':
