@@ -1216,7 +1216,10 @@ def run():
     if args.get('-M'):
         monitor_dir(args)
     else:
-        print run_args(args)
+        if sys.version_info[0] == 2:
+            print str(run_args(args))
+        else:
+            print (run_args(args))
 
 if __name__ == '__main__':
     # the setup tools version calls directly run, this is for git checkouts:
