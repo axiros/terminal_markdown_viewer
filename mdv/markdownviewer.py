@@ -157,27 +157,27 @@ H1, H2, H3, H4, H5, R, L, BG, BGL, T, TL, C = \
 # Code (C is fallback if we have no lexer). Default: Same theme:
 CH1, CH2, CH3, CH4, CH5 = H1, H2, H3, H4, H5
 
-code_hl = {"Keyword"  :  'CH3',
-           "Name"     :  'CH1',
-           "Comment"  :  'L',
-           "String"   :  'CH4',
-           "Error"    :  'R',
-           "Number"   :  'CH4',
-           "Operator" :  'CH5',
-           "Generic"  :  'CH2'
+code_hl = {"Keyword":   'CH3',
+           "Name":      'CH1',
+           "Comment":   'L',
+           "String":    'CH4',
+           "Error":     'R',
+           "Number":    'CH4',
+           "Operator":  'CH5',
+           "Generic":   'CH2'
            }
 
-admons = {'note'      :  'H3',
-          'warning'   :  'R',
-          'attention' :  'H1',
-          'hint'      :  'H4',
-          'summary'   :  'H1',
-          'hint'      :  'H4',
-          'question'  :  'H5',
-          'danger'    :  'R',
-          'dev'       :  'H5',
-          'hint'      :  'H4',
-          'caution'   :  'H2'
+admons = {'note':       'H3',
+          'warning':    'R',
+          'attention':  'H1',
+          'hint':       'H4',
+          'summary':    'H1',
+          'hint':       'H4',
+          'question':   'H5',
+          'danger':     'R',
+          'dev':        'H5',
+          'hint':       'H4',
+          'caution':    'H2'
           }
 
 def_lexer = 'python'
@@ -399,12 +399,12 @@ def col(s, c, bg=0, no_reset=0):
         if _strt in s:
             # inline code:
             s = s.replace(_strt, col('', _col, bg=background, no_reset=1))
-            s = s.replace(_end , col('', c, no_reset=1))
+            s = s.replace(_end,  col('', c, no_reset=1))
 
     s = '\033[38;5;%sm%s%s' % (c, s, reset)
     if bg:
         pass
-        #  s = col_bg(bg) + s
+        # s = col_bg(bg) + s
     return s
 
 reset_col = '\033[0m'
@@ -611,7 +611,7 @@ class AnsiPrinter(Treeprocessor):
                     for tg, start, end in (('code',   code_start, code_end),
                                            ('strong', stng_start, stng_end),
                                            ('em',     emph_start, emph_end)):
-                        t = t.replace('<%s>'  % tg, start)
+                        t = t.replace('<%s>' % tg,  start)
                         t = t.replace('</%s>' % tg, end)
                     t = html_parser.unescape(t)
                 else:
@@ -657,7 +657,7 @@ class AnsiPrinter(Treeprocessor):
                 # indent. can color the prefixes now, no more len checks:
                 if admon:
                     out.append('\n')
-                    pref      = col(pref     , globals()[admons[admon]])
+                    pref      = col(pref,      globals()[admons[admon]])
                     body_pref = col(body_pref, globals()[admons[admon]])
 
                 if pref:
@@ -1202,20 +1202,19 @@ def merge(a, b):
 
 def run_args(args):
     """ call the lib entry function with CLI args """
-    return main(filename      = args.get('MDFILE')
-               ,theme         = args.get('-t', 'random')
-               ,cols          = args.get('-c')
-               ,from_txt      = args.get('-f')
-               ,code_hilite   = args.get('-C')
-               ,c_theme       = args.get('-T')
-               ,c_no_guess    = args.get('-x')
-               ,c_def_lexer   = args.get('-X')
-               ,do_html       = args.get('-H')
-               ,theme_info    = args.get('-i')
-               ,no_colors     = args.get('-A')
-               ,display_links = args.get('-L')
-               ,tab_length    = args.get('-b', 4)
-               )
+    return main(filename      = args.get('MDFILE'),
+                theme         = args.get('-t', 'random'),
+                cols          = args.get('-c'),
+                from_txt      = args.get('-f'),
+                code_hilite   = args.get('-C'),
+                c_theme       = args.get('-T'),
+                c_no_guess    = args.get('-x'),
+                c_def_lexer   = args.get('-X'),
+                do_html       = args.get('-H'),
+                theme_info    = args.get('-i'),
+                no_colors     = args.get('-A'),
+                display_links = args.get('-L'),
+                tab_length    = args.get('-b', 4))
 
 
 def run():
