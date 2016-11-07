@@ -115,6 +115,7 @@ Setting both to all will probably spin your beach ball...
 
 __version__ = "1.4.2"
 
+import io
 import os
 import sys
 import textwrap
@@ -894,7 +895,9 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
         def_lexer = c_def_lexer
     py_config_file = os.path.expanduser("~/.mdv.py")
     if os.path.exists(py_config_file):
-        execfile(py_config_file, globals(), locals())
+        exec_globals = {}
+        exec(io.open(py_config_file, encoding='utf-8').read(), exec_globals)
+        globals().update(exec_globals)
 
     args = locals()
     if not md:
