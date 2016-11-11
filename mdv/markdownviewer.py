@@ -150,11 +150,15 @@ envget = os.environ.get
 # ---------------------------------------------------------------------- Config
 hr_sep, txt_block_cut, code_pref, list_pref, hr_ends = \
     '─', '✂', '| ', '- ', '◈'
+
+# Hack: Set normal text colour in code
+NORMAL_TEXT_COLOUR = 0
+
 # ansi cols (default):
 # R: Red (warnings), L: low visi, BG: background, BGL: background light, C=code
 # H1 - H5 = the theme, the numbers are the ansi color codes:
 H1, H2, H3, H4, H5, R, L, BG, BGL, T, TL, C = \
-    231, 153, 117, 109, 65, 124, 59, 16, 188, 188, 59, 102
+    231, 153, 117, 109, 65, 124, 59, 16, 188, NORMAL_TEXT_COLOUR, 59, 102
 # Code (C is fallback if we have no lexer). Default: Same theme:
 CH1, CH2, CH3, CH4, CH5 = H1, H2, H3, H4, H5
 
