@@ -1,0 +1,18 @@
+
+[38;5;59m[0m[38;5;209mTest runner[0m
+[38;5;188m  Currently not much tested except a few simple use cases but its easy to add new tests by just adding a "mud" (markdown under test) file with extension ".md" and do [38;5;74mrun build[38;5;188m to generate and
+  visually inpect if the rendered result of all muds comply with how it should be / if code changes break existing tests.[0m
+[38;5;188m  The travis verification is then simply based on diffs against the "<mud>.expected" files.[0m
+
+[38;5;59m[0m[38;5;74m building the expected results files[0m
+[38;5;188m    [38;5;209m- [0mexecute [38;5;74mrun build[38;5;188m to generate mdv output for all ".md" files within this folder.[0m
+[38;5;188m    [38;5;209m- [0mcommit[0m
+
+[38;5;59m[0m[38;5;74m testing new mdv versions[0m
+[38;5;188m    [38;5;209m- [0mtravis will execute [38;5;74mrun[38;5;188m to diff the current mdv output with the expected
+        results[0m
+
+[38;5;59m[0m[38;5;74m Notes[0m
+[38;5;188m  Some day I'll make the line seps a bit smarter, e.g. min one line sep after lists[0m
+
+

@@ -1,32 +1,31 @@
 #!/usr/bin/env bash
-export COLUMNS=80
 export MDV_THEME=729.8953
 export MDV_CODE_THEME=729.8953
 export d="`dirname "${BASH_SOURCE[0]}"`"
 cd "$d"
 
-if [ "x$1" = "xbuild" ]; then
+res='/tmp/mdv_expected'
+for col in 20 40 80 200; do
+    echo "Setting Columns to $col"
+    export COLUMNS=$col
+    rd="result.$col"
+    mkdir -p "$rd"
     for f in *.md; do
-        echo "building result for $f"
-        mdv $f > "$f.expected"
-        cat "$f.expected"
+        if [ "x$1" = "xbuild" ]; then
+            echo "building result for $f"
+            mdv $f > "$rd/$f.expected"
+            cat "$rd/$f.expected"
+        else
+            set -e
+            echo "testing $f"
+            mdv $f > $res
+            # why not:
+            cat $res
+            diff $res "$rd/$f.expected" || { \
+                echo "failing: $f columns $col"; exit 1; }
+        fi
     done
-    echo "all test files built, pls commit."
-    exit
-fi
-
-
-set -e
-
-mdv -h | grep Usage
-res="/tmp/mdv_expected"
-for f in *.md; do
-	echo "testing $f"
-	mdv $f > $res
-    # why not:
-    cat $res
-	diff $res "$f.expected" || { echo "failing: $f"; exit 1; }
 done
 
-echo 'done'
-
+test "x$1" = "xbuild" && \
+    echo "all test files built, pls commit." || echo 'test done'
