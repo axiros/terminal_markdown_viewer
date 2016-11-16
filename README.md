@@ -1,5 +1,7 @@
 # Terminal Markdown Viewer
 
+[![Build Status](https://travis-ci.org/axiros/terminal_markdown_viewer.svg?branch=master)](https://travis-ci.org/axiros/terminal_markdown_viewer)
+
 When you edit multiple md files remotely, like in a larger
 [mkdocs](http://www.mkdocs.org/) project, context switches between editing
 terminal(s) and viewing browser may have some efficiency impact.
