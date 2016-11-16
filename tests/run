@@ -1,6 +1,30 @@
 #!/usr/bin/env bash
+
+export MDV_THEME=729.8953
+export MDV_CODE_THEME=729.8953
+export d="`dirname "${BASH_SOURCE[0]}"`"
+cd "$d"
+
+if [ "x$1" = "xbuild" ]; then
+    for f in *.md; do
+        echo "building result for $f"
+        mdv $f > "$f.expected"
+        cat "$f.expected"
+    done
+    echo "all test files built, pls commit."
+    exit
+fi
+
+
 set -e
-which mdv
-mdv -h
+
+mdv -h | grep Usage
+
+for f in *.md; do
+	echo "testing $f"
+	mdv $f > /tmp/mdv_expected
+	diff /tmp/mdv_expected "$f.expected" || { echo "failing: $f"; exit 1; }
+done
+
 echo 'done'
 
