@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+export COLUMNS=80
 export MDV_THEME=729.8953
 export MDV_CODE_THEME=729.8953
 export d="`dirname "${BASH_SOURCE[0]}"`"
