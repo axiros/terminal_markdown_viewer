@@ -113,7 +113,6 @@ Setting both to all will probably spin your beach ball...
 
 """
 
-__version__ = "1.4.2"
 
 import io
 import os
