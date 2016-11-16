@@ -19,11 +19,13 @@ fi
 set -e
 
 mdv -h | grep Usage
-
+res="/tmp/mdv_expected"
 for f in *.md; do
 	echo "testing $f"
-	mdv $f > /tmp/mdv_expected
-	diff /tmp/mdv_expected "$f.expected" || { echo "failing: $f"; exit 1; }
+	mdv $f > $res
+    # why not:
+    cat $res
+	diff $res "$f.expected" || { echo "failing: $f"; exit 1; }
 done
 
 echo 'done'

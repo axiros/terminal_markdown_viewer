@@ -7,7 +7,7 @@ before_install:
     - sudo python setup.py install
 
 before_script:
-  - "export DISPLAY=:99.0"
+  - "echo 'starting'"
 
 script: "./tests/run"
 
