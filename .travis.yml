@@ -1,0 +1,10 @@
+dist: trusty
+language: python
+before_install:
+    - sudo pip install mdv
+
+before_script:
+  - "export DISPLAY=:99.0"
+
+script: "./tests/run"
+
