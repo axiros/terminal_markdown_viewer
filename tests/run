@@ -4,6 +4,7 @@ export MDV_CODE_THEME=729.8953
 export d="`dirname "${BASH_SOURCE[0]}"`"
 cd "$d"
 MDV='../mdv/markdownviewer.py'
+MDV="`which mdv`"
 res='/tmp/mdv_expected'
 
 for col in 20 40 80 200; do
