@@ -3,8 +3,9 @@ export MDV_THEME=729.8953
 export MDV_CODE_THEME=729.8953
 export d="`dirname "${BASH_SOURCE[0]}"`"
 cd "$d"
-
+MDV='../mdv/markdownviewer.py'
 res='/tmp/mdv_expected'
+
 for col in 20 40 80 200; do
     echo "Setting Columns to $col"
     export COLUMNS=$col
@@ -13,12 +14,12 @@ for col in 20 40 80 200; do
     for f in *.md; do
         if [ "x$1" = "xbuild" ]; then
             echo "building result for $f"
-            mdv $f > "$rd/$f.expected"
+            $MDV $f > "$rd/$f.expected"
             cat "$rd/$f.expected"
-        else
+        elif [ "x$1" = "xtest" ]; then
             set -e
             echo "testing $f"
-            mdv $f > $res
+            $MDV $f > $res
             # why not:
             cat $res
             diff $res "$rd/$f.expected" || { \
@@ -26,6 +27,10 @@ for col in 20 40 80 200; do
         fi
     done
 done
+
+test ! "x$1" = "x"   || { $MDV README.md; exit 0; }
+test ! "x$1" = "x-h" || { $MDV README.md; exit 0; }
+
 
 test "x$1" = "xbuild" && \
     echo "all test files built, pls commit." || echo 'test done'

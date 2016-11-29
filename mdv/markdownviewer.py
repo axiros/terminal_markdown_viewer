@@ -286,6 +286,7 @@ def clean_ansi(s):
 # markers: tab is 09, omit that
 code_start, code_end = '\x07', '\x08'
 stng_start, stng_end = '\x16', '\x10'
+link_start, link_end = '\x17', '\x18'
 emph_start, emph_end = '\x11', '\x12'
 punctuationmark      = '\x13'
 fenced_codemark      = '\x14'
@@ -395,11 +396,14 @@ def col(s, c, bg=0, no_reset=0):
         reset = ''
     for _strt, _end, _col in ((code_start, code_end, H2),
                               (stng_start, stng_end, H2),
+                              (link_start, link_end, H2),
                               (emph_start, emph_end, H3)):
         if _strt in s:
-            # inline code:
-            s = s.replace(_strt, col('', _col, bg=background, no_reset=1))
-            s = s.replace(_end,  col('', c, no_reset=1))
+            uon, uoff = '', ''
+            if _strt == link_start:
+                uon, uoff = '\033[4m', '\033[24m'
+            s = s.replace(_strt, col('', _col, bg=background, no_reset=1) + uon)
+            s = s.replace(_end,  uoff + col('', c, no_reset=1))
 
     s = '\033[38;5;%sm%s%s' % (c, s, reset)
     if bg:
@@ -484,7 +488,7 @@ def is_text_node(el):
     # do we start with another tagged child which is NOT in inlines:?
     if not html.startswith('<'):
         return 1, html
-    for inline in ('<em>', '<code>', '<strong>'):
+    for inline in ('<a', '<em>', '<code>', '<strong>'):
         if html.startswith(inline):
             return 1, html
     return 0, 0
@@ -573,6 +577,31 @@ def split_blocks(text_block, w, cols, part_fmter=None):
 
 
 # ---------------------------------------------------- Create the treeprocessor
+def replace_links(el, s):
+    '''digging through inline "<a href=..."'''
+    parts = s.split('<a ')
+    if len(parts) == 1:
+        return s
+    cur_link = 0
+    links = [l for l in el.getchildren() if 'href' in l.keys()]
+    if not len(parts) == len(links) + 1:
+        # there is an html element within which we don't support,
+        # e.g. blockquote
+        return s
+    cur = ''
+    while parts:
+        cur += parts.pop(0).rsplit('</a>')[-1]
+        if not parts:
+            break
+        cur += link_start
+        link = links[cur_link]
+        cur_link += 1
+        cur += link.text
+        cur += link_end
+        if show_links:
+            cur += low('(%s)' % link.get('href',''))
+    return cur
+
 class AnsiPrinter(Treeprocessor):
     header_tags = ('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8')
 
@@ -587,10 +616,16 @@ class AnsiPrinter(Treeprocessor):
 
         def formatter(el, out, hir=0, pref='', parent=None):
             """
+            Main recursion.
+
             debugging:
             # if el.tag == 'div':
             # for c in el.getchildren()[3].getchildren(): print c.text, c
             """
+            print '---------'
+            print el
+            print '---------'
+            #for c in el.getchildren(): print c.text, c
             is_txt_and_inline_markup = 0
 
             if el.tag == 'hr':
@@ -607,12 +642,15 @@ class AnsiPrinter(Treeprocessor):
                 is_txt_and_inline_markup, html = is_text_node(el)
 
                 if is_txt_and_inline_markup:
+                    # strip our own closing tag:
                     t = html.rsplit('<', 1)[0]
-                    for tg, start, end in (('code',   code_start, code_end),
-                                           ('strong', stng_start, stng_end),
-                                           ('em',     emph_start, emph_end)):
-                        t = t.replace('<%s>' % tg,  start)
-                        t = t.replace('</%s>' % tg, end)
+                    t = replace_links(el, t)
+                    for tg, start, end in (('<code>',   code_start, code_end),
+                                           ('<strong>', stng_start, stng_end),
+                                           ('<em>',     emph_start, emph_end)):
+                        t = t.replace('%s' % tg,  start)
+                        close_tag = '</%s' % tg[1:]
+                        t = t.replace(close_tag, end)
                     t = html_parser.unescape(t)
                 else:
                     t = el.text

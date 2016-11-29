@@ -9,5 +9,5 @@ before_install:
 before_script:
   - "echo 'starting'"
 
-script: "./tests/run"
+script: "./tests/run test"
 

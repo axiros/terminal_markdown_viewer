@@ -7,16 +7,22 @@ muds comply with how it should be / if code changes break existing tests.
 
 The travis verification is then simply based on diffs against the "<mud>.expected" files.
 
+This README is also a mud, you have to `run build` if you change it.
 
+# Columns
 
-## building the expected results files
+We verify correct output for certain terminal column available, resulting in
+files ending with e.g. '.80'
+
+## `run build`: building the expected results files
 - execute `run build` to generate mdv output for all ".md" files within this folder.
-- commit
+- git diff to see any changes
+- commit if all is good
 
 
-## testing new mdv versions
+## `run test`: testing new mdv versions
 
-- travis will execute `run` to diff the current mdv output with the expected
+- travis will execute `run test` to diff the current mdv output with the expected
   results
 
 

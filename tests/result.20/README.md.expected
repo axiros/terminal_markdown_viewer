@@ -25,8 +25,23 @@
   on diffs against
   the "<mud>.e
   xpected" files.[0m
+[38;5;188m  This README is
+  also a mud, you
+  have to [38;5;74mrun
+  build[38;5;188m if you
+  change it.[0m
 
-[38;5;59m[0m[38;5;74m building the
+[38;5;59m[0m[38;5;209mColumns[0m
+[38;5;188m  We verify correct
+  output for certain
+  terminal column
+  available,
+  resulting in files
+  ending with e.g.
+  '.80'[0m
+
+[38;5;59m[0m[38;5;74m [38;5;74mrun build[38;5;74m:
+ building the
  expected results
  files[0m
 [38;5;188m    [38;5;209m- [0mexecute [38;5;74mrun
@@ -36,16 +51,21 @@
       ".md" files
       within this
       folder.[0m
-[38;5;188m    [38;5;209m- [0mcommit[0m
+[38;5;188m    [38;5;209m- [0mgit diff to
+      see any
+      changes[0m
+[38;5;188m    [38;5;209m- [0mcommit if all
+      is good[0m
 
-[38;5;59m[0m[38;5;74m testing new mdv
- versions[0m
+[38;5;59m[0m[38;5;74m [38;5;74mrun test[38;5;74m: testing
+ new mdv versions[0m
 [38;5;188m    [38;5;209m- [0mtravis will
-      execute [38;5;74mrun[38;5;188m
-      to diff the
-      current mdv
-      output with
-      the expected
+      execute [38;5;74mrun
+      test[38;5;188m to diff
+      the current
+      mdv output
+      with the
+      expected
       results[0m
 
 [38;5;59m[0m[38;5;74m Notes[0m
