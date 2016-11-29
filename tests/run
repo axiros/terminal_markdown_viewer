@@ -13,7 +13,7 @@ for col in 20 40 80 200; do
     mkdir -p "$rd"
     for f in *.md; do
         if [ "x$1" = "xbuild" ]; then
-            echo "building result for $f"
+            echo "building result for $f (col $col)"
             $MDV $f > "$rd/$f.expected"
             cat "$rd/$f.expected"
         elif [ "x$1" = "xtest" ]; then

@@ -118,7 +118,7 @@ setup(
 - Tons of theme combinations: mdv ships with > 200 luminocity sorted themes, converted from html themes tables to ansi. Those can be combined for code vs regular markdown output...
 - Admonitions
 - Tables, incl. wide table handling avoiding "interleaving"
-- Somewhat hackable, all in [one](markdownviewer.py) module
+- Somewhat hackable, all in [one](mdv/markdownviewer.py) module
 - Useable as lib as well
 - File change monitor
 - Text wrapping
@@ -490,6 +490,12 @@ Also:
 - fixed but with not rendered strong texts
 - pip install mdv
 
+
+### Nov 2016:
+
+- travis
+- Inline link tables
+![](samples/links.png)
 
 
 ### Lastly

@@ -4,8 +4,8 @@
 """_
 # Usage:
 
-    mdv [-t THEME] [-T C_THEME] [-i] [-x] [-X Lexer] [-l] [-L] [-c COLS] \
-            [-f FROM] [-m] [-C MODE] [-M DIR] [-H] [-A] [-b TABL] [MDFILE]
+    mdv [-h] [-t THEME] [-T C_THEME] [-i] [-x] [-X Lexer] [-l] [-L] [-u STYL] \
+      [-c COLS] [-f FROM] [-m] [-C MODE] [-M DIR] [-H] [-A] [-b TABL] [MDFILE]
 
 # Options:
 
@@ -13,26 +13,38 @@
     -t THEME  : Key within the color ansi_table.json. 'random' accepted.
     -T C_THEME: Theme for code highlight. If not set: Using THEME.
     -l        : Light background (not yet supported)
-    -L        : Display links
+    -u STYL   : Link Style (it=inline table=default, h=hide, i=inline)
+    -L        : Backwards compatible shortcut for '-u i'
     -x        : Do not try guess code lexer (guessing is a bit slow)
     -X Lexer  : Default lexer name (default: python). Set -x to use it always.
     -f FROM   : Display FROM given substring of the file.
     -m        : Monitor file for changes and redisplay FROM given substring
     -M DIR    : Monitor directory for markdown file changes
     -c COLS   : Fix columns to this (default: your terminal width)
-    -C [MODE] : Sourcecode highlighting mode
+    -C MODE   : Sourcecode highlighting mode
     -A        : Strip all ansi (no colors then)
-    -b [TABL] : Set tab_length to sth. different than 4 [default: 4]
+    -b TABL : Set tab_length to sth. different than 4 [default: 4]
     -i        : Show theme infos with output
     -H        : Print html version
+    -h        : Show help
 
-# Notes:
+# Details
 
-- We use stty tool to derive terminal size. If you pipe into mdv we use
-  80 cols.
-- Setting tab_length away from 4 violates
-  [markdown](https://pythonhosted.org/Markdown/). But since many editors allow
-  to produce such source we allow it via that flag.
+## Flags
+
+### `-c COLS` / Columns
+
+We use stty tool to derive terminal size. If you pipe into mdv we use 80 cols.
+You can force the columns used via `-c`
+
+
+### `-b TABL` / Tablength
+
+Setting tab_length away from 4 violates
+[markdown](https://pythonhosted.org/Markdown/).
+But since many editors interpret such source we allow it via that flag.
+
+
 
 ## Themes
 
@@ -147,8 +159,8 @@ except ImportError as ex:
 envget = os.environ.get
 
 # ---------------------------------------------------------------------- Config
-hr_sep, txt_block_cut, code_pref, list_pref, hr_ends = \
-    '─', '✂', '| ', '- ', '◈'
+hr_sep, txt_block_cut, code_pref, list_pref, bquote_pref, hr_ends = \
+    '─', '✂', '| ', '- ', '|', '◈'
 # ansi cols (default):
 # R: Red (warnings), L: low visi, BG: background, BGL: background light, C=code
 # H1 - H5 = the theme, the numbers are the ansi color codes:
@@ -180,6 +192,10 @@ admons = {'note':       'H3',
           'caution':    'H2'
           }
 
+
+link_start = u'①'
+link_start_ord = ord(link_start)
+
 def_lexer = 'python'
 guess_lexer = True
 # also global. but not in use, BG handling can get pretty involved, to do with
@@ -191,10 +207,12 @@ left_indent = '  '
 # normal text color:
 color = T
 
-show_links = None
+# it: inline table, h: hide, i: inline
+show_links = 'it'
 
 # columns(!) - may be set to smaller width:
 # could be exported by the shell, normally not in subprocesses:
+
 term_columns, term_rows = envget('COLUMNS'), envget('LINES')
 if not term_columns:
     try:
@@ -209,7 +227,6 @@ if not term_columns:
 if not term_rows:
     term_rows = 200
 term_columns, term_rows = int(term_columns), int(term_rows)
-
 # could be given, otherwise read from ansi_tables.json:
 themes = {}
 
@@ -291,6 +308,7 @@ emph_start, emph_end = '\x11', '\x12'
 punctuationmark      = '\x13'
 fenced_codemark      = '\x14'
 hr_marker            = '\x15'
+no_split             = '\x19'
 
 
 def j(p, f):
@@ -578,16 +596,17 @@ def split_blocks(text_block, w, cols, part_fmter=None):
 
 # ---------------------------------------------------- Create the treeprocessor
 def replace_links(el, s):
-    '''digging through inline "<a href=..."'''
+    '''digging through inline "<a href=..."
+    '''
     parts = s.split('<a ')
     if len(parts) == 1:
-        return s
-    cur_link = 0
+        return None, s
+    links_list, cur_link = [], 0
     links = [l for l in el.getchildren() if 'href' in l.keys()]
     if not len(parts) == len(links) + 1:
         # there is an html element within which we don't support,
         # e.g. blockquote
-        return s
+        return None, s
     cur = ''
     while parts:
         cur += parts.pop(0).rsplit('</a>')[-1]
@@ -595,12 +614,17 @@ def replace_links(el, s):
             break
         cur += link_start
         link = links[cur_link]
-        cur_link += 1
-        cur += link.text
+        cur += link.text or ''
         cur += link_end
-        if show_links:
-            cur += low('(%s)' % link.get('href',''))
-    return cur
+        if show_links != 'h':
+            if show_links == 'i':
+                cur += low('(%s)' % link.get('href',''))
+            else: # inline table (it)
+                # we build a link list:
+                cur += '%s ' % unichr(link_start_ord + cur_link)
+                links_list.append(link.get('href', ''))
+        cur_link += 1
+    return links_list, cur
 
 class AnsiPrinter(Treeprocessor):
     header_tags = ('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8')
@@ -621,12 +645,25 @@ class AnsiPrinter(Treeprocessor):
             debugging:
             # if el.tag == 'div':
             # for c in el.getchildren()[3].getchildren(): print c.text, c
-            """
             print '---------'
             print el
             print '---------'
+            """
             #for c in el.getchildren(): print c.text, c
-            is_txt_and_inline_markup = 0
+            links_list, is_txt_and_inline_markup = None, 0
+            if el.tag == 'blockquote':
+                for el1 in el.getchildren():
+                    iout = []
+                    formatter(el1, iout, hir+2, parent=el)
+                    pr = col(bquote_pref, H1)
+                    sp = ' ' * (hir + 2)
+                    for l in iout:
+                        for l1 in l.splitlines():
+                            if sp in l1:
+                                l1 = ''.join(l1.split(sp, 1))
+                            out.append(pr + l1)
+                return
+
 
             if el.tag == 'hr':
                 return out.append(tags.hr('', hir=hir))
@@ -644,7 +681,7 @@ class AnsiPrinter(Treeprocessor):
                 if is_txt_and_inline_markup:
                     # strip our own closing tag:
                     t = html.rsplit('<', 1)[0]
-                    t = replace_links(el, t)
+                    links_list, t = replace_links(el, t)
                     for tg, start, end in (('<code>',   code_start, code_end),
                                            ('<strong>', stng_start, stng_end),
                                            ('<em>',     emph_start, emph_end)):
@@ -726,13 +763,15 @@ class AnsiPrinter(Treeprocessor):
                     out[-1] += _out
                 else:
                     out.append(tag_fmt_func(t, hir=hir))
-                if show_links:
-                    for l in 'src', 'href':
-                        if l in list(el.keys()):
-                            out[-1] += low('(%s) ' % get_attr(el, l))
 
                 if admon:
                     out.append('\n')
+
+                if links_list:
+                    i = 1
+                    for l in links_list:
+                        out.append(low('%s[%s] %s' % (ind, i, l)))
+                        i += 1
 
             # have children?
             #    nr for ols:
@@ -922,8 +961,8 @@ def do_code_hilite(md, what='all'):
 
 
 def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
-         c_no_guess=None, display_links=None, from_txt=None, do_html=None,
-         code_hilite=None, c_def_lexer=None,
+         c_no_guess=None, display_links=None, link_style=None,
+         from_txt=None, do_html=None, code_hilite=None, c_def_lexer=None,
          theme_info=None, no_colors=None, tab_length=4, **kw):
     """ md is markdown string. alternatively we use filename and read """
     tab_length = tab_length or 4
@@ -978,7 +1017,10 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
         term_columns = int(cols)
 
     global show_links
-    show_links = display_links
+    if display_links:
+        show_links = 'i'
+    if link_style: # rules
+        show_links = link_style
 
     if bg and bg == 'light':
         # not in use rite now:
@@ -1240,9 +1282,10 @@ def merge(a, b):
     return c
 
 
-def run_args(args):
+def run_args(args, md=None):
     """ call the lib entry function with CLI args """
-    return main(filename      = args.get('MDFILE'),
+    return main(md            = md,
+                filename      = args.get('MDFILE'),
                 theme         = args.get('-t', 'random'),
                 cols          = args.get('-c'),
                 from_txt      = args.get('-f'),
@@ -1254,6 +1297,7 @@ def run_args(args):
                 theme_info    = args.get('-i'),
                 no_colors     = args.get('-A'),
                 display_links = args.get('-L'),
+                link_style    = args.get('-u'),
                 tab_length    = args.get('-b', 4))
 
 
@@ -1268,18 +1312,28 @@ def run():
         # no? see http://stackoverflow.com/a/29832646/4583360 ...
 
     doc = __doc__[1:]
-    if '-h' in sys.argv or '--help' in sys.argv:
-        print(main(md=doc, c_no_guess=1, theme=909.0365, c_theme=579.6579,
-              c_def_lexer='yaml'))
-        sys.exit(0)
-
     # our docstring markdown to docopt:
-    d = doc.split('# Notes', 1)[0]    \
+    d = doc.split('# Details', 1)[0]    \
         .replace('\n\n', '\n')        \
         .replace('\n# ', '\n\n')      \
         .strip()
-    args = docopt(d, version='mdv v0.1')
-    args = merge(args, load_yaml_config())
+    try:
+        args = docopt(d, help=None, version='mdv v0.1')
+        args = merge(args, load_yaml_config())
+    except:
+        if not '-h' in sys.argv:
+            print(col('Option parsing error', R))
+        args = {'parse_error': 1}
+        sys.argv.append('-h')
+
+    if '-h' in sys.argv or '--help' in sys.argv:
+        args['-t'] = args.get('-t') or 909.0365
+        args['-T'] = args.get('-T') or 579.6579
+        args['-x'] = args.get('-x') or 'yaml'
+        args['-m'] = args['-M'] = None
+        print(run_args(args, md=doc))
+        sys.exit(0)
+
     if args.get('-m'):
         monitor(args)
     if args.get('-M'):
