@@ -646,7 +646,7 @@ class AnsiPrinter(Treeprocessor):
             # if el.tag == 'div':
             # for c in el.getchildren()[3].getchildren(): print c.text, c
             print '---------'
-            print el
+            print el, el.text
             print '---------'
             """
             #for c in el.getchildren(): print c.text, c
@@ -1079,6 +1079,8 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
     for ph in stash.rawHtmlBlocks:
         nr += 1
         raw = html_parser.unescape(ph[0])
+        if raw[:3].lower() == '<br':
+            raw = '\n'
         pre = '<pre><code'
         if raw.startswith(pre):
             pre, raw = raw.split(pre, 1)
