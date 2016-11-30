@@ -649,6 +649,9 @@ class AnsiPrinter(Treeprocessor):
             print el, el.text
             print '---------'
             """
+            if el.tag == 'br':
+                out.append('\n')
+                return
             #for c in el.getchildren(): print c.text, c
             links_list, is_txt_and_inline_markup = None, 0
             if el.tag == 'blockquote':
