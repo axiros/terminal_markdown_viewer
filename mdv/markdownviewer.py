@@ -682,8 +682,8 @@ class AnsiPrinter(Treeprocessor):
                 is_txt_and_inline_markup, html = is_text_node(el)
 
                 if is_txt_and_inline_markup:
-                    # on debian we got strange <br /> by markdown.py for src
-                    # like this: foo\nbar. TODO: try understand why. for now:
+                    # foo:  \nbar -> will be seing a foo:<br>bar with
+                    # mardkown.py. Code blocks are already quoted -> no prob.
                     html = html.replace('<br />', '\n')
                     # strip our own closing tag:
                     t = html.rsplit('<', 1)[0]
