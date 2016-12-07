@@ -33,5 +33,6 @@ test ! "x$1" = "x"   || { $MDV README.md; exit 0; }
 test ! "x$1" = "x-h" || { $MDV README.md; exit 0; }
 
 
-test "x$1" = "xbuild" && \
-    echo "all test files built, pls commit." || echo 'test done'
+test ! "x$1" = "xbuild" || { echo "all test files built, pls commit."; exit 0; }
+test ! "x$1" = "xtest"  || { echo 'tests done'; exit 0; }
+echo "No action. I understand $0 <build | test>"

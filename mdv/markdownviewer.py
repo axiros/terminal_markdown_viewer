@@ -148,7 +148,7 @@ import markdown.util
 from markdown.util import etree
 from markdown.extensions.tables import TableExtension
 from random import randint
-from tabulate import tabulate
+from .tabulate import tabulate
 from json import loads
 from markdown.treeprocessors import Treeprocessor
 from markdown.extensions import Extension, fenced_code
