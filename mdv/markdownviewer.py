@@ -531,36 +531,37 @@ def rewrap(el, t, ind, pref):
 
     # forgot why I didn't use textwrap from the beginning. In case there is a
     # reason I leave the old code here:
+    # edit: think it was because of ansi code unawareness of textwrap.
     # wrapping:
     # we want to keep existing linebreaks after punctuation
     # marks. the others we rewrap:
 
-    puncs = ',', '.', '?', '!', '-', ':'
-    parts = []
-    origp = t.splitlines()
-    if len(origp) > 1:
-        pos = -1
-        while pos < len(origp) - 1:
-            pos += 1
-            # last char punctuation?
-            if origp[pos][-1] not in puncs and \
-                    not pos == len(origp) - 1:
-                # concat:
-                parts.append(origp[pos].strip() + ' ' + origp[pos + 1].strip())
-                pos += 1
-            else:
-                parts.append(origp[pos].strip())
-        t = '\n'.join(parts)
-    # having only the linebreaks with puncs before we rewrap
-    # now:
-    parts = []
-    for part in t.splitlines():
-        parts.extend([part[i:i+cols] for i in range(0, len(part), cols)])
-    # last remove leading ' ' (if '\n' came just before):
-    t = []
-    for p in parts:
-        t.append(p.strip())
-    return '\n'.join(t)
+    #puncs = ',', '.', '?', '!', '-', ':'
+    #parts = []
+    #origp = t.splitlines()
+    #if len(origp) > 1:
+    #    pos = -1
+    #    while pos < len(origp) - 1:
+    #        pos += 1
+    #        # last char punctuation?
+    #        if origp[pos][-1] not in puncs and \
+    #                not pos == len(origp) - 1:
+    #            # concat:
+    #            parts.append(origp[pos].strip() + ' ' + origp[pos + 1].strip())
+    #            pos += 1
+    #        else:
+    #            parts.append(origp[pos].strip())
+    #    t = '\n'.join(parts)
+    ## having only the linebreaks with puncs before we rewrap
+    ## now:
+    #parts = []
+    #for part in t.splitlines():
+    #    parts.extend([part[i:i+cols] for i in range(0, len(part), cols)])
+    ## last remove leading ' ' (if '\n' came just before):
+    #t = []
+    #for p in parts:
+    #    t.append(p.strip())
+    #return '\n'.join(t)
 
 
 def split_blocks(text_block, w, cols, part_fmter=None):
