@@ -8,7 +8,7 @@ before_install:
     - sudo python setup.py install
 
 install:
-    pip install coveralls
+    sudo pip install coveralls
 
 before_script:
   - "echo 'starting'"
