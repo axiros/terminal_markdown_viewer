@@ -14,7 +14,7 @@ before_script:
   - "echo 'starting'"
 
 script:
-    sudo coverage run --source=mdv setup.py test
+    sudo coverage run --include="mdv/markdownviewer.py"  setup.py test
 
 after_success:
     coveralls
