@@ -7,8 +7,15 @@ before_install:
     - sudo pip install pygments markdown docopt pyyaml
     - sudo python setup.py install
 
+install:
+    pip install coveralls
+
 before_script:
   - "echo 'starting'"
 
-script: "./tests/run test"
+script:
+    coverage run --source=mdv setup.py test
+
+after_success:
+    coveralls
 
