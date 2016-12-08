@@ -1,6 +1,7 @@
 # Terminal Markdown Viewer
 
 [![Build Status](https://travis-ci.org/axiros/terminal_markdown_viewer.svg?branch=master)](https://travis-ci.org/axiros/terminal_markdown_viewer)
+ [![PyPI version](https://badge.fury.io/py/mdv.svg)](https://badge.fury.io/py/mdv)
 
 When you edit multiple md files remotely, like in a larger
 [mkdocs](http://www.mkdocs.org/) project, context switches between editing
