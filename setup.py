@@ -13,7 +13,7 @@
 
 
 from setuptools import setup, find_packages
-version = '1.6.1'
+version = '1.6.2'
 
 setup(
     name='mdv',
@@ -22,7 +22,7 @@ setup(
     author="Axiros GmbH",
     author_email="gk@axiros.com",
     description="Terminal Markdown Viewer",
-    long_description=open('README.md').read(),
+    long_description=open('README.rst').read(),
     install_requires=["pyyaml", "pygments", "markdown", "docopt"],
     include_package_data=True,
     url='http://github.com/axiros/terminal_markdown_viewer',
