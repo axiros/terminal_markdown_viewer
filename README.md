@@ -1,4 +1,5 @@
 # Terminal Markdown Viewer
+<a href='https://coveralls.io/github/axiros/terminal_markdown_viewer?branch=master'><img src='https://coveralls.io/repos/github/axiros/terminal_markdown_viewer/badge.svg?branch=master' alt='Coverage Status' /></a>
 
 
 [![Build Status](https://travis-ci.org/axiros/terminal_markdown_viewer.svg?branch=master)](https://travis-ci.org/axiros/terminal_markdown_viewer)
