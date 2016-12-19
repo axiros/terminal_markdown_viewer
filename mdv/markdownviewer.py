@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # coding: utf-8
-
 """_
 # Usage:
 
@@ -126,9 +125,9 @@ Setting both to all will probably spin your beach ball...
 """
 
 
+import sys
 import io
 import os
-import sys
 import textwrap
 is_app = 0
 # code analysis for hilite:
@@ -966,12 +965,33 @@ def do_code_hilite(md, what='all'):
             out.append('\n'.join(block))
     return '\n'.join(out)
 
+def_enc_set = False
+def fix_py2_default_encoding():
+    global def_enc_set
+    if not def_enc_set:
+        # Make Py2 > Py3:
+        import imp
+        imp.reload(sys)
+        sys.setdefaultencoding('utf-8')
+        # no? see http://stackoverflow.com/a/29832646/4583360 ...
+        def_enc_set = True
 
 def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
          c_no_guess=None, display_links=None, link_style=None,
          from_txt=None, do_html=None, code_hilite=None, c_def_lexer=None,
-         theme_info=None, no_colors=None, tab_length=4, **kw):
+         theme_info=None, no_colors=None, tab_length=4,
+         no_change_defenc=False, **kw):
     """ md is markdown string. alternatively we use filename and read """
+
+    if sys.version_info[0] == 2 and not no_change_defenc:
+        # if I don't do this here, then I'll get probs when being
+        # used as a lib:
+        # https://github.com/axiros/terminal_markdown_viewer/issues/39
+        # If you hate it then switch it off but don't blame me on unicode errs.
+        fix_py2_default_encoding()
+
+
+
     tab_length = tab_length or 4
     global def_lexer
     if c_def_lexer:
@@ -1313,13 +1333,7 @@ def run_args(args, md=None):
 def run():
     global is_app
     is_app = 1
-    if sys.version_info[0] == 2:
-        # Make Py2 > Py3:
-        import imp
-        imp.reload(sys)
-        sys.setdefaultencoding('utf-8')
-        # no? see http://stackoverflow.com/a/29832646/4583360 ...
-
+    fix_py2_default_encoding()
     doc = __doc__[1:]
     # our docstring markdown to docopt:
     d = doc.split('# Details', 1)[0]    \
