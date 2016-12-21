@@ -622,8 +622,7 @@ def replace_links(el, html):
         # bug in the markdown api? link el is not providing inlines!!
         # -> get them from the html:
         #cur += link.text or ''
-        cur += parts[0].split('>', 1)[1].rsplit('</', 1)[0] or ''
-
+        cur += parts[0].split('>', 1)[1].split('</a', 1)[0] or ''
         cur += link_end
         if show_links != 'h':
             if show_links == 'i':
@@ -652,9 +651,9 @@ class AnsiPrinter(Treeprocessor):
             Main recursion.
 
             debugging:
-            if el.tag == 'p':
+            if el.tag == 'xli':
                 import pdb; pdb.set_trace()
-                for c in el.getchildren()[0].getchildren(): print c.text, c
+                #for c in el.getchildren()[0].getchildren(): print c.text, c
             print '---------'
             print el, el.text
             print '---------'
