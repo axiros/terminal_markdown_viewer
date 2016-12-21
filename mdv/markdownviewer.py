@@ -595,32 +595,41 @@ def split_blocks(text_block, w, cols, part_fmter=None):
 
 
 # ---------------------------------------------------- Create the treeprocessor
-def replace_links(el, s):
+def replace_links(el, html):
     '''digging through inline "<a href=..."
     '''
-    parts = s.split('<a ')
+    parts = html.split('<a ')
     if len(parts) == 1:
-        return None, s
+        return None, html
     links_list, cur_link = [], 0
     links = [l for l in el.getchildren() if 'href' in l.keys()]
     if not len(parts) == len(links) + 1:
         # there is an html element within which we don't support,
         # e.g. blockquote
-        return None, s
+        return None, html
     cur = ''
     while parts:
         cur += parts.pop(0).rsplit('</a>')[-1]
         if not parts:
             break
+
+        # indicating link formatting start:
         cur += link_start
+
+        # the 'a' xml element:
         link = links[cur_link]
-        cur += link.text or ''
+
+        # bug in the markdown api? link el is not providing inlines!!
+        # -> get them from the html:
+        #cur += link.text or ''
+        cur += parts[0].split('>', 1)[1].rsplit('</', 1)[0] or ''
+
         cur += link_end
         if show_links != 'h':
             if show_links == 'i':
                 cur += low('(%s)' % link.get('href',''))
             else: # inline table (it)
-                # we build a link list:
+                # we build a link list, add the number like ① :
                 cur += '%s ' % unichr(link_start_ord + cur_link)
                 links_list.append(link.get('href', ''))
         cur_link += 1
@@ -643,8 +652,9 @@ class AnsiPrinter(Treeprocessor):
             Main recursion.
 
             debugging:
-            # if el.tag == 'div':
-            # for c in el.getchildren()[3].getchildren(): print c.text, c
+            if el.tag == 'p':
+                import pdb; pdb.set_trace()
+                for c in el.getchildren()[0].getchildren(): print c.text, c
             print '---------'
             print el, el.text
             print '---------'
@@ -675,7 +685,6 @@ class AnsiPrinter(Treeprocessor):
                el.tag == 'p' or                 \
                el.tag == 'li' or                \
                el.tag.startswith('h'):
-
                 el.text = el.text or ''
                 # <a attributes>foo... -> we want "foo....". Is it a sub
                 # tag or inline text?
@@ -687,7 +696,7 @@ class AnsiPrinter(Treeprocessor):
                     html = html.replace('<br />', '\n')
                     # strip our own closing tag:
                     t = html.rsplit('<', 1)[0]
-                    links_list, t = replace_links(el, t)
+                    links_list, t = replace_links(el, html=t)
                     for tg, start, end in (('<code>',   code_start, code_end),
                                            ('<strong>', stng_start, stng_end),
                                            ('<em>',     emph_start, emph_end)):
@@ -697,7 +706,6 @@ class AnsiPrinter(Treeprocessor):
                     t = html_parser.unescape(t)
                 else:
                     t = el.text
-
                 t = t.strip()
                 admon = ''
                 pref = body_pref = ''
