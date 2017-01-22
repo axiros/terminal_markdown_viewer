@@ -212,8 +212,9 @@ show_links = 'it'
 # columns(!) - may be set to smaller width:
 # could be exported by the shell, normally not in subprocesses:
 
-term_columns, term_rows = envget('COLUMNS'), envget('LINES')
-if not term_columns:
+# zsh does not allow to override COLUMNS ! Thats why we also respect $width:
+term_columns, term_rows = envget('COLUMNS', envget('width')), envget('LINES')
+if not term_columns and not '-c' in sys.argv:
     try:
         term_rows, term_columns = os.popen(
             'stty size 2>/dev/null', 'r').read().split()
@@ -221,11 +222,9 @@ if not term_columns:
     except:
         if '-' not in sys.argv:
             print('!! Could not derive your terminal width !!')
-if not term_columns:
-    term_columns = 80
-if not term_rows:
-    term_rows = 200
-term_columns, term_rows = int(term_columns), int(term_rows)
+term_columns, term_rows = int(term_columns or 80), int(term_rows or 200)
+
+
 # could be given, otherwise read from ansi_tables.json:
 themes = {}
 
