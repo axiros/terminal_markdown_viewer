@@ -34,7 +34,8 @@
 ### `-c COLS` / Columns
 
 We use stty tool to derive terminal size. If you pipe into mdv we use 80 cols.
-You can force the columns used via `-c`
+You can force the columns used via `-c`.  
+If you export `$width`, this has precedence over `$COLUMNS`.
 
 
 ### `-b TABL` / Tablength
@@ -213,7 +214,7 @@ show_links = 'it'
 # could be exported by the shell, normally not in subprocesses:
 
 # zsh does not allow to override COLUMNS ! Thats why we also respect $width:
-term_columns, term_rows = envget('COLUMNS', envget('width')), envget('LINES')
+term_columns, term_rows = envget('width', envget('COLUMNS')), envget('LINES')
 if not term_columns and not '-c' in sys.argv:
     try:
         term_rows, term_columns = os.popen(
