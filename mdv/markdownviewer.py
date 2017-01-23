@@ -1132,6 +1132,7 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
                 lang = ''
             print 'lang', lang
             print 'raw strip', raw.strip()
+            import pdb; pdb.set_trace()
             raw = tags.code(raw.strip(), from_fenced_block=1, lang=lang)
             print 'after raw', raw
         ansi = ansi.replace(PH % nr, raw)
