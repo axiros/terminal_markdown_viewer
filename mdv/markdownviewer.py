@@ -1095,8 +1095,10 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
         return the_html
 
     # who wants html, here is our result:
+    print 'the_html', the_html
     try:
         ansi = MD.ansi
+        print 'ansi', ansi
     except:
         if the_html:
             # can this happen? At least show:
@@ -1109,6 +1111,7 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
     # phs are numbered like this in the md, we replace back:
     PH = markdown.util.HTML_PLACEHOLDER
     stash = MD.htmlStash
+    print 'stash', stash
     nr = -1
     tags = Tags()
     for ph in stash.rawHtmlBlocks:
@@ -1117,15 +1120,20 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
         if raw[:3].lower() == '<br':
             raw = '\n'
         pre = '<pre><code'
+        print 'raw', raw
         if raw.startswith(pre):
             pre, raw = raw.split(pre, 1)
             raw = raw.split('>', 1)[1].rsplit('</code>', 1)[0]
+            print 'raw 2', raw
             if 'class="' in pre:
                 # language:
                 lang = pre.split('class="', 1)[1].split('"')[0]
             else:
                 lang = ''
+            print 'lang', lang
+            print 'raw strip', raw.strip()
             raw = tags.code(raw.strip(), from_fenced_block=1, lang=lang)
+            print 'after raw', raw
         ansi = ansi.replace(PH % nr, raw)
 
     # don't want these: gone through the extension now:
