@@ -1089,7 +1089,7 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
     if code_hilite:
         md = do_code_hilite(md, code_hilite)
     the_html = MD.convert(md)
-    print the_html
+    #print the_html
     # html?
     if do_html:
         return the_html

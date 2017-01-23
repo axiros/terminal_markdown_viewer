@@ -1,13 +1,3 @@
-<blockquote>
-<p>outer</p>
-<blockquote>
-<p>inner</p>
-</blockquote>
-<p>long lnog long outer <em>em</em> <a href="http://foo">link</a> end</p>
-<blockquote>
-<p>inner <em>em</em> <a href="http://foo">link</a> end</p>
-</blockquote>
-</blockquote>
 [38;5;209m|[0m[38;5;188m   outer[0m
 [38;5;209m|[0m[38;5;209m|[0m[38;5;188m  inner[0m
 [38;5;209m|[0m[38;5;188m   long lnog long
