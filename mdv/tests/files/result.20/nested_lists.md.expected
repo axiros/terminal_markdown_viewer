@@ -1,3 +1,31 @@
+<h1>Lists</h1>
+<ul>
+<li pref="">l1<ul>
+<li pref="">l2</li>
+<li pref="">l3<ul>
+<li pref="">l4</li>
+</ul>
+</li>
+<li pref="">l5</li>
+</ul>
+</li>
+<li pref="">l2</li>
+</ul>
+<blockquote>
+<p>with sep2</p>
+</blockquote>
+<ul>
+<li pref="">l1<ul>
+<li pref="">l2</li>
+<li pref="">l3<ul>
+<li pref="">l4</li>
+</ul>
+</li>
+<li pref="">l5</li>
+</ul>
+</li>
+<li pref="">l2</li>
+</ul>
 
 [38;5;59m[0m[38;5;209mLists[0m
 [38;5;188m    [38;5;209m- [0ml1

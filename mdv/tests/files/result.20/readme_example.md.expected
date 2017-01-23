@@ -1,3 +1,37 @@
+<h3>Source</h3>
+<h1>Header 1</h1>
+<h2>Header 2</h2>
+<h3>Header 3</h3>
+<h4>Header 4</h4>
+<h5>Header 5</h5>
+<h6>Header 6</h6>
+<pre><code class="python">&quot;&quot;&quot; Test &quot;&quot;&quot;
+# Make Py2 &gt;&gt;&gt; Py3:
+import os, sys; reload(sys); sys.setdefaultencoding('utf-8')
+# no? see http://stackoverflow.com/a/29832646/4583360 ...
+
+# code analysis for hilite:
+try:
+    from pygments import lex, token
+    from pygments.lexers import get_lexer_by_name, guess_lexer
+</code></pre>
+
+<table>
+<thead>
+<tr>
+<th>Tables</th>
+<th>Fmt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>!!! hint: wrapped</td>
+<td>0.1 <strong>strong</strong></td>
+</tr>
+</tbody>
+</table>
+<p>!!! note: title
+    this is a Note</p>
 
 [38;5;59m[0m[38;5;74m  Source[0m
 

@@ -1,3 +1,13 @@
+<p><a href="http://foo.bar">link</a>
+<a href="http://foo.bar">link</a> this also</p>
+<hr />
+<p>And <a href="http://foo.com">this</a> is also <a href="http://foo.bar">a</a> link</p>
+<ul>
+<li pref="">And <a href="http://foo.com">this</a> is also <a href="http://foo.bar">a</a> link</li>
+<li pref="">And <a href="http://foo.com">this</a> is also <a href="http://foo.bar">a</a> link</li>
+</ul>
+<hr />
+<p><a href="http://foo.bar">link <em>with</em> <strong>formatting</strong> and <code>code</code></a></p>
 [38;5;188m  [38;5;74m[4mlink[24m[38;5;188m①  [38;5;74m[4mlink[24m[38;5;188m②
   this also[0m
 [38;5;59m  [1] http://foo.bar[0m

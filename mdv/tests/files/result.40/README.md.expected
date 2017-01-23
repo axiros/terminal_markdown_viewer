@@ -1,3 +1,26 @@
+<h1>Test runner</h1>
+<p>Currently not much tested except a few simple use cases but its easy to add new
+tests by just adding a "mud" (markdown under test) file with extension ".md"
+and do <code>run build</code> to generate and visually inpect if the rendered result of all
+muds comply with how it should be / if code changes break existing tests.</p>
+<p>The travis verification is then simply based on diffs against the "<mud>.expected" files.</p>
+<p>This README is also a mud, you have to <code>run build</code> if you change it.</p>
+<h1>Columns</h1>
+<p>We verify correct output for certain terminal column available, resulting in
+files ending with e.g. '.80'</p>
+<h2><code>run build</code>: building the expected results files</h2>
+<ul>
+<li pref="">execute <code>run build</code> to generate mdv output for all ".md" files within this folder.</li>
+<li pref="">git diff to see any changes</li>
+<li pref="">commit if all is good</li>
+</ul>
+<h2><code>run test</code>: testing new mdv versions</h2>
+<ul>
+<li pref="">travis will execute <code>run test</code> to diff the current mdv output with the expected
+  results</li>
+</ul>
+<h2>Notes</h2>
+<p>Some day I'll make the line seps a bit smarter, e.g. min one line sep after lists</p>
 
 [38;5;59m[0m[38;5;209mTest runner[0m
 [38;5;188m  Currently not much tested except a few
