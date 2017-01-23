@@ -386,6 +386,7 @@ def style_ansi(raw_code, lang=None):
             pass
     if not lexer:
         lexer = get_lexer_by_name(def_lexer)
+    print lexer, def_lexer
     tokens = lex(raw_code, lexer)
     cod = []
     for t, v in tokens:
@@ -1132,7 +1133,6 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
                 lang = ''
             print 'lang', lang
             print 'raw strip', raw.strip()
-            import pdb; pdb.set_trace()
             raw = tags.code(raw.strip(), from_fenced_block=1, lang=lang)
             print 'after raw', raw
         ansi = ansi.replace(PH % nr, raw)
