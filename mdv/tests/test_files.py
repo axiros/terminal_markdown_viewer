@@ -22,6 +22,8 @@ class TestFiles(TestCase):
         for f in os.listdir(df):
             if not f.endswith('.md'):
                 continue
+            if not 'test_fenced' in f:
+                continue
             print ('testfile: ', f)
             with open(df + '/' + f) as fd:
                 src = fd.read()
