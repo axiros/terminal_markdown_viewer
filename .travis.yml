@@ -13,6 +13,8 @@ install:
 before_script:
   - "echo 'starting'"
   - "ls -la /home/travis/virtualenv/python2.7.12/lib/python2.7/site-packages"
+  - "ls -la /usr/lib/python2.7/dist-packages"
+  - "ls -la /usr/lib/python2.7/site-packages"
   - "echo $PYTHONPATH"
 
 script:
