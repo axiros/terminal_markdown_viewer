@@ -15,7 +15,7 @@ before_script:
 
 script:
     #sudo coverage run --include="mdv/markdownviewer.py"  setup.py test
-    python mdv/tests/test_files.py
+    export PYTHONPATH="`pwd`" && python mdv/tests/test_files.py
 
 after_success:
     coveralls
