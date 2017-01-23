@@ -29,7 +29,8 @@ class TestFiles(TestCase):
                 src = fd.read()
             for col in 40, 80, 200, 20:
                 print ('columns: ', col)
-                res = mdv.main(src, cols=col, theme=729.8953, c_theme=729.8953)
+                res = mdv.main(src, cols=col, theme=729.8953, c_theme=729.8953,
+                        c_def_lexer='python')
                 with open('%s/result.%s/%s.expected' % (df, col, f)) as fd:
                     tgt = fd.read()
                 print (res)
