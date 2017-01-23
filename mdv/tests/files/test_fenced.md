@@ -1,6 +1,3 @@
-fenced code
-
-```
-class C1(object):
-    pass
+```python
+class C1(object): pass
 ```
