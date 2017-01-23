@@ -514,7 +514,6 @@ def is_text_node(el):
 # ----------------------------------------------------- Text Termcols Adaptions
 def rewrap(el, t, ind, pref):
     """ Reasonably smart rewrapping checking punctuations """
-    global term_columns
     cols = max(term_columns - len(ind + pref), 5)
     if el.tag == 'code' or len(t) <= cols:
         return t
@@ -1025,8 +1024,12 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
                 with open(filename) as f:
                     md = f.read()
 
-    global term_columns
     # style rolers requested?
+    global term_columns
+    if cols:
+        term_columns = int(cols)
+
+
     if c_theme == 'all' or theme == 'all':
         if c_theme == 'all':
             os.environ['AXC_CODE_THEME'] = os.environ['MDV_CODE_THEME'] = ''
@@ -1046,9 +1049,6 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
                 args['c_theme'] = k
             print(main(**args))
         return ''
-
-    if cols:
-        term_columns = int(cols)
 
     global show_links
     if display_links:
@@ -1089,6 +1089,7 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
     if code_hilite:
         md = do_code_hilite(md, code_hilite)
     the_html = MD.convert(md)
+    print the_html
     # html?
     if do_html:
         return the_html
