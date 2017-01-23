@@ -15,12 +15,11 @@ before_script:
   - "ls -la /home/travis/virtualenv/python2.7.12/lib/python2.7/site-packages"
   - "ls -la /usr/lib/python2.7/dist-packages"
   - "ls -la /usr/local/lib/python2.7/dist-packages"
-  - "ls -la /usr/lib/python2.7/site-packages"
   - "echo $PYTHONPATH"
 
 script:
     #sudo coverage run --include="mdv/markdownviewer.py"  setup.py test
-    echo $PYTHONPATH && export PYTHONPATH="`pwd`:$PYTHONPATH" && python -c "import docopt, markdown, pygments, yaml" && python mdv/tests/test_files.py
+    echo $PYTHONPATH && export PYTHONPATH="`pwd`:$PYTHONPATH:usr/local/lib/python2.7/dist-packages" && python -c "import docopt, markdown, pygments, yaml" && python mdv/tests/test_files.py
 
 after_success:
     coveralls
