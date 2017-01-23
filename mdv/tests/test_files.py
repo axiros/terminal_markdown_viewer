@@ -25,13 +25,13 @@ class TestFiles(TestCase):
             print ('testfile: ', f)
             with open(df + '/' + f) as fd:
                 src = fd.read()
-            for col in 20, 40, 80, 200:
+            for col in 40, 80, 200, 20:
                 print ('columns: ', col)
-                rd = 'result.%s' % col
                 res = mdv.main(src, cols=col, theme=729.8953, c_theme=729.8953)
                 with open('%s/result.%s/%s.expected' % (df, col, f)) as fd:
                     tgt = fd.read()
                 print (res)
+                print ('res', res)
                 if not unicode(tgt).strip() == unicode(res).strip():
                     print ('error')
                     print ('got:\n', res)
