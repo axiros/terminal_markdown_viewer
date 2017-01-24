@@ -15,12 +15,12 @@ for col in 20 40 80 200; do
     for f in *.md; do
         if [ "x$1" = "xbuild" ]; then
             echo "building result for $f (col $col)"
-            $MDV $f > "$rd/$f.expected"
+            $MDV -x $f > "$rd/$f.expected"
             cat "$rd/$f.expected"
         elif [ "x$1" = "xtest" ]; then
             set -e
             echo "testing $f"
-            $MDV $f > $res
+            $MDV -x $f > $res
             # why not:
             cat $res
             diff $res "$rd/$f.expected" || { \

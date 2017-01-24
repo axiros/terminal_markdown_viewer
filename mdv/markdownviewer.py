@@ -1047,6 +1047,7 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
                 args['theme'] = k
             else:
                 args['c_theme'] = k
+            import pdb; pdb.set_trace()
             print(main(**args))
         return ''
 
