@@ -19,6 +19,8 @@ before_script:
 
 script:
     sudo coverage run --include="mdv/markdownviewer.py"  setup.py test
+    # those paths seem to be needed if you run tests directly, otherwise libs
+    # are not found. strange:
     #echo $PYTHONPATH && export PYTHONPATH="`pwd`:$PYTHONPATH:/usr/lib/python2.7/dist-packages:/usr/local/lib/python2.7/dist-packages" && python -c "import docopt, markdown, pygments, yaml" && python mdv/tests/test_files.py
 
 after_success:
