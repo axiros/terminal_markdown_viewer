@@ -371,10 +371,15 @@ def set_theme(theme=None, for_code=None, theme_info=None):
 
 def style_ansi(raw_code, lang=None):
     """ actual code hilite """
+    def lexer_alias(n):
+        # not found:
+        if n == 'markdown': return 'md'
+        return n
+
     lexer = 0
     if lang:
         try:
-            lexer = get_lexer_by_name(lang)
+            lexer = get_lexer_by_name(lexer_alias(lang))
         except ValueError:
             print(col(R, 'Lexer for %s not found' % lang))
 
@@ -388,7 +393,7 @@ def style_ansi(raw_code, lang=None):
     if not lexer:
         for l in def_lexer, 'yaml', 'python', 'c':
             try:
-                lexer = get_lexer_by_name(l)
+                lexer = get_lexer_by_name(lexer_alias(l))
                 break
             except:
                 # OUR def_lexer (python) was overridden,but not found.
@@ -1128,13 +1133,13 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
             raw = '\n'
         pre = '<pre><code'
         if raw.startswith(pre):
-            pre, raw = raw.split(pre, 1)
-            raw = raw.split('>', 1)[1].rsplit('</code>', 1)[0]
-            if 'class="' in pre:
+            _, raw = raw.split(pre, 1)
+            if 'class="' in raw:
                 # language:
-                lang = pre.split('class="', 1)[1].split('"')[0]
+                lang = raw.split('class="', 1)[1].split('"')[0]
             else:
                 lang = ''
+            raw = raw.split('>', 1)[1].rsplit('</code>', 1)[0]
             raw = tags.code(raw.strip(), from_fenced_block=1, lang=lang)
         ansi = ansi.replace(PH % nr, raw)
 
