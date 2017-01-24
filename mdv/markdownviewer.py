@@ -4,7 +4,7 @@
 # Usage:
 
     mdv [-h] [-t THEME] [-T C_THEME] [-i] [-x] [-X Lexer] [-l] [-L] [-u STYL] \
-      [-c COLS] [-f FROM] [-m] [-C MODE] [-M DIR] [-H] [-A] [-b TABL] [MDFILE]
+[-c COLS] [-f FROM] [-m] [-C MODE] [-M DIR] [-H] [-A] [-b TABL] [MDFILE]
 
 # Options:
 
@@ -381,11 +381,20 @@ def style_ansi(raw_code, lang=None):
     if not lexer:
         try:
             if guess_lexer:
+                # takes a long time!
                 lexer = pyg_guess_lexer(raw_code)
         except:
             pass
     if not lexer:
-        lexer = get_lexer_by_name(def_lexer)
+        for l in def_lexer, 'yaml', 'python', 'c':
+            try:
+                lexer = get_lexer_by_name(l)
+                break
+            except:
+                # OUR def_lexer (python) was overridden,but not found.
+                # still we should not fail. lets use yaml. or python:
+                continue
+
     tokens = lex(raw_code, lexer)
     cod = []
     for t, v in tokens:
@@ -1361,9 +1370,11 @@ def run():
     if '-h' in sys.argv or '--help' in sys.argv:
         args['-t'] = args.get('-t') or 909.0365
         args['-T'] = args.get('-T') or 579.6579
-        args['-x'] = args.get('-x') or 'yaml'
+        args['-x'] = True
+        args['-X'] = args.get('-X') or 'md' # md: from pygments 2.2
         args['-m'] = args['-M'] = None
-        print(run_args(args, md=doc))
+        d = '-----'.join((doc, doc.split('# Details', 1)[0]))
+        print(run_args(args, md=d))
         sys.exit(0)
 
     if args.get('-m'):
