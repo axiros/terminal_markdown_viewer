@@ -135,6 +135,7 @@ PY3 = True if sys.version_info[0] > 2 else False
 import io
 import os
 import textwrap
+import shutil
 is_app = 0
 # code analysis for hilite:
 try:
@@ -224,6 +225,23 @@ show_links = 'it'
 # columns(!) - may be set to smaller width:
 # could be exported by the shell, normally not in subprocesses:
 
+
+def get_terminal_size():
+    """get terminal size for python3.3 or greater, using shutil.
+
+    taken and modified from http://stackoverflow.com/a/14422538
+
+    Returns:
+        tuple: (column, rows) from terminal size, or (0, 0) if error.
+    """
+    error_terminal_size = (0, 0)
+    if hasattr(shutil, 'get_terminal_size'):
+        terminal_size = shutil.get_terminal_size(fallback=error_terminal_size)
+        return terminal_size.columns, terminal_size.lines
+    else:
+        return error_terminal_size
+
+
 # zsh does not allow to override COLUMNS ! Thats why we also respect $width:
 term_columns, term_rows = envget('width', envget('COLUMNS')), envget('LINES')
 if not term_columns and not '-c' in sys.argv:
@@ -232,7 +250,8 @@ if not term_columns and not '-c' in sys.argv:
             'stty size 2>/dev/null', 'r').read().split()
         term_columns, term_rows = int(term_columns), int(term_rows)
     except:
-        if '-' not in sys.argv:
+        term_columns, term_rows = get_terminal_size()
+        if '-' not in sys.argv and (term_columns, term_rows) == (0, 0):
             print('!! Could not derive your terminal width !!')
 term_columns, term_rows = int(term_columns or 80), int(term_rows or 200)
 
