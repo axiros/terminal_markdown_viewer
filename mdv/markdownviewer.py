@@ -654,7 +654,12 @@ def replace_links(el, html):
                 cur += low('(%s)' % link.get('href',''))
             else: # inline table (it)
                 # we build a link list, add the number like ① :
-                cur += '%s ' % unichr(link_start_ord + cur_link)
+                try:
+                    cur += '%s ' % unichr(link_start_ord + cur_link)
+                except NameError:
+                    # fix for py3
+                    # http://stackoverflow.com/a/2352047
+                    cur += '%s ' % chr(link_start_ord + cur_link)
                 links_list.append(link.get('href', ''))
         cur_link += 1
     return links_list, cur
