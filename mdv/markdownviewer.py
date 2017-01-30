@@ -1004,7 +1004,8 @@ def fix_py2_default_encoding():
         # Make Py2 > Py3:
         import imp
         imp.reload(sys)
-        sys.setdefaultencoding('utf-8')
+        if hasattr(sys, 'setdefaultencoding'):
+            sys.setdefaultencoding('utf-8')
         # no? see http://stackoverflow.com/a/29832646/4583360 ...
         def_enc_set = True
 
