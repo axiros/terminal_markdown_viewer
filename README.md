@@ -148,7 +148,7 @@ Summary: For production ready robust markdown viewing (e.g. for your customers) 
 (2.7 version of pip)
 If you get `no attribute HTML_PLACEHOLDER`: update your markdown package.
 
-[Here][https://trac.macports.org/ticket/53591] is a macport (thanks Aljaž).
+[Here](https://trac.macports.org/ticket/53591) is a macport (thanks Aljaž).
 
 #### Py2.7?!
 
