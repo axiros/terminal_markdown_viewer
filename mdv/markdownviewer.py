@@ -127,6 +127,9 @@ Setting both to all will probably spin your beach ball...
 
 
 import sys
+# grrr
+PY3 = True if sys.version_info[0] > 2 else False
+
 import io
 import os
 import textwrap
@@ -157,6 +160,12 @@ try:
 except ImportError as ex:
     from HTMLParser import HTMLParser
 envget = os.environ.get
+
+
+# adaptions:
+if PY3:
+    unichr = chr
+
 
 # ---------------------------------------------------------------------- Config
 hr_sep, txt_block_cut, code_pref, list_pref, bquote_pref, hr_ends = \
