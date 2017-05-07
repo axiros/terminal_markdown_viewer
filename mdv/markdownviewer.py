@@ -143,7 +143,7 @@ try:
     from pygments.lexers import get_lexer_by_name
     from pygments.lexers import guess_lexer as pyg_guess_lexer
     have_pygments = True
-except ImportError:
+except ImportError:  # pragma: no cover
     have_pygments = False
 
 import time
@@ -249,7 +249,7 @@ if not term_columns and not '-c' in sys.argv:
         term_rows, term_columns = os.popen(
             'stty size 2>/dev/null', 'r').read().split()
         term_columns, term_rows = int(term_columns), int(term_rows)
-    except:
+    except:  # pragma: no cover
         term_columns, term_rows = get_terminal_size()
         if '-' not in sys.argv and (term_columns, term_rows) == (0, 0):
             print('!! Could not derive your terminal width !!')
@@ -1443,7 +1443,7 @@ def run():
         else:
             print(run_args(args))
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     # the setup tools version calls directly run, this is for git checkouts:
     run()
 
