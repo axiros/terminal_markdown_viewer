@@ -414,11 +414,8 @@ def style_ansi(raw_code, lang=None):
     for t, v in tokens:
         if not v:
             continue
-        _col = code_hl_tokens.get(t)  # color
-        if _col:
-            cod.append(col(v, _col))
-        else:
-            cod.append(v)
+        _col = code_hl_tokens.get(t) or C  # color
+        cod.append(col(v, _col))
     return ''.join(cod)
 
 
