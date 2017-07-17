@@ -12,9 +12,6 @@ install:
 
 before_script:
   - "echo 'starting'"
-  - "ls -la /home/travis/virtualenv/python2.7.12/lib/python2.7/site-packages"
-  - "ls -la /usr/lib/python2.7/dist-packages"
-  - "ls -la /usr/local/lib/python2.7/dist-packages"
   - "echo $PYTHONPATH"
 
 script:
@@ -23,6 +20,10 @@ script:
     # are not found. strange:
     #echo $PYTHONPATH && export PYTHONPATH="`pwd`:$PYTHONPATH:/usr/lib/python2.7/dist-packages:/usr/local/lib/python2.7/dist-packages" && python -c "import docopt, markdown, pygments, yaml" && python mdv/tests/test_files.py
 
+    #- "ls -la /home/travis/virtualenv/python2.7.12/lib/python2.7/site-packages"
+    #- "ls -la /usr/lib/python2.7/dist-packages"
+    #- "ls -la /usr/local/lib/python2.7/dist-packages"
+    
 after_success:
     coveralls
 
