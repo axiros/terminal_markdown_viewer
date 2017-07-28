@@ -2,12 +2,13 @@
 
 [![Build Status][travis_img]][travis]
 
-[travis]: https://travis-ci.org/axiros/terminal_markdown_viewer
-[travis_img]: https://travis-ci.org/axiros/terminal_markdown_viewer.svg?branch=master
 
 <a href='https://coveralls.io/github/axiros/terminal_markdown_viewer?branch=master'>
 <img src='https://coveralls.io/repos/github/axiros/terminal_markdown_viewer/badge.svg?branch=master' alt='Coverage Status' /></a>
- [![PyPI version](https://badge.fury.io/py/mdv.svg)](https://badge.fury.io/py/mdv)
+
+[![PyPI version](https://badge.fury.io/py/mdv.svg)](https://badge.fury.io/py/mdv)
+
+
 
 When you edit multiple md files remotely, like in a larger
 [mkdocs](http://www.mkdocs.org/) project, context switches between editing
@@ -506,6 +507,7 @@ Also:
 ![](samples/links.png)
 
 
-### Lastly
 
-*sorry for the aggressive promotion of setdefaultencoding in the example shot, hope it does not hurt anybody's feelings;-) I'm only on posix and don't deal with last century encodings. Py2's text handling with it just rocks.*
+[travis]: https://travis-ci.org/axiros/terminal_markdown_viewer
+[travis_img]: https://travis-ci.org/axiros/terminal_markdown_viewer.svg?branch=master
+
