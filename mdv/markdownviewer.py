@@ -3,12 +3,10 @@
 """_
 # Usage:
 
-    mdv [-h] [-t THEME] [-T C_THEME] [-i] [-x] [-X Lexer] [-l] [-L] [-u STYL] \
-[-c COLS] [-f FROM] [-m] [-C MODE] [-M DIR] [-H] [-A] [-b TABL] [MDFILE]
+    mdv [options] [MDFILE]
 
 # Options:
 
-    MDFILE    : Path to markdown file
     -t THEME  : Key within the color ansi_table.json. 'random' accepted.
     -T C_THEME: Theme for code highlight. If not set: Using THEME.
     -l        : Light background (not yet supported)
@@ -27,39 +25,26 @@
     -H        : Print html version
     -h        : Show help
 
+
 # Details
 
-## Flags
+### **MDFILE**
 
-### `-c COLS` / Columns
+Filename to markdownfile or '-' for pipe mode (no termwidth auto dedection then)
+
+### **-c COLS**: Columns
 
 We use stty tool to derive terminal size. If you pipe into mdv we use 80 cols.
 You can force the columns used via `-c`.  
 If you export `$width`, this has precedence over `$COLUMNS`.
 
+### **-b TABL**: Tablength
 
-### `-b TABL` / Tablength
-
-Setting tab_length away from 4 violates
-[markdown](https://pythonhosted.org/Markdown/).
+Setting tab_length away from 4 violates [markdown](https://pythonhosted.org/Markdown/).
 But since many editors interpret such source we allow it via that flag.
 
 
-
-## Themes
-
-environ variables `$MDV_THEME` and `$MDV_CODE_THEME` are understood:
-
-    export MDV_THEME=729.8953; mdv foo.md
-
-
-## To use mdv.py as lib:
-
-Call the main function with markdown string at hand to get a
-formatted one back. Sorry then for no Py3 support, accepting PRs if they
-don't screw Py2.
-
-## FROM:
+### **-f FROM**: Partial Display
 
 FROM may contain max lines to display, seperated by colon.
 Example:
@@ -70,7 +55,37 @@ If the substring is not found we set it to the *first* character of the file -
 resulting in output from the top (if your terminal height can be derived
 correctly through the stty cmd).
 
-## Code Highlighting
+
+## Themes
+
+Environ variables `$MDV_THEME` and `$MDV_CODE_THEME` are understood:
+
+```bash
+export MDV_THEME='729.8953'; mdv foo.md
+```
+
+### Theme rollers:
+
+
+    mdv -T all:  All available code styles on the given file.
+    mdv -t all:  All available md styles on the given file.
+                 If file is not given we use a short sample file.
+
+So to see all code hilite variations with a given theme:
+
+Say `C_THEME=all` and fix `THEME`
+
+Setting both to all will probably spin your beach ball...
+
+
+## Inline Usage (mdv as lib)
+
+Call the main function with markdown string at hand to get a
+formatted one back. Sorry then for no Py3 support, accepting PRs if they
+don't screw Py2.
+
+
+## Source Code Highlighting
 
 Set -C <all|code|doc|mod> for source code highlighting of source code files.
 Mark inline markdown with a '_' following the docstring beginnings.
@@ -105,22 +120,9 @@ The command can contain placeholders:
                of the file
     _pretty_ # Will be replaced with the base64 encoded prettyfied output
 
-Like: mdv -M './mydocs:py,md::open "_fp_"'  which calls the open
-command with argument the path to the changed file.
+Like: `mdv -M './mydocs:py,md::open "_fp_"'` which calls the open command
+with argument the path to the changed file.
 
-
-## Theme rollers:
-
-
-    mdv -T all:  All available code styles on the given file.
-    mdv -t all:  All available md   styles on the given file.
-                If file is not given we use a short sample file.
-
-So to see all code hilite variations with a given theme:
-
-Say C_THEME = all and fix THEME
-
-Setting both to all will probably spin your beach ball...
 
 
 """
@@ -151,7 +153,7 @@ import markdown.util
 from markdown.util import etree
 from markdown.extensions.tables import TableExtension
 from random import randint
-from .tabulate import tabulate
+from tabulate import tabulate
 from json import loads
 from markdown.treeprocessors import Treeprocessor
 from markdown.extensions import Extension, fenced_code
@@ -399,6 +401,7 @@ def style_ansi(raw_code, lang=None):
                 lexer = pyg_guess_lexer(raw_code)
         except:
             pass
+
     if not lexer:
         for l in def_lexer, 'yaml', 'python', 'c':
             try:
@@ -494,6 +497,8 @@ class Tags:
     def code(_, s, from_fenced_block=None, **kw):
         """ md code AND ``` style fenced raw code ends here"""
         lang = kw.get('lang')
+        if not from_fenced_block:
+            s = ('\n' + s).replace('\n    ', '\n')[1:]
 
         # funny: ":-" confuses the tokenizer. replace/backreplace:
         raw_code = s.replace(':-', '\x01--')
@@ -512,6 +517,7 @@ class Tags:
         # we want an indent of one and low vis prefix. this does it:
         code_lines = ('\n' + s).splitlines()
         prefix = ('\n%s%s %s' % (ind, low(code_pref), col('', C, no_reset=1)))
+        code_lines.pop() if code_lines[-1] == u'\x1b[0m' else None
         code = prefix.join(code_lines)
         code = code.replace('\x01--', ':-')
         return code + '\n' + reset_col
@@ -1002,11 +1008,24 @@ def fix_py2_default_encoding():
         # no? see http://stackoverflow.com/a/29832646/4583360 ...
         def_enc_set = True
 
-def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
-         c_no_guess=None, display_links=None, link_style=None,
-         from_txt=None, do_html=None, code_hilite=None, c_def_lexer=None,
-         theme_info=None, no_colors=None, tab_length=4,
-         no_change_defenc=False, **kw):
+def main(  md               = None
+         , filename         = None
+         , cols             = None
+         , theme            = None
+         , c_theme          = None
+         , bg               = None
+         , c_no_guess       = None
+         , display_links    = None
+         , link_style       = None
+         , from_txt         = None
+         , do_html          = None
+         , code_hilite      = None
+         , c_def_lexer      = None
+         , theme_info       = None
+         , no_colors        = None
+         , tab_length       = 4
+         , no_change_defenc = False
+         , **kw):
     """ md is markdown string. alternatively we use filename and read """
 
     if sys.version_info[0] == 2 and not no_change_defenc:
@@ -1067,7 +1086,6 @@ def main(md=None, filename=None, cols=None, theme=None, c_theme=None, bg=None,
                 args['theme'] = k
             else:
                 args['c_theme'] = k
-            import pdb; pdb.set_trace()
             print(main(**args))
         return ''
 
@@ -1365,22 +1383,24 @@ def run():
     fix_py2_default_encoding()
     doc = __doc__[1:]
     # our docstring markdown to docopt:
-    d = doc.split('# Details', 1)[0]    \
-        .replace('\n\n', '\n')        \
-        .replace('\n# ', '\n\n')      \
-        .strip()
+    d = ( doc.split('# Details', 1)[0]
+         .replace('\n\n', '\n')
+         .replace('\n# ', '\n\n')
+         .strip() )
+
     try:
         args = docopt(d, help=None, version='mdv v0.1')
         args = merge(args, load_yaml_config())
-    except:
+    except Exception as ex:
         if not '-h' in sys.argv:
             print(col('Option parsing error', R))
         args = {'parse_error': 1}
         sys.argv.append('-h')
 
+
     if '-h' in sys.argv or '--help' in sys.argv:
-        args['-t'] = args.get('-t') or 909.0365
-        args['-T'] = args.get('-T') or 579.6579
+        args['-t'] = args.get('-t') or 671.1616
+        args['-T'] = args.get('-T') or 526.9416
         args['-x'] = True
         args['-X'] = args.get('-X') or 'md' # md: from pygments 2.2
         args['-m'] = args['-M'] = None
@@ -1401,3 +1421,4 @@ def run():
 if __name__ == '__main__':
     # the setup tools version calls directly run, this is for git checkouts:
     run()
+
