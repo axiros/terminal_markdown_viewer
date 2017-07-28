@@ -500,7 +500,9 @@ Also:
 ### Nov 2016:
 
 - travis
+
 - Inline link tables
+
 ![](samples/links.png)
 
 
