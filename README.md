@@ -1,8 +1,12 @@
 # Terminal Markdown Viewer
 
+[![Build Status][travis_img]][travis]
 
-[![Build Status](https://travis-ci.org/axiros/terminal_markdown_viewer.svg?branch=master)](https://travis-ci.org/axiros/terminal_markdown_viewer)
-<a href='https://coveralls.io/github/axiros/terminal_markdown_viewer?branch=master'><img src='https://coveralls.io/repos/github/axiros/terminal_markdown_viewer/badge.svg?branch=master' alt='Coverage Status' /></a>
+[travis]: https://travis-ci.org/axiros/terminal_markdown_viewer
+[travis_img]: https://travis-ci.org/axiros/terminal_markdown_viewer.svg?branch=master
+
+<a href='https://coveralls.io/github/axiros/terminal_markdown_viewer?branch=master'>
+<img src='https://coveralls.io/repos/github/axiros/terminal_markdown_viewer/badge.svg?branch=master' alt='Coverage Status' /></a>
  [![PyPI version](https://badge.fury.io/py/mdv.svg)](https://badge.fury.io/py/mdv)
 
 When you edit multiple md files remotely, like in a larger
@@ -43,7 +47,7 @@ a good option.
 
 
 
-Markdown is "simple" enough to be well displayed on modern (256 color) terminals (except images that is).
+If markdown is often "simple" enough to be somewhat readable on 256 color terminals (except images that is).
 
 <img src="./samples/1.png" width=500>
 
