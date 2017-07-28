@@ -1,11 +1,8 @@
 # Terminal Markdown Viewer
 
 [![Build Status][travis_img]][travis]
-
-
 <a href='https://coveralls.io/github/axiros/terminal_markdown_viewer?branch=master'>
 <img src='https://coveralls.io/repos/github/axiros/terminal_markdown_viewer/badge.svg?branch=master' alt='Coverage Status' /></a>
-
 [![PyPI version](https://badge.fury.io/py/mdv.svg)](https://badge.fury.io/py/mdv)
 
 
