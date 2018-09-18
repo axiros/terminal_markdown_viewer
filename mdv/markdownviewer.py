@@ -126,29 +126,21 @@ with argument the path to the changed file.
 
 
 """
+from __future__ import absolute_import, print_function, unicode_literals
 
 
 import sys
-# grrr
+
 PY3 = sys.version_info.major > 2
+
 
 import io
 import os
 import textwrap
 import shutil
-is_app = 0
-# code analysis for hilite:
-try:
-    from pygments import lex, token
-    from pygments.lexers import get_lexer_by_name
-    from pygments.lexers import guess_lexer as pyg_guess_lexer
-    have_pygments = True
-except ImportError:  # pragma: no cover
-    have_pygments = False
-
 import time
 import markdown
-import re
+import re, imp
 from docopt import docopt
 import markdown.util
 from markdown.util import etree
@@ -158,69 +150,122 @@ from tabulate import tabulate
 from json import loads
 from markdown.treeprocessors import Treeprocessor
 from markdown.extensions import Extension, fenced_code
+from functools import partial
+
+# code analysis for hilite:
 try:
-    from html.parser import HTMLParser
-except ImportError as ex:
-    from HTMLParser import HTMLParser
-envget = os.environ.get
+    from pygments import lex, token
+    from pygments.lexers import get_lexer_by_name
+    from pygments.lexers import guess_lexer as pyg_guess_lexer
+
+    have_pygments = True
+except ImportError:  # pragma: no cover
+    have_pygments = False
 
 
-# adaptions:
 if PY3:
     unichr = chr
+    from html.parser import HTMLParser
+else:
+    from HTMLParser import HTMLParser
+
+    def breakpoint():
+        import pdb
+
+        pdb.set_trace()
+
+
+errout = partial(print, file=sys.stderr)
+envget = os.environ.get
+is_app = 0
+
+def_enc_set = False
+
+
+def fix_py2_default_encoding():
+    """ can be switched off when used as library"""
+    if PY3:
+        return
+    global def_enc_set
+    if not def_enc_set:
+        # Make Py2 > Py3:
+        imp.reload(sys)
+        sys.setdefaultencoding("utf-8")
+        # no? see http://stackoverflow.com/a/29832646/4583360 ...
+        def_enc_set = True
 
 
 # ---------------------------------------------------------------------- Config
-hr_sep, txt_block_cut, code_pref, list_pref, bquote_pref, hr_ends = \
-    '─', '✂', '| ', '- ', '|', '◈'
+hr_sep, txt_block_cut, code_pref, list_pref, bquote_pref, hr_ends = (
+    "─",
+    "✂",
+    "| ",
+    "- ",
+    "|",
+    "◈",
+)
 # ansi cols (default):
 # R: Red (warnings), L: low visi, BG: background, BGL: background light, C=code
 # H1 - H5 = the theme, the numbers are the ansi color codes:
-H1, H2, H3, H4, H5, R, L, BG, BGL, T, TL, C = \
-    231, 153, 117, 109, 65, 124, 59, 16, 188, 188, 59, 102
+H1, H2, H3, H4, H5, R, L, BG, BGL, T, TL, C = (
+    231,
+    153,
+    117,
+    109,
+    65,
+    124,
+    59,
+    16,
+    188,
+    188,
+    59,
+    102,
+)
 # Code (C is fallback if we have no lexer). Default: Same theme:
 CH1, CH2, CH3, CH4, CH5 = H1, H2, H3, H4, H5
 
-code_hl = {"Keyword":   'CH3',
-           "Name":      'CH1',
-           "Comment":   'L',
-           "String":    'CH4',
-           "Error":     'R',
-           "Number":    'CH4',
-           "Operator":  'CH5',
-           "Generic":   'CH2'
-           }
+code_hl = {
+    "Keyword": "CH3",
+    "Name": "CH1",
+    "Comment": "L",
+    "String": "CH4",
+    "Error": "R",
+    "Number": "CH4",
+    "Operator": "CH5",
+    "Generic": "CH2",
+}
 
-admons = {'note':       'H3',
-          'warning':    'R',
-          'attention':  'H1',
-          'hint':       'H4',
-          'summary':    'H1',
-          'hint':       'H4',
-          'question':   'H5',
-          'danger':     'R',
-          'dev':        'H5',
-          'hint':       'H4',
-          'caution':    'H2'
-          }
+admons = {
+    "note": "H3",
+    "warning": "R",
+    "attention": "H1",
+    "hint": "H4",
+    "summary": "H1",
+    "hint": "H4",
+    "question": "H5",
+    "danger": "R",
+    "dev": "H5",
+    "hint": "H4",
+    "caution": "H2",
+}
 
 
-link_start = u'①'
+link_start = "①"
 link_start_ord = ord(link_start)
 
-def_lexer = 'python'
+def_lexer = "python"
 guess_lexer = True
 # also global. but not in use, BG handling can get pretty involved, to do with
 # taste, since we don't know the term backg....:
 background = BG
 
 # hirarchical indentation by:
-left_indent = '  '
+left_indent = "  "
 # normal text color:
 color = T
 
 # it: inline table, h: hide, i: inline
-show_links = 'it'
+show_links = "it"
 
 # columns(!) - may be set to smaller width:
 # could be exported by the shell, normally not in subprocesses:
@@ -235,7 +280,7 @@ def get_terminal_size():
         tuple: (column, rows) from terminal size, or (0, 0) if error.
     """
     error_terminal_size = (0, 0)
-    if hasattr(shutil, 'get_terminal_size'):
+    if hasattr(shutil, "get_terminal_size"):
         terminal_size = shutil.get_terminal_size(fallback=error_terminal_size)
         return terminal_size.columns, terminal_size.lines
     else:
@@ -243,16 +288,17 @@ def get_terminal_size():
 
 
 # zsh does not allow to override COLUMNS ! Thats why we also respect $width:
-term_columns, term_rows = envget('width', envget('COLUMNS')), envget('LINES')
-if not term_columns and not '-c' in sys.argv:
+term_columns, term_rows = envget("width", envget("COLUMNS")), envget("LINES")
+if not term_columns and not "-c" in sys.argv:
     try:
-        term_rows, term_columns = os.popen(
-            'stty size 2>/dev/null', 'r').read().split()
+        term_rows, term_columns = (
+            os.popen("stty size 2>/dev/null", "r").read().split()
+        )
         term_columns, term_rows = int(term_columns), int(term_rows)
     except:  # pragma: no cover
         term_columns, term_rows = get_terminal_size()
-        if '-' not in sys.argv and (term_columns, term_rows) == (0, 0):
-            print('!! Could not derive your terminal width !!')
+        if "-" not in sys.argv and (term_columns, term_rows) == (0, 0):
+            print("!! Could not derive your terminal width !!")
 term_columns, term_rows = int(term_columns or 80), int(term_rows or 200)
 
 
@@ -261,34 +307,35 @@ themes = {}
 
 
 # sample for the theme roller feature:
-md_sample = ''
+md_sample = ""
 
 # dir monitor recursion max:
 mon_max_files = 1000
 # ------------------------------------------------------------------ End Config
 
 import logging
-md_logger = logging.getLogger('MARKDOWN')
+
+md_logger = logging.getLogger("MARKDOWN")
 md_logger.setLevel(logging.WARNING)
 
 
 # below here you have to *know* what u r doing... (since I didn't too much)
 
-dir_mon_filepath_ph    = '_fp_'
-dir_mon_content_raw    = '_raw_'
-dir_mon_content_pretty = '_pretty_'
+dir_mon_filepath_ph = "_fp_"
+dir_mon_content_raw = "_raw_"
+dir_mon_content_pretty = "_pretty_"
 
 
 def read_themes():
     if not themes:
-        with open(j(mydir, 'ansi_tables.json')) as f:
+        with open(j(mydir, "ansi_tables.json")) as f:
             themes.update(loads(f.read()))
     return themes
 
 
 # can unescape:
 html_parser = HTMLParser()
-you_like = 'You like this theme?'
+you_like = "You like this theme?"
 
 
 def make_sample():
@@ -298,19 +345,24 @@ def make_sample():
         return md_sample
     _md = []
     for hl in range(1, 7):
-        _md.append('#' * hl + ' ' + 'Header %s' % hl)
-    this = open(__file__).read().split('"""', 3)[2].splitlines()[:10]
-    _md.append('```\n""" Test """\n%s\n```' % '\n'.join(this).strip())
-    _md.append("""
+        _md.append("#" * hl + " " + "Header %s" % hl)
+    sample_code = """class Foo:
+    bar = 'baz'
+    """
+    _md.append('```python\n""" Doc String """\n%s\n```' % sample_code)
+    _md.append(
+        """
 | Tables        | Fmt |
 | -- | -- |
 | !!! hint: wrapped | 0.1 **strong** |
-    """)
+    """
+    )
     for ad in list(admons.keys())[:1]:
-        _md.append('!!! %s: title\n    this is a %s\n' % (ad, ad.capitalize()))
+        _md.append("!!! %s: title\n    this is a %s\n" % (ad, ad.capitalize()))
     # 'this theme' replaced in the roller (but not at mdv w/o args):
-    globals()['md_sample'] = \
-        '\n'.join(_md) + '\n----\n!!! question: %s' % you_like
+    globals()["md_sample"] = (
+        "\n".join(_md) + "\n----\n!!! question: %s" % you_like
+    )
 
 
 code_hl_tokens = {}
@@ -326,22 +378,24 @@ def build_hl_by_token():
 
 def clean_ansi(s):
     # if someone does not want the color foo:
-    ansi_escape = re.compile(r'\x1b[^m]*m')
-    return ansi_escape.sub('', s)
+    ansi_escape = re.compile(r"\x1b[^m]*m")
+    return ansi_escape.sub("", s)
+
 
 # markers: tab is 09, omit that
-code_start, code_end = '\x07', '\x08'
-stng_start, stng_end = '\x16', '\x10'
-link_start, link_end = '\x17', '\x18'
-emph_start, emph_end = '\x11', '\x12'
-punctuationmark      = '\x13'
-fenced_codemark      = '\x14'
-hr_marker            = '\x15'
-no_split             = '\x19'
+code_start, code_end = "\x07", "\x08"
+stng_start, stng_end = "\x16", "\x10"
+link_start, link_end = "\x17", "\x18"
+emph_start, emph_end = "\x11", "\x12"
+punctuationmark = "\x13"
+fenced_codemark = "\x14"
+hr_marker = "\x15"
+no_split = "\x19"
 
 
 def j(p, f):
     return os.path.join(p, f)
+
 
 mydir = os.path.realpath(__file__).rsplit(os.path.sep, 1)[0]
 
@@ -351,41 +405,49 @@ def set_theme(theme=None, for_code=None, theme_info=None):
     # for md the default is None and should return the 'random' theme
     # for code the default is 'default' and should return the default theme.
     # historical reasons...
-    dec = {False: {'dflt': None, 'on_dflt': 'random',
-                   'env': ('MDV_THEME', 'AXC_THEME')},
-           True: {'dflt': 'default', 'on_dflt': None,
-                  'env': ('MDV_CODE_THEME', 'AXC_CODE_THEME')}}
+    dec = {
+        False: {
+            "dflt": None,
+            "on_dflt": "random",
+            "env": ("MDV_THEME", "AXC_THEME"),
+        },
+        True: {
+            "dflt": "default",
+            "on_dflt": None,
+            "env": ("MDV_CODE_THEME", "AXC_CODE_THEME"),
+        },
+    }
     dec = dec[bool(for_code)]
     try:
-        if theme == dec['dflt']:
-            for k in dec['env']:
+        if theme == dec["dflt"]:
+            for k in dec["env"]:
                 ek = envget(k)
                 if ek:
                     theme = ek
                     break
-        if theme == dec['dflt']:
-            theme = dec['on_dflt']
+        if theme == dec["dflt"]:
+            theme = dec["on_dflt"]
         if not theme:
             return
 
         theme = str(theme)
         # all the themes from here:
         themes = read_themes()
-        if theme == 'random':
+        if theme == "random":
             rand = randint(0, len(themes) - 1)
             theme = list(themes.keys())[rand]
         t = themes.get(theme)
-        if not t or len(t.get('ct')) != 5:
+        if not t or len(t.get("ct")) != 5:
             # leave defaults:
             return
-        _for = ''
+        _for = ""
         if for_code:
-            _for = ' (code)'
+            _for = " (code)"
 
         if theme_info:
-            print(low('theme%s: %s (%s)' % (_for, theme, t.get('name'))))
+            print(low("theme%s: %s (%s)" % (_for, theme, t.get("name"))))
 
-        t = t['ct']
+        t = t["ct"]
         cols = (t[0], t[1], t[2], t[3], t[4])
         if for_code:
             global CH1, CH2, CH3, CH4, CH5
@@ -401,9 +463,11 @@ def set_theme(theme=None, for_code=None, theme_info=None):
 
 def style_ansi(raw_code, lang=None):
     """ actual code hilite """
+
     def lexer_alias(n):
         # not found:
-        if n == 'markdown': return 'md'
+        if n == "markdown":
+            return "md"
         return n
 
     lexer = 0
@@ -411,7 +475,7 @@ def style_ansi(raw_code, lang=None):
         try:
             lexer = get_lexer_by_name(lexer_alias(lang))
         except ValueError:
-            print(col(R, 'Lexer for %s not found' % lang))
+            print(col(R, "Lexer for %s not found" % lang))
 
     if not lexer:
         try:
@@ -422,7 +486,7 @@ def style_ansi(raw_code, lang=None):
             pass
 
     if not lexer:
-        for l in def_lexer, 'yaml', 'python', 'c':
+        for l in def_lexer, "yaml", "python", "c":
             try:
                 lexer = get_lexer_by_name(lexer_alias(l))
                 break
@@ -438,12 +502,12 @@ def style_ansi(raw_code, lang=None):
             continue
         _col = code_hl_tokens.get(t) or C  # color
         cod.append(col(v, _col))
-    return ''.join(cod)
+    return "".join(cod)
 
 
 def col_bg(c):
     """ colorize background """
-    return '\033[48;5;%sm' % c
+    return "\033[48;5;%sm" % c
 
 
 def col(s, c, bg=0, no_reset=0):
@@ -452,25 +516,30 @@ def col(s, c, bg=0, no_reset=0):
     c = color, s the value to colorize """
     reset = reset_col
     if no_reset:
-        reset = ''
-    for _strt, _end, _col in ((code_start, code_end, H2),
-                              (stng_start, stng_end, H2),
-                              (link_start, link_end, H2),
-                              (emph_start, emph_end, H3)):
+        reset = ""
+    for _strt, _end, _col in (
+        (code_start, code_end, H2),
+        (stng_start, stng_end, H2),
+        (link_start, link_end, H2),
+        (emph_start, emph_end, H3),
+    ):
         if _strt in s:
-            uon, uoff = '', ''
+            uon, uoff = "", ""
             if _strt == link_start:
-                uon, uoff = '\033[4m', '\033[24m'
-            s = s.replace(_strt, col('', _col, bg=background, no_reset=1) + uon)
-            s = s.replace(_end,  uoff + col('', c, no_reset=1))
+                uon, uoff = "\033[4m", "\033[24m"
+            s = s.replace(
+                _strt, col("", _col, bg=background, no_reset=1) + uon
+            )
+            s = s.replace(_end, uoff + col("", c, no_reset=1))
 
-    s = '\033[38;5;%sm%s%s' % (c, s, reset)
+    s = "\033[38;5;%sm%s%s" % (c, s, reset)
     if bg:
         pass
         # s = col_bg(bg) + s
     return s
 
-reset_col = '\033[0m'
+
+reset_col = "\033[0m"
 
 
 def low(s):
@@ -484,7 +553,7 @@ def plain(s, **kw):
 
 
 def sh(out):
-    ''' debug tool'''
+    """ debug tool"""
     for l in out:
         print(l)
 
@@ -492,65 +561,92 @@ def sh(out):
 # --------------------------------------------------------- Tag formatter funcs
 class Tags:
     """ can be overwritten in derivations. """
+
     # @staticmethod everywhere is eye cancer, so we instantiate it later
     def h(_, s, level):
-        return '\n%s%s' % (low('#' * 0), col(s, globals()['H%s' % level]))
-    def h1(_, s, **kw): return _.h(s, 1)
-    def h2(_, s, **kw): return _.h(s, 2)
-    def h3(_, s, **kw): return _.h(s, 3)
-    def h4(_, s, **kw): return _.h(s, 4)
-    def h5(_, s, **kw): return _.h(s, 5)
-    def h6(_, s, **kw): return _.h(s, 5)  # have not more then 5
-    def h7(_, s, **kw): return _.h(s, 5)  # cols in the themes, low them all
-    def h8(_, s, **kw): return _.h(s, 5)
+        return "\n%s%s" % (low("#" * 0), col(s, globals()["H%s" % level]))
 
-    def p (_, s, **kw): return col(s, T)
-    def a (_, s, **kw): return col(s, L)
+    def h1(_, s, **kw):
+        return _.h(s, 1)
+
+    def h2(_, s, **kw):
+        return _.h(s, 2)
+
+    def h3(_, s, **kw):
+        return _.h(s, 3)
+
+    def h4(_, s, **kw):
+        return _.h(s, 4)
+
+    def h5(_, s, **kw):
+        return _.h(s, 5)
+
+    def h6(_, s, **kw):
+        return _.h(s, 5)  # have not more then 5
+
+    def h7(_, s, **kw):
+        return _.h(s, 5)  # cols in the themes, low them all
+
+    def h8(_, s, **kw):
+        return _.h(s, 5)
+
+    def p(_, s, **kw):
+        return col(s, T)
+
+    def a(_, s, **kw):
+        return col(s, L)
+
     def hr(_, s, **kw):
         # we want nice line seps:
-        hir = kw.get('hir', 1)
+        hir = kw.get("hir", 1)
         ind = (hir - 1) * left_indent
-        s = e = col(hr_ends, globals()['H%s' % hir])
-        return low('\n%s%s%s%s%s\n' % (ind, s, hr_marker, e, ind))
+        s = e = col(hr_ends, globals()["H%s" % hir])
+        return low("\n%s%s%s%s%s\n" % (ind, s, hr_marker, e, ind))
 
     def code(_, s, from_fenced_block=None, **kw):
         """ md code AND ``` style fenced raw code ends here"""
-        lang = kw.get('lang')
+        lang = kw.get("lang")
         if not from_fenced_block:
-            s = ('\n' + s).replace('\n    ', '\n')[1:]
+            s = ("\n" + s).replace("\n    ", "\n")[1:]
 
         # funny: ":-" confuses the tokenizer. replace/backreplace:
-        raw_code = s.replace(':-', '\x01--')
+        raw_code = s.replace(":-", "\x01--")
         if have_pygments:
             s = style_ansi(raw_code, lang=lang)
 
         # outest hir is 2, use it for fenced:
-        ind = ' ' * kw.get('hir', 2)
+        ind = " " * kw.get("hir", 2)
         # if from_fenced_block: ... WE treat equal.
 
         # shift to the far left, no matter the indent (screenspace matters):
-        firstl = s.split('\n')[0]
-        del_spaces = ' ' * (len(firstl) - len(firstl.lstrip()))
-        s = ('\n' + s).replace('\n%s' % del_spaces, '\n')[1:]
+        firstl = s.split("\n")[0]
+        del_spaces = " " * (len(firstl) - len(firstl.lstrip()))
+        s = ("\n" + s).replace("\n%s" % del_spaces, "\n")[1:]
 
         # we want an indent of one and low vis prefix. this does it:
-        code_lines = ('\n' + s).splitlines()
-        prefix = ('\n%s%s %s' % (ind, low(code_pref), col('', C, no_reset=1)))
-        code_lines.pop() if code_lines[-1] == u'\x1b[0m' else None
+        code_lines = ("\n" + s).splitlines()
+        prefix = "\n%s%s %s" % (ind, low(code_pref), col("", C, no_reset=1))
+        code_lines.pop() if code_lines[-1] == "\x1b[0m" else None
         code = prefix.join(code_lines)
-        code = code.replace('\x01--', ':-')
-        return code + '\n' + reset_col
+        code = code.replace("\x01--", ":-")
+        return code + "\n" + reset_col
+
+
+if PY3:
+    elstr = lambda el: etree.tostring(el).decode("utf-8")
+else:
+    elstr = lambda el: etree.tostring(el)
 
 
 def is_text_node(el):
     """ """
-    s = str(etree.tostring(el))
+    s = elstr(el)
     # strip our tag:
-    html = s.split('<%s' % el.tag, 1)[1].split('>', 1)[1].rsplit('>', 1)[0]
+    html = s.split("<%s" % el.tag, 1)[1].split(">", 1)[1].rsplit(">", 1)[0]
     # do we start with another tagged child which is NOT in inlines:?
-    if not html.startswith('<'):
+    if not html.startswith("<"):
         return 1, html
-    for inline in ('<a', '<em>', '<code>', '<strong>'):
+    for inline in ("<a", "<em>", "<code>", "<strong>"):
         if html.startswith(inline):
             return 1, html
     return 0, 0
@@ -560,12 +656,12 @@ def is_text_node(el):
 def rewrap(el, t, ind, pref):
     """ Reasonably smart rewrapping checking punctuations """
     cols = max(term_columns - len(ind + pref), 5)
-    if el.tag == 'code' or len(t) <= cols:
+    if el.tag == "code" or len(t) <= cols:
         return t
 
     # this is a code replacement marker of markdown.py. Don't split the
     # replacement marker:
-    if t.startswith('\x02') and t.endswith('\x03'):
+    if t.startswith("\x02") and t.endswith("\x03"):
         return t
 
     dedented = textwrap.dedent(t).strip()
@@ -579,10 +675,10 @@ def rewrap(el, t, ind, pref):
     # we want to keep existing linebreaks after punctuation
     # marks. the others we rewrap:
 
-    #puncs = ',', '.', '?', '!', '-', ':'
-    #parts = []
-    #origp = t.splitlines()
-    #if len(origp) > 1:
+    # puncs = ',', '.', '?', '!', '-', ':'
+    # parts = []
+    # origp = t.splitlines()
+    # if len(origp) > 1:
     #    pos = -1
     #    while pos < len(origp) - 1:
     #        pos += 1
@@ -597,14 +693,14 @@ def rewrap(el, t, ind, pref):
     #    t = '\n'.join(parts)
     ## having only the linebreaks with puncs before we rewrap
     ## now:
-    #parts = []
-    #for part in t.splitlines():
+    # parts = []
+    # for part in t.splitlines():
     #    parts.extend([part[i:i+cols] for i in range(0, len(part), cols)])
     ## last remove leading ' ' (if '\n' came just before):
-    #t = []
-    #for p in parts:
+    # t = []
+    # for p in parts:
     #    t.append(p.strip())
-    #return '\n'.join(t)
+    # return '\n'.join(t)
 
 
 def split_blocks(text_block, w, cols, part_fmter=None):
@@ -613,16 +709,19 @@ def split_blocks(text_block, w, cols, part_fmter=None):
     for line in text_block.splitlines():
         parts = []
         # make equal len:
-        line = line.ljust(w, ' ')
+        line = line.ljust(w, " ")
         # first part full width, others a bit indented:
         parts.append(line[:cols])
         scols = cols - 2
         # the txt_block_cut in low makes the whole secondary tables
         # low. which i find a feature:
         # if you don't want it remove the col(.., L)
-        parts.extend([' ' + col(txt_block_cut, L, no_reset=1) +
-                      line[i:i + scols]
-                      for i in range(cols, len(line), scols)])
+        parts.extend(
+            [
+                " " + col(txt_block_cut, L, no_reset=1) + line[i : i + scols]
+                for i in range(cols, len(line), scols)
+            ]
+        )
         ts.append(parts)
 
     blocks = []
@@ -633,27 +732,27 @@ def split_blocks(text_block, w, cols, part_fmter=None):
         if part_fmter:
             part_fmter(tpart)
         tpart[1] = col(tpart[1], H3)
-        blocks.append('\n'.join(tpart))
-    t = '\n'.join(blocks)
-    return('\n%s\n' % t)
+        blocks.append("\n".join(tpart))
+    t = "\n".join(blocks)
+    return "\n%s\n" % t
 
 
 # ---------------------------------------------------- Create the treeprocessor
 def replace_links(el, html):
-    '''digging through inline "<a href=..."
-    '''
-    parts = html.split('<a ')
+    """digging through inline "<a href=..."
+    """
+    parts = html.split("<a ")
     if len(parts) == 1:
         return None, html
     links_list, cur_link = [], 0
-    links = [l for l in el.getchildren() if 'href' in l.keys()]
+    links = [l for l in el.getchildren() if "href" in l.keys()]
     if not len(parts) == len(links) + 1:
         # there is an html element within which we don't support,
         # e.g. blockquote
         return None, html
-    cur = ''
+    cur = ""
     while parts:
-        cur += parts.pop(0).rsplit('</a>')[-1]
+        cur += parts.pop(0).rsplit("</a>")[-1]
         if not parts:
             break
 
@@ -665,26 +764,27 @@ def replace_links(el, html):
 
         # bug in the markdown api? link el is not providing inlines!!
         # -> get them from the html:
-        #cur += link.text or ''
-        cur += parts[0].split('>', 1)[1].split('</a', 1)[0] or ''
+        # cur += link.text or ''
+        cur += parts[0].split(">", 1)[1].split("</a", 1)[0] or ""
         cur += link_end
-        if show_links != 'h':
-            if show_links == 'i':
-                cur += low('(%s)' % link.get('href',''))
-            else: # inline table (it)
+        if show_links != "h":
+            if show_links == "i":
+                cur += low("(%s)" % link.get("href", ""))
+            else:  # inline table (it)
                 # we build a link list, add the number like ① :
                 try:
-                    cur += '%s ' % unichr(link_start_ord + cur_link)
+                    cur += "%s " % unichr(link_start_ord + cur_link)
                 except NameError:
                     # fix for py3
                     # http://stackoverflow.com/a/2352047
-                    cur += '%s ' % chr(link_start_ord + cur_link)
-                links_list.append(link.get('href', ''))
+                    cur += "%s " % chr(link_start_ord + cur_link)
+                links_list.append(link.get("href", ""))
         cur_link += 1
     return links_list, cur
 
+
 class AnsiPrinter(Treeprocessor):
-    header_tags = ('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8')
+    header_tags = ("h1", "h2", "h3", "h4", "h5", "h6", "h7", "h8")
 
     def run(self, doc):
         tags = Tags()
@@ -693,9 +793,9 @@ class AnsiPrinter(Treeprocessor):
             for c in list(el.items()):
                 if c[0] == attr:
                     return c[1]
-            return ''
+            return ""
 
-        def formatter(el, out, hir=0, pref='', parent=None):
+        def formatter(el, out, hir=0, pref="", parent=None):
             """
             Main recursion.
 
@@ -707,33 +807,35 @@ class AnsiPrinter(Treeprocessor):
             print el, el.text
             print '---------'
             """
-            if el.tag == 'br':
-                out.append('\n')
+            if el.tag == "br":
+                out.append("\n")
                 return
-            #for c in el.getchildren(): print c.text, c
+            # for c in el.getchildren(): print c.text, c
             links_list, is_txt_and_inline_markup = None, 0
-            if el.tag == 'blockquote':
+            j
+            if el.tag == "blockquote":
                 for el1 in el.getchildren():
                     iout = []
-                    formatter(el1, iout, hir+2, parent=el)
+                    formatter(el1, iout, hir + 2, parent=el)
                     pr = col(bquote_pref, H1)
-                    sp = ' ' * (hir + 2)
+                    sp = " " * (hir + 2)
                     for l in iout:
                         for l1 in l.splitlines():
                             if sp in l1:
-                                l1 = ''.join(l1.split(sp, 1))
+                                l1 = "".join(l1.split(sp, 1))
                             out.append(pr + l1)
                 return
 
+            if el.tag == "hr":
+                return out.append(tags.hr("", hir=hir))
 
-            if el.tag == 'hr':
-                return out.append(tags.hr('', hir=hir))
-
-            if el.text or                       \
-               el.tag == 'p' or                 \
-               el.tag == 'li' or                \
-               el.tag.startswith('h'):
-                el.text = el.text or ''
+            if (
+                el.text
+                or el.tag == "p"
+                or el.tag == "li"
+                or el.tag.startswith("h")
+            ):
+                el.text = el.text or ""
                 # <a attributes>foo... -> we want "foo....". Is it a sub
                 # tag or inline text?
                 is_txt_and_inline_markup, html = is_text_node(el)
@@ -741,23 +843,25 @@ class AnsiPrinter(Treeprocessor):
                 if is_txt_and_inline_markup:
                     # foo:  \nbar -> will be seing a foo:<br>bar with
                     # mardkown.py. Code blocks are already quoted -> no prob.
-                    html = html.replace('<br />', '\n')
+                    html = html.replace("<br />", "\n")
                     # strip our own closing tag:
-                    t = html.rsplit('<', 1)[0]
+                    t = html.rsplit("<", 1)[0]
                     links_list, t = replace_links(el, html=t)
-                    for tg, start, end in (('<code>',   code_start, code_end),
-                                           ('<strong>', stng_start, stng_end),
-                                           ('<em>',     emph_start, emph_end)):
-                        t = t.replace('%s' % tg,  start)
-                        close_tag = '</%s' % tg[1:]
+                    for tg, start, end in (
+                        ("<code>", code_start, code_end),
+                        ("<strong>", stng_start, stng_end),
+                        ("<em>", emph_start, emph_end),
+                    ):
+                        t = t.replace("%s" % tg, start)
+                        close_tag = "</%s" % tg[1:]
                         t = t.replace(close_tag, end)
                     t = html_parser.unescape(t)
                 else:
                     t = el.text
                 t = t.strip()
-                admon = ''
-                pref = body_pref = ''
-                if t.startswith('!!! '):
+                admon = ""
+                pref = body_pref = ""
+                if t.startswith("!!! "):
                     # we allow admons with spaces. so check for startswith:
                     _ad = None
                     for k in admons:
@@ -766,46 +870,46 @@ class AnsiPrinter(Treeprocessor):
                             break
                     # not found - markup using hte first one's color:
                     if not _ad:
-                        k = t[4:].split(' ', 1)[0]
+                        k = t[4:].split(" ", 1)[0]
                         admons[k] = admons.values()[0]
 
-                    pref = body_pref = '┃ '
-                    pref += (k.capitalize())
+                    pref = body_pref = "┃ "
+                    pref += k.capitalize()
                     admon = k
                     t = t.split(k, 1)[1]
 
                 # set the parent, e.g. nrs in ols:
-                if el.get('pref'):
+                if el.get("pref"):
                     # first line pref, like '-':
-                    pref = el.get('pref')
+                    pref = el.get("pref")
                     # next line prefs:
-                    body_pref = ' ' * len(pref)
-                    el.set('pref', '')
+                    body_pref = " " * len(pref)
+                    el.set("pref", "")
 
                 ind = left_indent * hir
                 if el.tag in self.header_tags:
                     # header level:
                     hl = int(el.tag[1:])
-                    ind = ' ' * (hl - 1)
+                    ind = " " * (hl - 1)
                     hir += hl
 
                 t = rewrap(el, t, ind, pref)
 
                 # indent. can color the prefixes now, no more len checks:
                 if admon:
-                    out.append('\n')
-                    pref      = col(pref,      globals()[admons[admon]])
+                    out.append("\n")
+                    pref = col(pref, globals()[admons[admon]])
                     body_pref = col(body_pref, globals()[admons[admon]])
 
                 if pref:
                     # different color per indent:
-                    h = globals()['H%s' % (((hir - 2) % 5) + 1)]
+                    h = globals()["H%s" % (((hir - 2) % 5) + 1)]
                     if pref == list_pref:
                         pref = col(pref, h)
-                    elif pref.split('.', 1)[0].isdigit():
+                    elif pref.split(".", 1)[0].isdigit():
                         pref = col(pref, h)
 
-                t = ('\n' + ind + body_pref).join((t).splitlines())
+                t = ("\n" + ind + body_pref).join((t).splitlines())
                 t = ind + pref + t
 
                 # headers outer left: go sure.
@@ -819,53 +923,57 @@ class AnsiPrinter(Treeprocessor):
                 # omit the linebreak and append the text of p to the previous
                 # result, (i.e. the list separator):
                 tag_fmt_func = getattr(tags, el.tag, plain)
-                if type(parent) == type(el) and parent.tag == 'li' and \
-                        not parent.text and el.tag == 'p':
+                if (
+                    type(parent) == type(el)
+                    and parent.tag == "li"
+                    and not parent.text
+                    and el.tag == "p"
+                ):
                     _out = tag_fmt_func(t.lstrip(), hir=hir)
                     out[-1] += _out
                 else:
                     out.append(tag_fmt_func(t, hir=hir))
 
                 if admon:
-                    out.append('\n')
+                    out.append("\n")
 
                 if links_list:
                     i = 1
                     for l in links_list:
-                        out.append(low('%s[%s] %s' % (ind, i, l)))
+                        out.append(low("%s[%s] %s" % (ind, i, l)))
                         i += 1
 
             # have children?
             #    nr for ols:
             if is_txt_and_inline_markup:
-                if el.tag == 'li':
+                if el.tag == "li":
                     childs = el.getchildren()
-                    for nested in 'ul', 'ol':
+                    for nested in "ul", "ol":
                         if childs and childs[-1].tag == nested:
                             ul = childs[-1]
                             # do we have a nested sublist? the li was inline
                             # formattet,
                             # split all from <ul> off and format it as own tag:
                             # (ul always at the end of an li)
-                            out[-1] = out[-1].split('<%s>' % nested, 1)[0]
+                            out[-1] = out[-1].split("<%s>" % nested, 1)[0]
                             formatter(ul, out, hir + 1, parent=el)
                 return
 
-            if el.tag == 'table':
+            if el.tag == "table":
                 # processed all here, in one sweep:
                 # markdown ext gave us a xml tree from the ascii,
                 # our part here is the cell formatting and into a
                 # python nested list, then tabulate spits
                 # out ascii again:
                 def borders(t):
-                    t[0] = t[-1] = low(t[0].replace('-', '─'))
+                    t[0] = t[-1] = low(t[0].replace("-", "─"))
 
                 def fmt(cell, parent):
                     """ we just run the whole formatter - just with a fresh new
                     result list so that our 'out' is untouched """
                     _cell = []
                     formatter(cell, out=_cell, hir=0, parent=parent)
-                    return '\n'.join(_cell)
+                    return "\n".join(_cell)
 
                 t = []
                 for he_bo in 0, 1:
@@ -880,7 +988,7 @@ class AnsiPrinter(Treeprocessor):
 
                 # do we have right room to indent it?
                 # first line is seps, so no ansi esacapes foo:
-                w = len(tbl.split('\n', 1)[0])
+                w = len(tbl.split("\n", 1)[0])
                 if w <= cols:
                     t = tbl.splitlines()
                     borders(t)
@@ -890,7 +998,7 @@ class AnsiPrinter(Treeprocessor):
                     ind = hir
                     tt = []
                     for line in t:
-                        tt.append('%s%s' % (ind * left_indent, line))
+                        tt.append("%s%s" % (ind * left_indent, line))
                     out.extend(tt)
                 else:
                     # TABLE CUTTING WHEN NOT WIDTH FIT
@@ -909,16 +1017,17 @@ class AnsiPrinter(Treeprocessor):
                     # note: we had to patch it, it inserted '\n' within cells!
                     table = tabulate(tc)
                     out.append(
-                        split_blocks(table, w, cols, part_fmter=borders))
+                        split_blocks(table, w, cols, part_fmter=borders)
+                    )
                 return
 
             nr = 0
             for c in el:
-                if el.tag == 'ul':  # or el.tag == 'li':
-                    c.set('pref', list_pref)
-                elif el.tag == 'ol':
+                if el.tag == "ul":  # or el.tag == 'li':
+                    c.set("pref", list_pref)
+                elif el.tag == "ol":
                     nr += 1
-                    c.set('pref', str(nr) + '. ')
+                    c.set("pref", str(nr) + ". ")
 
                 # handle the ``` style unindented code blocks -> parsed as p:
                 formatter(c, out, hir + 1, parent=el)
@@ -927,7 +1036,7 @@ class AnsiPrinter(Treeprocessor):
 
         out = []
         formatter(doc, out)
-        self.markdown.ansi = '\n'.join(out)
+        self.markdown.ansi = "\n".join(out)
 
 
 def set_hr_widths(result):
@@ -966,22 +1075,22 @@ def set_hr_widths(result):
 class AnsiPrintExtension(Extension):
     def extendMarkdown(self, md, md_globals):
         ansi_print_ext = AnsiPrinter(md)
-        md.treeprocessors.add('ansi_print_ext', ansi_print_ext, '>inline')
+        md.treeprocessors.add("ansi_print_ext", ansi_print_ext, ">inline")
 
 
-def do_code_hilite(md, what='all'):
-    '''
+def do_code_hilite(md, what="all"):
+    """
     "inverse" mode for source code highlighting:
     the file contains mainly code and md is within docstrings
     what in  all, code, doc, mod
-    '''
-    if what not in ('all', 'code', 'doc', 'mod'):
-        what = 'all'
+    """
+    if what not in ("all", "code", "doc", "mod"):
+        what = "all"
     code_mode, md_mode = 1, 2
     blocks, block, mode = [], [], code_mode
     blocks.append([mode, block])
-    lines = ('\n' + md).splitlines()
-    mdstart = '\x01'
+    lines = ("\n" + md).splitlines()
+    mdstart = "\x01"
     while lines:
         line = lines.pop(0)
         if mode == code_mode:
@@ -989,13 +1098,13 @@ def do_code_hilite(md, what='all'):
                 mdstart = line.rstrip()[:-1]
                 mode = md_mode
                 block = []
-                if mdstart == '/*':
-                    mdstart = '*/'
+                if mdstart == "/*":
+                    mdstart = "*/"
                 blocks.append([md_mode, block])
                 continue
 
         elif line.rstrip() == mdstart:
-            if what == 'doc':
+            if what == "doc":
                 # only module level docstring:
                 break
             mode = code_mode
@@ -1004,63 +1113,53 @@ def do_code_hilite(md, what='all'):
             continue
 
         if mode == code_mode:
-            if what in ('all', 'code'):
+            if what in ("all", "code"):
                 block.append(line)
 
-        elif what != 'code':
+        elif what != "code":
             block.append(line)
 
     out = []
     for mode, block in blocks:
-        b = '\n'.join(block)
+        b = "\n".join(block)
         if not b:
             continue
         if mode == code_mode:
-            out.append('```\n%s\n```' % b)
+            out.append("```\n%s\n```" % b)
         else:
-            out.append('\n'.join(block))
-    return '\n'.join(out)
+            out.append("\n".join(block))
+    return "\n".join(out)
 
-def_enc_set = False
-def fix_py2_default_encoding():
-    global def_enc_set
-    if not def_enc_set:
-        # Make Py2 > Py3:
-        import imp
-        imp.reload(sys)
-        if hasattr(sys, 'setdefaultencoding'):
-            sys.setdefaultencoding('utf-8')
-        # no? see http://stackoverflow.com/a/29832646/4583360 ...
-        def_enc_set = True
 
-def main(  md               = None
-         , filename         = None
-         , cols             = None
-         , theme            = None
-         , c_theme          = None
-         , bg               = None
-         , c_no_guess       = None
-         , display_links    = None
-         , link_style       = None
-         , from_txt         = None
-         , do_html          = None
-         , code_hilite      = None
-         , c_def_lexer      = None
-         , theme_info       = None
-         , no_colors        = None
-         , tab_length       = 4
-         , no_change_defenc = False
-         , **kw):
+# fmt: off
+def main(
+    md               = None,
+    filename         = None,
+    cols             = None,
+    theme            = None,
+    c_theme          = None,
+    bg               = None,
+    c_no_guess       = None,
+    display_links    = None,
+    link_style       = None,
+    from_txt         = None,
+    do_html          = None,
+    code_hilite      = None,
+    c_def_lexer      = None,
+    theme_info       = None,
+    no_colors        = None,
+    tab_length       = 4,
+    no_change_defenc = False,
+    **kw
+):
     """ md is markdown string. alternatively we use filename and read """
+    # fmt: on
 
-    if sys.version_info[0] == 2 and not no_change_defenc:
-        # if I don't do this here, then I'll get probs when being
-        # used as a lib:
-        # https://github.com/axiros/terminal_markdown_viewer/issues/39
-        # If you hate it then switch it off but don't blame me on unicode errs.
-        fix_py2_default_encoding()
-
-
+    # if I don't do this here, then I'll get probs when being
+    # used as a lib:
+    # https://github.com/axiros/terminal_markdown_viewer/issues/39
+    # If you hate it then switch it off but don't blame me on unicode errs.
+    True if no_change_defenc else fix_py2_default_encoding()
 
     tab_length = tab_length or 4
     global def_lexer
@@ -1069,20 +1168,20 @@ def main(  md               = None
     py_config_file = os.path.expanduser("~/.mdv.py")
     if os.path.exists(py_config_file):
         exec_globals = {}
-        exec(io.open(py_config_file, encoding='utf-8').read(), exec_globals)
+        exec(io.open(py_config_file, encoding="utf-8").read(), exec_globals)
         globals().update(exec_globals)
 
     args = locals()
     if not md:
         if not filename:
-            print('Using sample markdown:')
+            print("Using sample markdown:")
             make_sample()
-            md = args['md'] = md_sample
+            md = args["md"] = md_sample
             print(md)
             print
-            print('Styling Result')
+            print("Styling Result")
         else:
-            if filename == '-':
+            if filename == "-":
                 md = sys.stdin.read()
             else:
                 with open(filename) as f:
@@ -1093,34 +1192,33 @@ def main(  md               = None
     if cols:
         term_columns = int(cols)
 
-
-    if c_theme == 'all' or theme == 'all':
-        if c_theme == 'all':
-            os.environ['AXC_CODE_THEME'] = os.environ['MDV_CODE_THEME'] = ''
-        if theme == 'all':
-            os.environ['AXC_THEME'] = os.environ['MDV_THEME'] = ''
-        args.pop('kw')
+    if c_theme == "all" or theme == "all":
+        if c_theme == "all":
+            os.environ["AXC_CODE_THEME"] = os.environ["MDV_CODE_THEME"] = ""
+        if theme == "all":
+            os.environ["AXC_THEME"] = os.environ["MDV_THEME"] = ""
+        args.pop("kw")
         themes = read_themes()
         for k, v in list(themes.items()):
             if not filename:
-                yl = 'You like *%s*, *%s*?' % (k, v['name'])
-                args['md'] = md_sample.replace(you_like, yl)
-            print(col('%s%s%s' % ('\n\n', '=' * term_columns, '\n'), L))
+                yl = "You like *%s*, *%s*?" % (k, v["name"])
+                args["md"] = md_sample.replace(you_like, yl)
+            print(col("%s%s%s" % ("\n\n", "=" * term_columns, "\n"), L))
             # should really create an iterator here:
-            if theme == 'all':
-                args['theme'] = k
+            if theme == "all":
+                args["theme"] = k
             else:
-                args['c_theme'] = k
+                args["c_theme"] = k
             print(main(**args))
-        return ''
+        return ""
 
     global show_links
     if display_links:
-        show_links = 'i'
-    if link_style: # rules
+        show_links = "i"
+    if link_style:  # rules
         show_links = link_style
 
-    if bg and bg == 'light':
+    if bg and bg == "light":
         # not in use rite now:
         global background, color
         background = BGL
@@ -1132,9 +1230,9 @@ def main(  md               = None
     guess_lexer = not c_no_guess
 
     if not c_theme:
-        c_theme = theme or 'default'
+        c_theme = theme or "default"
 
-    if c_theme == 'None':
+    if c_theme == "None":
         c_theme = None
 
     if c_theme:
@@ -1143,31 +1241,27 @@ def main(  md               = None
     if c_theme:
         # info:
         if not have_pygments:
-            print(col('No pygments, can not analyze code for hilite', R))
+            errout(col("No pygments, can not analyze code for hilite", R))
 
     # Create an instance of the Markdown class with the new extension
-    MD = markdown.Markdown(tab_length=int(tab_length),
-                           extensions=[AnsiPrintExtension(),
-                                       TableExtension(),
-                                       fenced_code.FencedCodeExtension()])
+    MD = markdown.Markdown(
+        tab_length=int(tab_length),
+        extensions=[
+            AnsiPrintExtension(),
+            TableExtension(),
+            fenced_code.FencedCodeExtension(),
+        ],
+    )
     if code_hilite:
         md = do_code_hilite(md, code_hilite)
     the_html = MD.convert(md)
-    #print the_html
+    # print the_html
     # html?
     if do_html:
         return the_html
 
     # who wants html, here is our result:
-    try:
-        ansi = MD.ansi
-    except:
-        if the_html:
-            # can this happen? At least show:
-            print("we have markdown result but no ansi.")
-            print(the_html)
-        else:
-            ansi = 'n.a. (no parsing result)'
+    ansi = MD.ansi
 
     # The RAW html within source, incl. fenced code blocks:
     # phs are numbered like this in the md, we replace back:
@@ -1178,17 +1272,17 @@ def main(  md               = None
     for ph in stash.rawHtmlBlocks:
         nr += 1
         raw = html_parser.unescape(ph[0])
-        if raw[:3].lower() == '<br':
-            raw = '\n'
-        pre = '<pre><code'
+        if raw[:3].lower() == "<br":
+            raw = "\n"
+        pre = "<pre><code"
         if raw.startswith(pre):
             _, raw = raw.split(pre, 1)
             if 'class="' in raw:
                 # language:
                 lang = raw.split('class="', 1)[1].split('"')[0]
             else:
-                lang = ''
-            raw = raw.split('>', 1)[1].rsplit('</code>', 1)[0]
+                lang = ""
+            raw = raw.split(">", 1)[1].rsplit("</code>", 1)[0]
             raw = tags.code(raw.strip(), from_fenced_block=1, lang=lang)
         ansi = ansi.replace(PH % nr, raw)
 
@@ -1197,21 +1291,25 @@ def main(  md               = None
 
     # sub part display (the -f feature)
     if from_txt:
-        if not from_txt.split(':', 1)[0] in ansi:
+        if not from_txt.split(":", 1)[0] in ansi:
             # display from top then:
             from_txt = ansi.strip()[1]
-        from_txt, mon_lines = (
-            from_txt + ':%s' % (term_rows - 6)).split(':')[:2]
+        from_txt, mon_lines = (from_txt + ":%s" % (term_rows - 6)).split(":")[
+            :2
+        ]
         mon_lines = int(mon_lines)
         pre, post = ansi.split(from_txt, 1)
-        post = '\n'.join(post.split('\n')[:mon_lines])
-        ansi = '\n(...)%s%s%s' % (
-               '\n'.join(pre.rsplit('\n', 2)[-2:]), from_txt, post)
+        post = "\n".join(post.split("\n")[:mon_lines])
+        ansi = "\n(...)%s%s%s" % (
+            "\n".join(pre.rsplit("\n", 2)[-2:]),
+            from_txt,
+            post,
+        )
 
-    ansi = set_hr_widths(ansi) + '\n'
+    ansi = set_hr_widths(ansi) + "\n"
     if no_colors:
         return clean_ansi(ansi)
-    return ansi + '\n'
+    return ansi + "\n"
 
 
 # Following just file monitors, not really core feature so the prettyfier:
@@ -1219,15 +1317,15 @@ def main(  md               = None
 # ---------------------------------------------------------------- File Monitor
 def monitor(args):
     """ file monitor mode """
-    filename = args.get('MDFILE')
+    filename = args.get("MDFILE")
     if not filename:
-        print(col('Need file argument', 2))
+        print(col("Need file argument", 2))
         raise SystemExit
-    last_err = ''
+    last_err = ""
     last_stat = 0
     while True:
         if not os.path.exists(filename):
-            last_err = 'File %s not found. Will continue trying.' % filename
+            last_err = "File %s not found. Will continue trying." % filename
         else:
             try:
                 stat = os.stat(filename)[8]
@@ -1235,11 +1333,11 @@ def monitor(args):
                     parsed = run_args(args)
                     print(str(parsed))
                     last_stat = stat
-                last_err = ''
+                last_err = ""
             except Exception as ex:
                 last_err = str(ex)
         if last_err:
-            print('Error: %s' % last_err)
+            print("Error: %s" % last_err)
         sleep()
 
 
@@ -1247,7 +1345,7 @@ def sleep():
     try:
         time.sleep(1)
     except KeyboardInterrupt:
-        print('Have a nice day!')
+        print("Have a nice day!")
         raise SystemExit
 
 
@@ -1259,85 +1357,88 @@ def run_changed_file_cmd(cmd, fp, pretty):
     with open(fp) as f:
         raw = f.read()
     # go sure regarding quotes:
-    for ph in (dir_mon_filepath_ph, dir_mon_content_raw,
-               dir_mon_content_pretty):
-        if ph in cmd and \
-                not ('"%s"' % ph) in cmd and \
-                not ("'%s'" % ph) in cmd:
+    for ph in (
+        dir_mon_filepath_ph,
+        dir_mon_content_raw,
+        dir_mon_content_pretty,
+    ):
+        if ph in cmd and not ('"%s"' % ph) in cmd and not ("'%s'" % ph) in cmd:
             cmd = cmd.replace(ph, '"%s"' % ph)
 
     cmd = cmd.replace(dir_mon_filepath_ph, fp)
-    print(col('Running %s' % cmd, H1))
-    for r, what in ((dir_mon_content_raw, raw),
-                    (dir_mon_content_pretty, pretty)):
-        cmd = cmd.replace(r, what.encode('base64'))
+    print(col("Running %s" % cmd, H1))
+    for r, what in (
+        (dir_mon_content_raw, raw),
+        (dir_mon_content_pretty, pretty),
+    ):
+        cmd = cmd.replace(r, what.encode("base64"))
 
     # yeah, i know, sub bla bla...
     if os.system(cmd):
-        print(col('(the command failed)', R))
+        print(col("(the command failed)", R))
 
 
 def monitor_dir(args):
     """ displaying the changed files """
 
     def show_fp(fp):
-        args['MDFILE'] = fp
+        args["MDFILE"] = fp
         pretty = run_args(args)
         print(pretty)
         print("(%s)" % col(fp, L))
-        cmd = args.get('change_cmd')
+        cmd = args.get("change_cmd")
         if cmd:
             run_changed_file_cmd(cmd, fp=fp, pretty=pretty)
 
     ftree = {}
-    d = args.get('-M')
+    d = args.get("-M")
     # was a change command given?
-    d += '::'
-    d, args['change_cmd'] = d.split('::')[:2]
-    args.pop('-M')
+    d += "::"
+    d, args["change_cmd"] = d.split("::")[:2]
+    args.pop("-M")
     # collides:
-    args.pop('-m')
-    d, exts = (d + ':md,mdown,markdown').split(':')[:2]
-    exts = exts.split(',')
+    args.pop("-m")
+    d, exts = (d + ":md,mdown,markdown").split(":")[:2]
+    exts = exts.split(",")
     if not os.path.exists(d):
-        print(col('Does not exist: %s' % d, R))
+        print(col("Does not exist: %s" % d, R))
         sys.exit(2)
 
-    dir_black_list = ['.', '..']
+    dir_black_list = [".", ".."]
 
     def check_dir(d, ftree):
-        check_latest = ftree.get('latest_ts')
+        check_latest = ftree.get("latest_ts")
         d = os.path.abspath(d)
         if d in dir_black_list:
             return
 
         if len(ftree) > mon_max_files:
             # too deep:
-            print(col('Max files (%s) reached' % col(mon_max_files, R)))
+            print(col("Max files (%s) reached" % col(mon_max_files, R)))
             dir_black_list.append(d)
             return
         try:
             files = os.listdir(d)
         except Exception as ex:
-            print('%s when scanning dir %s' % (col(ex, R), d))
+            print("%s when scanning dir %s" % (col(ex, R), d))
             dir_black_list.append(d)
             return
 
         for f in files:
             fp = j(d, f)
             if os.path.isfile(fp):
-                f_ext = f.rsplit('.', 1)[-1]
+                f_ext = f.rsplit(".", 1)[-1]
                 if f_ext == f:
-                    f_ext == ''
+                    f_ext == ""
                 if f_ext not in exts:
                     continue
                 old = ftree.get(fp)
                 # size:
                 now = os.stat(fp)[6]
                 if check_latest:
-                    if os.stat(fp)[7] > ftree['latest_ts']:
-                        ftree['latest'] = fp
-                        ftree['latest_ts'] = os.stat(fp)[8]
+                    if os.stat(fp)[7] > ftree["latest_ts"]:
+                        ftree["latest"] = fp
+                        ftree["latest_ts"] = os.stat(fp)[8]
                 if now == old:
                     continue
                 # change:
@@ -1346,27 +1447,28 @@ def monitor_dir(args):
                     # At first time we don't display ALL the files...:
                     continue
                 # no binary. make sure:
-                if 'text' in os.popen('file "%s"' % fp).read():
+                if "text" in os.popen('file "%s"' % fp).read():
                     show_fp(fp)
             elif os.path.isdir(fp):
                 check_dir(j(d, fp), ftree)
 
-    ftree['latest_ts'] = 1
+    ftree["latest_ts"] = 1
     while True:
         check_dir(d, ftree)
-        if 'latest_ts' in ftree:
-            ftree.pop('latest_ts')
-            fp = ftree.get('latest')
+        if "latest_ts" in ftree:
+            ftree.pop("latest_ts")
+            fp = ftree.get("latest")
             if fp:
                 show_fp(fp)
             else:
-                print('sth went wrong, no file found')
+                print("sth went wrong, no file found")
         sleep()
 
 
 def load_yaml_config():
     import yaml
-    cfg = yaml.load('{}')
+
+    cfg = yaml.load("{}")
     config_file = os.path.expanduser("~/.mdv")
     if os.path.exists(config_file):
         with open(config_file, "r") as mdvconfig:
@@ -1385,65 +1487,68 @@ def merge(a, b):
 
 def run_args(args, md=None):
     """ call the lib entry function with CLI args """
-    return main(md            = md,
-                filename      = args.get('MDFILE'),
-                theme         = args.get('-t', 'random'),
-                cols          = args.get('-c'),
-                from_txt      = args.get('-f'),
-                code_hilite   = args.get('-C'),
-                c_theme       = args.get('-T'),
-                c_no_guess    = args.get('-x'),
-                c_def_lexer   = args.get('-X'),
-                do_html       = args.get('-H'),
-                theme_info    = args.get('-i'),
-                no_colors     = args.get('-A'),
-                display_links = args.get('-L'),
-                link_style    = args.get('-u'),
-                tab_length    = args.get('-b', 4))
+    # fmt: off
+    return main(
+        md            = md,
+        filename      = args.get("MDFILE"),
+        theme         = args.get("-t", "random"),
+        cols          = args.get("-c"),
+        from_txt      = args.get("-f"),
+        code_hilite   = args.get("-C"),
+        c_theme       = args.get("-T"),
+        c_no_guess    = args.get("-x"),
+        c_def_lexer   = args.get("-X"),
+        do_html       = args.get("-H"),
+        theme_info    = args.get("-i"),
+        no_colors     = args.get("-A"),
+        display_links = args.get("-L"),
+        link_style    = args.get("-u"),
+        tab_length    = args.get("-b", 4),
+    )
+    # fmt: on
 
 
 def run():
     global is_app
     is_app = 1
-    fix_py2_default_encoding()
+    fix_py2_default_encoding() if not PY3 else None
     doc = __doc__[1:]
     # our docstring markdown to docopt:
-    d = ( doc.split('# Details', 1)[0]
-         .replace('\n\n', '\n')
-         .replace('\n# ', '\n\n')
-         .strip() )
+    d = (
+        doc.split("# Details", 1)[0]
+        .replace("\n\n", "\n")
+        .replace("\n# ", "\n\n")
+        .strip()
+    )
 
     try:
-        args = docopt(d, help=None, version='mdv v0.1')
+        args = docopt(d, help=None, version="mdv v0.1")
         args = merge(args, load_yaml_config())
     except Exception as ex:
-        if not '-h' in sys.argv:
-            print(col('Option parsing error', R))
-        args = {'parse_error': 1}
-        sys.argv.append('-h')
+        if not "-h" in sys.argv:
+            print(col("Option parsing error", R))
+        args = {"parse_error": 1}
+        sys.argv.append("-h")
 
-
-    if '-h' in sys.argv or '--help' in sys.argv:
-        args['-t'] = args.get('-t') or 671.1616
-        args['-T'] = args.get('-T') or 526.9416
-        args['-x'] = True
-        args['-X'] = args.get('-X') or 'md' # md: from pygments 2.2
-        args['-m'] = args['-M'] = None
-        d = '-----'.join((doc, doc.split('# Details', 1)[0]))
-        print(run_args(args, md=d))
+    if "-h" in sys.argv or "--help" in sys.argv:
+        # greenish default theme:
+        args["-t"] = args.get("-t") or 671.1616
+        args["-T"] = args.get("-T") or 526.9416
+        args["-x"] = True
+        args["-X"] = args.get("-X") or "md"  # md: from pygments 2.2
+        args["-m"] = args["-M"] = None
+        d = "-----".join((doc, doc.split("# Details", 1)[0]))
+        print(run_args(args) if PY3 else str(run_args(args)))
         sys.exit(0)
 
-    if args.get('-m'):
+    if args.get("-m"):
         monitor(args)
-    if args.get('-M'):
+    if args.get("-M"):
         monitor_dir(args)
     else:
-        if sys.version_info[0] == 2:
-            print(str(run_args(args)))
-        else:
-            print(run_args(args))
+        print(run_args(args) if PY3 else str(run_args(args)))
 
-if __name__ == '__main__':  # pragma: no cover
+
+if __name__ == "__main__":  # pragma: no cover
     # the setup tools version calls directly run, this is for git checkouts:
     run()
-

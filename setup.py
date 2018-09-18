@@ -13,23 +13,32 @@
 
 
 from setuptools import setup, find_packages
-version = '1.6.3'
+
+version = "1.6.3"
 
 setup(
-    name='mdv',
+    name="mdv",
     version=version,
     packages=find_packages(),
     author="Axiros GmbH",
     author_email="gk@axiros.com",
     description="Terminal Markdown Viewer",
-    long_description=open('README.rst').read(),
-    install_requires=["pyyaml", "pygments", "markdown", "docopt"],
+    long_description=open("README.rst").read(),
+    install_requires=["tabulate", "pyyaml", "pygments", "markdown", "docopt"],
     include_package_data=True,
-    url='http://github.com/axiros/terminal_markdown_viewer',
-    download_url='http://github.com/axiros/terminal_markdown_viewer/tarball/' + version,
-    keywords = ['markdown', 'markup', 'terminal', 'hilighting', 'syntax', 'source code'],
-    test_suite='nose.collector',
-    tests_require=['nose'],
+    url="http://github.com/axiros/terminal_markdown_viewer",
+    download_url="http://github.com/axiros/terminal_markdown_viewer/tarball/"
+    + version,
+    keywords=[
+        "markdown",
+        "markup",
+        "terminal",
+        "hilighting",
+        "syntax",
+        "source code",
+    ],
+    test_suite="nose.collector",
+    tests_require=["nose"],
     classifiers=[
         "Programming Language :: Python",
         "Natural Language :: English",
@@ -38,9 +47,5 @@ setup(
         "License :: OSI Approved :: BSD License",
         "Programming Language :: Python :: 2.7",
     ],
-    entry_points = {
-        'console_scripts': [
-            'mdv = mdv:run',
-        ],
-    },
+    entry_points={"console_scripts": ["mdv = mdv:run"]},
 )
