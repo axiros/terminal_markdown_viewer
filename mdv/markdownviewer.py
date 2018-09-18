@@ -130,7 +130,7 @@ with argument the path to the changed file.
 
 import sys
 # grrr
-PY3 = True if sys.version_info[0] > 2 else False
+PY3 = sys.version_info.major > 2
 
 import io
 import os
