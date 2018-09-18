@@ -135,6 +135,7 @@ PY3 = True if sys.version_info[0] > 2 else False
 import io
 import os
 import textwrap
+import shutil
 is_app = 0
 # code analysis for hilite:
 try:
@@ -142,7 +143,7 @@ try:
     from pygments.lexers import get_lexer_by_name
     from pygments.lexers import guess_lexer as pyg_guess_lexer
     have_pygments = True
-except ImportError:
+except ImportError:  # pragma: no cover
     have_pygments = False
 
 import time
@@ -224,6 +225,23 @@ show_links = 'it'
 # columns(!) - may be set to smaller width:
 # could be exported by the shell, normally not in subprocesses:
 
+
+def get_terminal_size():
+    """get terminal size for python3.3 or greater, using shutil.
+
+    taken and modified from http://stackoverflow.com/a/14422538
+
+    Returns:
+        tuple: (column, rows) from terminal size, or (0, 0) if error.
+    """
+    error_terminal_size = (0, 0)
+    if hasattr(shutil, 'get_terminal_size'):
+        terminal_size = shutil.get_terminal_size(fallback=error_terminal_size)
+        return terminal_size.columns, terminal_size.lines
+    else:
+        return error_terminal_size
+
+
 # zsh does not allow to override COLUMNS ! Thats why we also respect $width:
 term_columns, term_rows = envget('width', envget('COLUMNS')), envget('LINES')
 if not term_columns and not '-c' in sys.argv:
@@ -231,8 +249,9 @@ if not term_columns and not '-c' in sys.argv:
         term_rows, term_columns = os.popen(
             'stty size 2>/dev/null', 'r').read().split()
         term_columns, term_rows = int(term_columns), int(term_rows)
-    except:
-        if '-' not in sys.argv:
+    except:  # pragma: no cover
+        term_columns, term_rows = get_terminal_size()
+        if '-' not in sys.argv and (term_columns, term_rows) == (0, 0):
             print('!! Could not derive your terminal width !!')
 term_columns, term_rows = int(term_columns or 80), int(term_rows or 200)
 
@@ -654,7 +673,12 @@ def replace_links(el, html):
                 cur += low('(%s)' % link.get('href',''))
             else: # inline table (it)
                 # we build a link list, add the number like ① :
-                cur += '%s ' % unichr(link_start_ord + cur_link)
+                try:
+                    cur += '%s ' % unichr(link_start_ord + cur_link)
+                except NameError:
+                    # fix for py3
+                    # http://stackoverflow.com/a/2352047
+                    cur += '%s ' % chr(link_start_ord + cur_link)
                 links_list.append(link.get('href', ''))
         cur_link += 1
     return links_list, cur
@@ -1004,7 +1028,8 @@ def fix_py2_default_encoding():
         # Make Py2 > Py3:
         import imp
         imp.reload(sys)
-        sys.setdefaultencoding('utf-8')
+        if hasattr(sys, 'setdefaultencoding'):
+            sys.setdefaultencoding('utf-8')
         # no? see http://stackoverflow.com/a/29832646/4583360 ...
         def_enc_set = True
 
@@ -1418,7 +1443,7 @@ def run():
         else:
             print(run_args(args))
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     # the setup tools version calls directly run, this is for git checkouts:
     run()
 
