@@ -1,7 +1,9 @@
-# this does NOT produce rst understood by pypi :-(
-pandoc --from=markdown_github --to=rst README.md > README.rst
--> forget it.
+# thats the only way to get md into pypi:
 
+git push (for the images)
+vi setup.py -> add new version.
+rm -rf dist/
+python setup.py sdist
+twine upload dist/*
 
-python setup.py sdist upload -r pypi
 

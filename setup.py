@@ -14,10 +14,14 @@
 import os
 from setuptools import setup, find_packages
 
-version = "1.7.1"
+version = "1.7.4"
 
 with open(os.path.join(os.path.dirname(__file__), "README.md")) as fd:
-    long_description = fd.read()
+    md = fd.read()
+
+# images hack for pypi:
+gh='https://raw.githubusercontent.com/axiros/terminal_markdown_viewer/master'
+md = md.replace('src="./', 'src="%s/' % gh)
 
 setup(
     name="mdv",
@@ -28,7 +32,7 @@ setup(
     description="Terminal Markdown Viewer",
     install_requires=["tabulate", "pygments", "markdown"],
     extras_require={"yaml": "pyyaml"},
-    long_description=long_description,
+    long_description=md,
     long_description_content_type="text/markdown",
     include_package_data=True,
     url="http://github.com/axiros/terminal_markdown_viewer",
