@@ -14,7 +14,7 @@
 import os
 from setuptools import setup, find_packages
 
-version = "1.6.3"
+version = "1.7"
 
 with open(os.path.join(os.path.dirname(__file__), "README.md")) as fd:
     long_description = fd.read()
@@ -31,8 +31,7 @@ setup(
     install_requires=["tabulate", "pyyaml", "pygments", "markdown", "docopt"],
     include_package_data=True,
     url="http://github.com/axiros/terminal_markdown_viewer",
-    download_url="http://github.com/axiros/terminal_markdown_viewer/tarball/"
-    + version,
+    download_url="http://github.com/axiros/terminal_markdown_viewer/tarball/",
     keywords=[
         "markdown",
         "markup",
