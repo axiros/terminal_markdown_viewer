@@ -517,7 +517,7 @@ Also:
 
 - Inline link tables
 
-![](samples/links.png)
+![](./samples/links.png)
 
 
 
@@ -528,9 +528,11 @@ Also:
 
 ### Sept 2018:
 
-- Merged some PRs. 
+- Merged some PRs, thanks.
 - Decent [code formatter](https://github.com/ambv/black). Not that this weekend hack got more readable though. Well, maybe a bit.
 - Revised Py3 support (finally found peace with it, since they enforce UTF-8 everywhere the new features begin to outweigh the nightmares of trying to decode everything without need).
-- Indented code in PY3 was broken, fixed that. *Why, PY3, are you you creating crap like "b'foo'" instead raising or auto-decoding?*
+- Indented code in PY3 was broken, fixed that. Why, PY3, are you creating crap like `"b'foo'"` instead raising or auto-decoding (since you work anyway only with your UTF8-everywhere-assumption)!?
 - Header numbering feature added (`-n 2-4` or `-n 1-`)
 <img src="./samples/header_num.png" width="400"/>
+- docopt and pyyaml install requirement removed, better config file handling.
+- pypi markdown rendering for the readme, finally.
