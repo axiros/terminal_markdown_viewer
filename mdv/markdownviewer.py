@@ -6,32 +6,47 @@
     mdv [options] [MDFILE]
 
 # Options:
-
-    -A        : Strip all ansi (no colors then)
-    -C MODE   : Sourcecode highlighting mode
-    -H        : Print html version
-    -L        : Backwards compatible shortcut for '-u i'
-    -M DIR    : Monitor directory for markdown file changes
-    -T C_THEME: Theme for code highlight. If not set: Using THEME.
-    -X Lexer  : Default lexer name (default: python). Set -x to use it always.
-    -b TABL   : Set tab_length to sth. different than 4 [default: 4]
-    -c COLS   : Fix columns to this (default: your terminal width)
-    -f FROM   : Display FROM given substring of the file.
-    -h        : Show help
-    -i        : Show theme infos with output
-    -l        : Light background (not yet supported)
-    -m        : Monitor file for changes and redisplay FROM given substring
-    -n NRS    : Header numbering (default: off. Say e.g. -3 or 1- or 1-5
-    -t THEME  : Key within the color ansi_table.json. 'random' accepted.
-    -u STYL   : Link Style (it=inline table=default, h=hide, i=inline)
-    -x        : Do not try guess code lexer (guessing is a bit slow)
-
+    -A         : no_colors     : Strip all ansi (no colors then)
+    -C MODE    : code_hilite   : Sourcecode highlighting mode
+    -F FILE    : config_file   : Alternative configfile (defaults ~./.mdv or ~/.config/mdv)
+    -H         : do_html       : Print html version
+    -L         : display_links : Backwards compatible shortcut for '-u i'
+    -M DIR     : monitor_dir   : Monitor directory for markdown file changes
+    -T C_THEME : c_theme       : Theme for code highlight. If not set we use THEME.
+    -X Lexer   : c_def_lexer   : Default lexer name (default python). Set -x to use it always.
+    -b TABL    : tab_length    : Set tab_length to sth. different than 4 [default 4]
+    -c COLS    : cols          : Fix columns to this (default <your terminal width>)
+    -f FROM    : from_txt      : Display FROM given substring of the file.
+    -h         : sh_help       : Show help
+    -i         : theme_info    : Show theme infos with output
+    -l         : bg_light      : Light background (not yet supported)
+    -m         : monitor_file  : Monitor file for changes and redisplay FROM given substring
+    -n NRS     : header_nrs    : Header numbering (default off. Say e.g. -3 or 1- or 1-5)
+    -t THEME   : theme         : Key within the color ansi_table.json. 'random' accepted.
+    -u STYL    : link_style    : Link Style (it=inline table=default, h=hide, i=inline)
+    -x         : c_no_guess    : Do not try guess code lexer (guessing is a bit slow)
 
 # Details
 
 ### **MDFILE**
 
 Filename to markdownfile or '-' for pipe mode (no termwidth auto dedection then)
+
+### Configuration
+
+Happens like:
+
+    1. parse_default_files at (`~/.mdv` or `~/.config/mdv`)
+    2. overlay with any -F <filename> config
+    3. overlay with environ vars (e.g. `$MDV_THEME`)
+    4. overlay with CLI vars
+
+#### File Formats
+
+We try yaml.  
+If not installed we try json.  
+If it is the custom config file we fail if not parsable.  
+If you prefer shell style config then source and export so you have it as environ.
 
 ### **-c COLS**: Columns
 
@@ -59,7 +74,7 @@ correctly through the stty cmd).
 
 ## Themes
 
-Environ variables `$MDV_THEME` and `$MDV_CODE_THEME` are understood:
+`$MDV_CODE_THEME` is an alias for the standard `$MDV_C_THEME`
 
 ```bash
 export MDV_THEME='729.8953'; mdv foo.md
@@ -129,7 +144,6 @@ with argument the path to the changed file.
 """
 from __future__ import absolute_import, print_function, unicode_literals
 
-
 import sys
 
 PY3 = sys.version_info.major > 2
@@ -142,7 +156,6 @@ import shutil
 import time
 import markdown
 import re, imp
-from docopt import docopt
 import markdown.util
 from markdown.util import etree
 from markdown.extensions.tables import TableExtension
@@ -153,52 +166,7 @@ from markdown.treeprocessors import Treeprocessor
 from markdown.extensions import Extension, fenced_code
 from functools import partial
 
-# code analysis for hilite:
-try:
-    from pygments import lex, token
-    from pygments.lexers import get_lexer_by_name
-    from pygments.lexers import guess_lexer as pyg_guess_lexer
-
-    have_pygments = True
-except ImportError:  # pragma: no cover
-    have_pygments = False
-
-
-if PY3:
-    unichr = chr
-    from html.parser import HTMLParser
-
-    string_type = str
-else:
-    from HTMLParser import HTMLParser
-
-    string_type = basestring
-
-    def breakpoint():
-        import pdb
-
-        pdb.set_trace()
-
-
-errout = partial(print, file=sys.stderr)
-envget = os.environ.get
-is_app = 0
-
-def_enc_set = False
-
-
-def fix_py2_default_encoding():
-    """ can be switched off when used as library"""
-    if PY3:
-        return
-    global def_enc_set
-    if not def_enc_set:
-        # Make Py2 > Py3:
-        imp.reload(sys)
-        sys.setdefaultencoding("utf-8")
-        # no? see http://stackoverflow.com/a/29832646/4583360 ...
-        def_enc_set = True
-
+errout, envget = partial(print, file=sys.stderr), os.environ.get
 
 # ---------------------------------------------------------------------- Config
 hr_sep, txt_block_cut, code_pref, list_pref, bquote_pref, hr_ends = (
@@ -271,6 +239,18 @@ color = T
 # it: inline table, h: hide, i: inline
 show_links = "it"
 
+
+# could be given, otherwise read from ansi_tables.json:
+themes = {}
+
+
+# sample for the theme roller feature:
+md_sample = ""
+
+# dir monitor recursion max:
+mon_max_files = 1000
+# ------------------------------------------------------------------ End Config
+
 # columns(!) - may be set to smaller width:
 # could be exported by the shell, normally not in subprocesses:
 
@@ -306,16 +286,96 @@ if not term_columns and not "-c" in sys.argv:
 term_columns, term_rows = int(term_columns or 80), int(term_rows or 200)
 
 
-# could be given, otherwise read from ansi_tables.json:
-themes = {}
+def die(msg):
+    errout(msg)
+    sys.exit(1)
 
 
-# sample for the theme roller feature:
-md_sample = ""
+def parse_env_and_cli():
+    """replacing docopt"""
+    kw, argv = {}, list(sys.argv[1:])
+    opts = __doc__.split("# Options", 1)[1].split("# Details", 1)[0].strip()
+    opts = [_.lstrip().split(":", 2) for _ in opts.splitlines()]
+    opts = dict(
+        [
+            (l[0].split()[0], (l[0].split()[1:], l[1].strip(), l[2].strip()))
+            for l in opts
+            if len(l) > 2
+        ]
+    )
 
-# dir monitor recursion max:
-mon_max_files = 1000
-# ------------------------------------------------------------------ End Config
+    # check environ:
+    aliases = {
+        "MDV_C_THEME": ["AXC_CODE_THEME", "MDV_CODE_THEME"],
+        "MDV_THEME": ["AXC_THEME"],
+    }
+    for k, v in aliases.items():
+        for f in v:
+            if f in os.environ:
+                os.environ[k] = envget(f)
+    for k, v in opts.items():
+        V = envget("MDV_" + v[1].upper())
+        if V is not None:
+            kw[v[1]] = V
+    # walk cli args:
+    while argv:
+        k = argv.pop(0)
+        k = "-h" if k == "--help" else k
+        try:
+            reqv, n = opts[k][:2]
+            kw[n] = argv.pop(0) if reqv else True
+        except:
+            if not argv:
+                kw["filename"] = k
+            else:
+                die("Not understood: %s" % k)
+    return kw
+
+
+# code analysis for hilite:
+try:
+    from pygments import lex, token
+    from pygments.lexers import get_lexer_by_name
+    from pygments.lexers import guess_lexer as pyg_guess_lexer
+
+    have_pygments = True
+except ImportError:  # pragma: no cover
+    have_pygments = False
+
+
+if PY3:
+    unichr = chr
+    from html.parser import HTMLParser
+
+    string_type = str
+else:
+    from HTMLParser import HTMLParser
+
+    string_type = basestring
+
+    def breakpoint():
+        import pdb
+
+        pdb.set_trace()
+
+
+is_app = 0
+
+def_enc_set = False
+
+
+def fix_py2_default_encoding():
+    """ can be switched off when used as library"""
+    if PY3:
+        return
+    global def_enc_set
+    if not def_enc_set:
+        # Make Py2 > Py3:
+        imp.reload(sys)
+        sys.setdefaultencoding("utf-8")
+        # no? see http://stackoverflow.com/a/29832646/4583360 ...
+        def_enc_set = True
+
 
 import logging
 
@@ -608,8 +668,6 @@ class Tags:
     """ can be overwritten in derivations. """
 
     def update_header_state(_, level):
-        if level == 3 and 0:
-            breakpoint()
         cur = cur_header_state
         if _._last_header_level > level:
             [into(cur, i, 0) for i in range(level + 1, 10)]
@@ -1378,7 +1436,7 @@ def main(
 # ---------------------------------------------------------------- File Monitor
 def monitor(args):
     """ file monitor mode """
-    filename = args.get("MDFILE")
+    filename = args.get("filename")
     if not filename:
         print(col("Need file argument", 2))
         raise SystemExit
@@ -1391,14 +1449,14 @@ def monitor(args):
             try:
                 stat = os.stat(filename)[8]
                 if stat != last_stat:
-                    parsed = run_args(args)
+                    parsed = main(**args)
                     print(str(parsed))
                     last_stat = stat
                 last_err = ""
             except Exception as ex:
                 last_err = str(ex)
         if last_err:
-            print("Error: %s" % last_err)
+            errout("Error: %s" % last_err)
         sleep()
 
 
@@ -1406,7 +1464,7 @@ def sleep():
     try:
         time.sleep(1)
     except KeyboardInterrupt:
-        print("Have a nice day!")
+        errout("Have a nice day!")
         raise SystemExit
 
 
@@ -1427,7 +1485,7 @@ def run_changed_file_cmd(cmd, fp, pretty):
             cmd = cmd.replace(ph, '"%s"' % ph)
 
     cmd = cmd.replace(dir_mon_filepath_ph, fp)
-    print(col("Running %s" % cmd, H1))
+    errout(col("Running %s" % cmd, H1))
     for r, what in (
         (dir_mon_content_raw, raw),
         (dir_mon_content_pretty, pretty),
@@ -1436,15 +1494,15 @@ def run_changed_file_cmd(cmd, fp, pretty):
 
     # yeah, i know, sub bla bla...
     if os.system(cmd):
-        print(col("(the command failed)", R))
+        errout(col("(the command failed)", R))
 
 
 def monitor_dir(args):
     """ displaying the changed files """
 
     def show_fp(fp):
-        args["MDFILE"] = fp
-        pretty = run_args(args)
+        args["filename"] = fp
+        pretty = main(**args)
         print(pretty)
         print("(%s)" % col(fp, L))
         cmd = args.get("change_cmd")
@@ -1452,13 +1510,13 @@ def monitor_dir(args):
             run_changed_file_cmd(cmd, fp=fp, pretty=pretty)
 
     ftree = {}
-    d = args.get("-M")
+    d = args.get("monitor_dir")
     # was a change command given?
     d += "::"
     d, args["change_cmd"] = d.split("::")[:2]
-    args.pop("-M")
+    args.pop("monitor_dir")
     # collides:
-    args.pop("-m")
+    args.pop("monitor_file")
     d, exts = (d + ":md,mdown,markdown").split(":")[:2]
     exts = exts.split(",")
     if not os.path.exists(d):
@@ -1526,19 +1584,36 @@ def monitor_dir(args):
         sleep()
 
 
-def load_yaml_config():
-    import yaml
+def load_config(filename, s=None, yaml=None):
+    fns = (filename,) if filename else ('.mdv', '.config/mdv')
+    for f in fns:
+        fn = os.path.expanduser('~/' + f) if f[0] == '.' else f
+        if not os.path.exists(fn):
+            if filename:
+                die('Not found: %s' % filename)
+            else:
+                continue
+        with open(fn) as fd:
+            s = fd.read()
+            break
+    if not s:
+        return {}
+    try:
+        import yaml
+        m = yaml.safe_load(s)
+    except:
+        import json
+        try:
+            m = json.loads(s)
+        except:
+            errout('could not parse config at %s. Have yaml: %s' % (fn, yaml))
+            if filename:
+                sys.exit(1)
+            m = {}
+    return m
 
-    cfg = yaml.load("{}")
-    config_file = os.path.expanduser("~/.mdv")
-    if os.path.exists(config_file):
-        with open(config_file, "r") as mdvconfig:
-            try:
-                cfg = yaml.load(mdvconfig)
-            except IOError:
-                pass
-    return cfg
-
+# backwards compat - this was there before:
+load_yaml_config = load_config
 
 def merge(a, b):
     c = a.copy()
@@ -1546,74 +1621,40 @@ def merge(a, b):
     return c
 
 
-def run_args(args, md=None):
-    """ call the lib entry function with CLI args """
-    # fmt: off
-    return main(
-        md            = md,
-        filename      = args.get("MDFILE"),
-        theme         = args.get("-t", "random"),
-        cols          = args.get("-c"),
-        from_txt      = args.get("-f"),
-        code_hilite   = args.get("-C"),
-        c_theme       = args.get("-T"),
-        c_no_guess    = args.get("-x"),
-        c_def_lexer   = args.get("-X"),
-        do_html       = args.get("-H"),
-        theme_info    = args.get("-i"),
-        no_colors     = args.get("-A"),
-        display_links = args.get("-L"),
-        link_style    = args.get("-u"),
-        tab_length    = args.get("-b", 4),
-        header_nrs    = args.get("-n"),
-    )
-
-
 # fmt: on
 def run():
     global is_app
     is_app = 1
     fix_py2_default_encoding() if not PY3 else None
+    kw = load_config(None) or {}
+    kw1 = parse_env_and_cli()
+    fn = kw1.get("config_file")
+    if fn:
+        kw.update(load_config(filename=fn))
+    kw.update(kw1)
     doc = __doc__[1:]
-    # our docstring markdown to docopt:
-    d = (
-        doc.split("# Details", 1)[0]
-        .replace("\n\n", "\n")
-        .replace("\n# ", "\n\n")
-        .strip()
-    )
-
-    try:
-        args = docopt(d, help=None, version="mdv v0.1")
-        args = merge(args, load_yaml_config())
-    except Exception as ex:
-        if not "-h" in sys.argv:
-            print(col("Option parsing error", R))
-        args = {"parse_error": 1}
-        sys.argv.append("-h")
-
-    if "-h" in sys.argv or "--help" in sys.argv:
-        # greenish default theme:
-        args["-t"] = args.get("-t") or 671.1616
-        args["-T"] = args.get("-T") or 526.9416
-        # lexers default:
-        args["-x"] = True
-        args["-X"] = args.get("-X") or "md"  # md: from pygments 2.2
-        # file monitor off:
-        args["-m"] = args["-M"] = None
-        args["-n"] = "1-"
-        res = run_args(args, md=doc)
-        args["-n"] = "0-0"
-        res += run_args(args, md="-----" + doc.split("# Details", 1)[0])
+    if kw.get("sh_help"):
+        d = dict(
+            theme=671.1616,
+            ctheme=526.9416,
+            c_no_guess=True,
+            c_def_lexer="md",
+            header_nrs="1-",
+            md=doc,
+        )
+        d.update(kw)
+        res = main(**d)
+        d["header_nrs"] = "0-0"
+        d["md"] = "-----" + doc.split("# Details", 1)[0]
+        res += main(**d)
         print(res if PY3 else str(res))
         sys.exit(0)
-
-    if args.get("-m"):
-        monitor(args)
-    if args.get("-M"):
-        monitor_dir(args)
+    if kw.get("monitor_file"):
+        monitor(kw)
+    elif kw.get("monitor_dir"):
+        monitor_dir(kw)
     else:
-        print(run_args(args) if PY3 else str(run_args(args)))
+        print(main(**kw) if PY3 else str(main(**kw)))
 
 
 if __name__ == "__main__":  # pragma: no cover

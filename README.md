@@ -447,6 +447,29 @@ Note the table block splitting when the table does not fit (last picture).
 - Some themes have black as darkest color, change to dark grey
 - Common Mark instead of markdown
 
+## PerfTests
+
+Rendering this readme [100 times](./mdv/misc/perftest.py):
+```
+black root@ip-10-34-2-19:~/terminal_markdown_viewer/mdv/misc# python perfest.py
+0.03 paka
+0.04 paka_breaks
+0.04 paka_xml
+1.47 mistletoe
+8.70 markdown
+5.22 commonmark
+```
+- markdown did better than commonmark w/o extensions but table and fenced code
+are definitelly required for 99% users.
+
+- paka is a wrapper around the C reference lib -> requires compilation.
+
+- mistletoe is pure python, crazy that they are so much faster than CommonMark.
+They say in pypy they are speed up even much more.
+
+mistletoe downside: py2 only via a fork.
+
+
 ## Credits
 
 [pygments](http://pygments.org/) (using their lexer)

@@ -14,7 +14,7 @@
 
 from setuptools import setup, find_packages
 
-version = "1.6.3"
+version = "1.7.0"
 
 setup(
     name="mdv",
@@ -24,11 +24,11 @@ setup(
     author_email="gk@axiros.com",
     description="Terminal Markdown Viewer",
     long_description=open("README.rst").read(),
-    install_requires=["tabulate", "pyyaml", "pygments", "markdown", "docopt"],
+    install_requires=["tabulate", "pygments", "markdown"],
+    extras_require={"yaml": "pyyaml"},
     include_package_data=True,
     url="http://github.com/axiros/terminal_markdown_viewer",
-    download_url="http://github.com/axiros/terminal_markdown_viewer/tarball/"
-    + version,
+    download_url="http://github.com/axiros/terminal_markdown_viewer/tarball/",
     keywords=[
         "markdown",
         "markup",
@@ -46,6 +46,8 @@ setup(
         "Topic :: Text Processing :: Markup",
         "License :: OSI Approved :: BSD License",
         "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3:6",
+        "Programming Language :: Python :: 3:7",
     ],
     entry_points={"console_scripts": ["mdv = mdv:run"]},
 )
