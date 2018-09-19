@@ -7,23 +7,24 @@
 
 # Options:
 
-    -t THEME  : Key within the color ansi_table.json. 'random' accepted.
-    -T C_THEME: Theme for code highlight. If not set: Using THEME.
-    -l        : Light background (not yet supported)
-    -u STYL   : Link Style (it=inline table=default, h=hide, i=inline)
-    -L        : Backwards compatible shortcut for '-u i'
-    -x        : Do not try guess code lexer (guessing is a bit slow)
-    -X Lexer  : Default lexer name (default: python). Set -x to use it always.
-    -f FROM   : Display FROM given substring of the file.
-    -m        : Monitor file for changes and redisplay FROM given substring
-    -M DIR    : Monitor directory for markdown file changes
-    -c COLS   : Fix columns to this (default: your terminal width)
-    -C MODE   : Sourcecode highlighting mode
     -A        : Strip all ansi (no colors then)
-    -b TABL : Set tab_length to sth. different than 4 [default: 4]
-    -i        : Show theme infos with output
+    -C MODE   : Sourcecode highlighting mode
     -H        : Print html version
+    -L        : Backwards compatible shortcut for '-u i'
+    -M DIR    : Monitor directory for markdown file changes
+    -T C_THEME: Theme for code highlight. If not set: Using THEME.
+    -X Lexer  : Default lexer name (default: python). Set -x to use it always.
+    -b TABL   : Set tab_length to sth. different than 4 [default: 4]
+    -c COLS   : Fix columns to this (default: your terminal width)
+    -f FROM   : Display FROM given substring of the file.
     -h        : Show help
+    -i        : Show theme infos with output
+    -l        : Light background (not yet supported)
+    -m        : Monitor file for changes and redisplay FROM given substring
+    -n NRS    : Header numbering (default: off. Say e.g. -3 or 1- or 1-5
+    -t THEME  : Key within the color ansi_table.json. 'random' accepted.
+    -u STYL   : Link Style (it=inline table=default, h=hide, i=inline)
+    -x        : Do not try guess code lexer (guessing is a bit slow)
 
 
 # Details
@@ -166,8 +167,12 @@ except ImportError:  # pragma: no cover
 if PY3:
     unichr = chr
     from html.parser import HTMLParser
+
+    string_type = str
 else:
     from HTMLParser import HTMLParser
+
+    string_type = basestring
 
     def breakpoint():
         import pdb
@@ -249,7 +254,6 @@ admons = {
     "caution": "H2",
 }
 
-
 link_start = "①"
 link_start_ord = ord(link_start)
 
@@ -298,7 +302,7 @@ if not term_columns and not "-c" in sys.argv:
     except:  # pragma: no cover
         term_columns, term_rows = get_terminal_size()
         if "-" not in sys.argv and (term_columns, term_rows) == (0, 0):
-            print("!! Could not derive your terminal width !!")
+            errout("!! Could not derive your terminal width !!")
 term_columns, term_rows = int(term_columns or 80), int(term_rows or 200)
 
 
@@ -559,36 +563,84 @@ def sh(out):
 
 
 # --------------------------------------------------------- Tag formatter funcs
+
+# number these header levels:
+header_nr = {"from": 0, "to": 0}
+# current state scanning the document:
+cur_header_state = {i: 0 for i in range(1, 11)}
+
+
+def reset_cur_header_state():
+    """after one document is complete"""
+    [into(cur_header_state, i, 0) for i in range(1, 11)]
+
+
+def parse_header_nrs(nrs):
+    'nrs e.g. "4-10" or "1-"'
+    if not nrs:
+        return
+    if isinstance(nrs, dict):
+        return header_nr.update(nrs)
+    if isinstance(nrs, string_type):
+        if nrs.startswith("-"):
+            nrs = "1" + nrs
+        if nrs.endswith("-"):
+            nrs += "10"
+        if not "-" in nrs:
+            nrs += "-10"
+        nrs = nrs.split("-")[0:2]
+    try:
+        if isinstance(nrs, (tuple, list)):
+            header_nr["from"] = int(nrs[0])
+            header_nr["to"] = int(nrs[1])
+            return
+    except Extension as ex:
+        errout("header numbering not understood", nrs)
+        sys.exit(1)
+
+
+def into(m, k, v):
+    m[k] = v
+
+
 class Tags:
+    _last_header_level = 0
     """ can be overwritten in derivations. """
 
+    def update_header_state(_, level):
+        if level == 3 and 0:
+            breakpoint()
+        cur = cur_header_state
+        if _._last_header_level > level:
+            [into(cur, i, 0) for i in range(level + 1, 10)]
+
+        for l in range(_._last_header_level + 1, level):
+            if cur[l] == 0:
+                cur[l] = 1
+        cur[level] += 1
+        _._last_header_level = level
+        ret = ""
+        f, t = header_nr["from"], header_nr["to"]
+        if level >= f and level <= t:
+            ret = ".".join(
+                [str(cur[i]) for i in range(f, t + 1) if cur[i] > 0]
+            )
+        return ret
+
     # @staticmethod everywhere is eye cancer, so we instantiate it later
-    def h(_, s, level):
-        return "\n%s%s" % (low("#" * 0), col(s, globals()["H%s" % level]))
-
-    def h1(_, s, **kw):
-        return _.h(s, 1)
-
-    def h2(_, s, **kw):
-        return _.h(s, 2)
-
-    def h3(_, s, **kw):
-        return _.h(s, 3)
-
-    def h4(_, s, **kw):
-        return _.h(s, 4)
-
-    def h5(_, s, **kw):
-        return _.h(s, 5)
-
-    def h6(_, s, **kw):
-        return _.h(s, 5)  # have not more then 5
-
-    def h7(_, s, **kw):
-        return _.h(s, 5)  # cols in the themes, low them all
-
-    def h8(_, s, **kw):
-        return _.h(s, 5)
+    def h(_, s, level, **kw):
+        """we set h1 to h10 formatters calling this when we do tag = Tag()"""
+        nrstr = _.update_header_state(level)
+        if nrstr:
+            # if we have header numbers we don't indent the text yet more:
+            s = " " + s.lstrip()
+        # have not more colors:
+        header_col = min(level, 5)
+        return "\n%s%s%s" % (
+            low("#" * 0),
+            nrstr,
+            col(s, globals()["H%s" % header_col]),
+        )
 
     def p(_, s, **kw):
         return col(s, T)
@@ -788,6 +840,8 @@ class AnsiPrinter(Treeprocessor):
 
     def run(self, doc):
         tags = Tags()
+        for h in cur_header_state:
+            setattr(tags, "h%s" % h, partial(tags.h, level=h))
 
         def get_attr(el, attr):
             for c in list(el.items()):
@@ -1060,6 +1114,7 @@ def set_hr_widths(result):
         l = len(clean_ansi(line))
         if l > mw:
             mw = l
+
     for hr in hrs:
         # pos of hr marker is indent, derives full width:
         # (more indent = less '-'):
@@ -1150,6 +1205,7 @@ def main(
     no_colors        = None,
     tab_length       = 4,
     no_change_defenc = False,
+    header_nrs       = False,
     **kw
 ):
     """ md is markdown string. alternatively we use filename and read """
@@ -1160,6 +1216,8 @@ def main(
     # https://github.com/axiros/terminal_markdown_viewer/issues/39
     # If you hate it then switch it off but don't blame me on unicode errs.
     True if no_change_defenc else fix_py2_default_encoding()
+
+    parse_header_nrs(header_nrs)
 
     tab_length = tab_length or 4
     global def_lexer
@@ -1252,9 +1310,12 @@ def main(
             fenced_code.FencedCodeExtension(),
         ],
     )
+
+
     if code_hilite:
         md = do_code_hilite(md, code_hilite)
     the_html = MD.convert(md)
+    reset_cur_header_state()
     # print the_html
     # html?
     if do_html:
@@ -1504,10 +1565,11 @@ def run_args(args, md=None):
         display_links = args.get("-L"),
         link_style    = args.get("-u"),
         tab_length    = args.get("-b", 4),
+        header_nrs    = args.get("-n"),
     )
-    # fmt: on
 
 
+# fmt: on
 def run():
     global is_app
     is_app = 1
@@ -1534,11 +1596,16 @@ def run():
         # greenish default theme:
         args["-t"] = args.get("-t") or 671.1616
         args["-T"] = args.get("-T") or 526.9416
+        # lexers default:
         args["-x"] = True
         args["-X"] = args.get("-X") or "md"  # md: from pygments 2.2
+        # file monitor off:
         args["-m"] = args["-M"] = None
-        d = "-----".join((doc, doc.split("# Details", 1)[0]))
-        print(run_args(args) if PY3 else str(run_args(args)))
+        args["-n"] = "1-"
+        res = run_args(args, md=doc)
+        args["-n"] = "0-0"
+        res += run_args(args, md="-----" + doc.split("# Details", 1)[0])
+        print(res if PY3 else str(res))
         sys.exit(0)
 
     if args.get("-m"):

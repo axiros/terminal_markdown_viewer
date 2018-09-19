@@ -147,32 +147,19 @@ Summary: For production ready robust markdown viewing (e.g. for your customers) 
 
     pip install mdv
 
-(2.7 version of pip)
 If you get `no attribute HTML_PLACEHOLDER`: update your markdown package.
 
 [Here](https://trac.macports.org/ticket/53591) is a macport (thanks Aljaž).
 
-#### Py2.7?!
-
-Except for some print brackets there is no reason it would not run in 3 and I'd
-pull if anybody sent me a version for 2 and 3. I myself won't do it though, will
-never work in a language w/o bytestrings and the most important type based on
-[funny enumerated](http://utf8everywhere.org/#characters) symbols.
-
-Update: With 1.4 it now basically runs in Python3 in the sense of no compile
-time errors - but the rendering result still is not really usable. Maybe
-somebody is inclinded to fix that, I'm on Py2 still.
-
-Changed the shebang to `/usr/bin/env python` though.
-
 
 ### Manual Install: Requirements
 
-- python2.7
+- python == 2.7 or > 3.5
 - py markdown (pip install markdown)
 - py pygments (pip install pygments)
 - py yaml (pip install pyyaml)
 - py docopt (pip install docopt)
+- py tabulate (pip install tabulate)
 
 Further a 256 color terminal (for now best with dark background) and font support for a few special separator characters (which you could change via config).
 
@@ -199,27 +186,33 @@ Use the setup.py provided inside, I.e. run:
 ### CLI
 
 ```markdown
+
 # Usage:
 
-    mdv [-t THEME] [-T C_THEME] [-i] [-x] [-X Lexer] [-l] [-L] [-c COLS] [-f FROM] [-m] [-C MODE] [-M DIR] [-H] [-A] [MDFILE]
+    mdv [OPTIONS] MDFILE
 
 # Options:
 
     MDFILE    : Path to markdown file
-    -t THEME  : Key within the color ansi_table.json. 'random' accepted.
-    -T C_THEME: Theme for code highlight. If not set: Using THEME.
-    -l        : Light background (not yet supported)
-    -L        : Display links
-    -x        : Do not try guess code lexer (guessing is a bit slow)
-    -X Lexer  : Default lexer name (default: python)
-    -f FROM   : Display FROM given substring of the file.
-    -m        : Monitor file for changes and redisplay FROM given substring
-    -M DIR    : Monitor directory for markdown file changes
-    -c COLS   : Fix columns to this (default: your terminal width)
-    -C MODE   : Sourcecode highlighting mode.
     -A        : Strip all ansi (no colors then)
-    -i        : Show theme infos with output
+    -C MODE   : Sourcecode highlighting mode
     -H        : Print html version
+    -L        : Backwards compatible shortcut for '-u i'
+    -M DIR    : Monitor directory for markdown file changes
+    -T C_THEME: Theme for code highlight. If not set: Using THEME.
+    -X Lexer  : Default lexer name (default: python). Set -x to use it always.
+    -b TABL   : Set tab_length to sth. different than 4 [default: 4]
+    -c COLS   : Fix columns to this (default: your terminal width)
+    -f FROM   : Display FROM given substring of the file.
+    -h        : Show help
+    -i        : Show theme infos with output
+    -l        : Light background (not yet supported)
+    -m        : Monitor file for changes and redisplay FROM given substring
+    -n NRS    : Header numbering (default: off. Say e.g. -3 or 1- or 1-5
+    -t THEME  : Key within the color ansi_table.json. 'random' accepted.
+    -u STYL   : Link Style (it=inline table=default, h=hide, i=inline)
+    -x        : Do not try guess code lexer (guessing is a bit slow)
+
 
 # Notes:
 
@@ -509,4 +502,13 @@ Also:
 
 [travis]: https://travis-ci.org/axiros/terminal_markdown_viewer
 [travis_img]: https://travis-ci.org/axiros/terminal_markdown_viewer.svg?branch=master
+
+
+
+### Sept 2018:
+
+- Merged some PRs
+- Revised Py3 support (finally found peace with it, since they enforce UTF-8
+  everywhere it s usable). Indented code was broken, fixed that.
+- Header numbering feature added (`-n 2-4` or `-n 1-`)
 
