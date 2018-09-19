@@ -1,0 +1,474 @@
+<html>
+<body><h1>Terminal Markdown Viewer</h1>
+<table>
+<tr><td>foo</td></tr>
+<tr><td>foo</td></tr>
+<tr><td>foo</td></tr>
+<tr><td>foo</td></tr>
+</table>
+
+<p><a href="https://travis-ci.org/axiros/terminal_markdown_viewer"><img alt="Build Status" src="https://travis-ci.org/axiros/terminal_markdown_viewer.svg?branch=master" /></a>
+<a href='https://coveralls.io/github/axiros/terminal_markdown_viewer?branch=master'>
+<img src='https://coveralls.io/repos/github/axiros/terminal_markdown_viewer/badge.svg?branch=master' alt='Coverage Status' /></a>
+<a href="https://badge.fury.io/py/mdv"><img alt="PyPI version" src="https://badge.fury.io/py/mdv.svg" /></a>
+<a href="https://github.com/ambv/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a></p>
+<p>When you edit multiple md files remotely, like in a larger
+<a href="http://www.mkdocs.org/">mkdocs</a> project, context switches between editing
+terminal(s) and viewing browser may have some efficiency impact.
+Also sometimes there is just no browser, like via security gateways offering
+just a fixed set of applications on the hop in machine.
+Further, reading efficiency and convenience is often significantly improved
+by using colors.
+And lastly, using such a thing for cli applications might improve user output,
+e.g. for help texts.</p>
+<p>This is where mdv, a Python based Markdown viewer for the terminal might be
+a good option.</p>
+<!-- toc -->
+
+<ul>
+<li><a href="#terminal-markdown-viewer">Terminal Markdown Viewer</a><ul>
+<li><a href="#features">Features</a></li>
+<li><a href="#alternatives">Alternatives</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#usage">Usage</a><ul>
+<li><a href="#cli">CLI</a></li>
+<li><a href="#inline">Inline</a></li>
+<li><a href="#sample-inline-use-case-click-module-docu">Sample Inline Use Case: click module docu</a></li>
+</ul>
+</li>
+<li><a href="#customization">Customization</a></li>
+<li><a href="#screenshots">Screenshots</a></li>
+<li><a href="#todo">TODO</a></li>
+<li><a href="#credits">Credits</a></li>
+<li><a href="#updates">Updates</a></li>
+</ul>
+</li>
+</ul>
+<!-- tocstop -->
+
+<p>If markdown is often "simple" enough to be somewhat readable on 256 color terminals (except images that is).</p>
+<p><img src="./samples/1.png" width=500></p>
+<p>from</p>
+<pre><code>### Source
+# Header 1
+## Header 2
+### Header 3
+#### Header 4
+##### Header 5
+###### Header 6
+```python
+""" Test """
+# Make Py2 &gt;&gt;&gt; Py3:
+import os, sys; reload(sys); sys.setdefaultencoding('utf-8')
+# no? see http://stackoverflow.com/a/29832646/4583360 ...
+
+# code analysis for hilite:
+try:
+    from pygments import lex, token
+    from pygments.lexers import get_lexer_by_name, guess_lexer
+```
+
+| Tables | Fmt |
+| -- | -- |
+| !!! hint: wrapped | 0.1 **strong** |
+
+!!! note: title
+    this is a Note
+</code></pre>
+<p>You can also use mdv as a <strong>source code</strong> viewer, best when you have docstrings with markdown in your code:</p>
+<p><img alt="" src="./samples/5.png" /></p>
+<p>from</p>
+<pre><code class="python">~/terminal_markdown_viewer $ cat setup.py
+#!/usr/bin/env python2.7
+# coding: utf-8
+
+&quot;&quot;&quot;_
+# Mdv installation
+
+## Usage
+
+    [sudo] ./setup.py install
+
+----
+&quot;&quot;&quot;
+
+from setuptools import setup, find_packages
+
+import mdv
+
+setup(
+    name='mdv',
+    version=mdv.__version__,
+
+</code></pre>
+
+<p>(the '_' after the docstring telling mdv that markdown follows)</p>
+<hr />
+<blockquote>
+<p>mdv is a proof of concept hack: While for simple structures it does its job quite well, for complex markdown you want to use other tools.
+Especially for inlined html it simply fails.</p>
+</blockquote>
+<hr />
+<h2>Features</h2>
+<ul>
+<li>Tons of theme combinations: mdv ships with &gt; 200 luminocity sorted themes, converted from html themes tables to ansi. Those can be combined for code vs regular markdown output...</li>
+<li>Admonitions</li>
+<li>Tables, incl. wide table handling avoiding "interleaving"</li>
+<li>Somewhat hackable, all in <a href="mdv/markdownviewer.py">one</a> module</li>
+<li>Useable as lib as well</li>
+<li>File change monitor</li>
+<li>Text wrapping</li>
+<li>Source code highlighter</li>
+<li>Little directory change monitor (cames handy when working on multiple files, to get the current one always displayed)<ul>
+<li>which can run arbitrary commands on file changes</li>
+<li>which passes filepath, raw and prettyfied content to the other command
+    Note: Poor man's implementation, polling. Check inotify based tools if you want sth better.</li>
+</ul>
+</li>
+</ul>
+<h2>Alternatives</h2>
+<p>The ones I know of (and which made me write mdv ;-) ):</p>
+<ol>
+<li>There are quite a few from the js community (e.g. <a href="https://www.npmjs.com/package/msee">msee</a>, ansidown, ansimd and also nd which is great) but they require nodejs &amp; npm, which I don't have on my servers. Also I personally wanted table handling and admonition support throughout and prob. too old to hack other peoples' js (struggling enough with my own). But have a look at them, they do some things better than mdv in this early version (I try to learn from them). Also <a href="https://github.com/substack/picture-tube">this</a> would be worth a look ;-)</li>
+<li>pandoc -&gt; html -&gt; elinks, lynx or pandoc -&gt; groff -&gt; man. (Heavy and hard to use from within other programs. Styling suboptimal)</li>
+<li>vimcat (Also heavy and hard to use inline in other programs)</li>
+</ol>
+<p>Summary: For production ready robust markdown viewing (e.g. for your customers) I recommend nd still, due to the early state of mdv. For playing around, especially with theming or when with Python, this one might be a valid alternative to look at.</p>
+<h2>Installation</h2>
+<pre><code>pip install mdv
+</code></pre>
+<p>If you get <code>no attribute HTML_PLACEHOLDER</code>: update your markdown package.</p>
+<p><a href="https://trac.macports.org/ticket/53591">Here</a> is a macport (thanks Aljaž).</p>
+<h3>Manual Install: Requirements</h3>
+<ul>
+<li>python == 2.7 or &gt; 3.5</li>
+<li>py markdown (pip install markdown)</li>
+<li>py pygments (pip install pygments)</li>
+<li>py yaml (pip install pyyaml)</li>
+<li>py docopt (pip install docopt)</li>
+<li>py tabulate (pip install tabulate)</li>
+</ul>
+<p>Further a 256 color terminal (for now best with dark background) and font support for a few special separator characters (which you could change via config).</p>
+<blockquote>
+<p>For light terms you'd just need to revert the 5 colors from the themes, since they are sorted by luminocity.</p>
+</blockquote>
+<p>I did not test anything on windows.</p>
+<h3>Manual Install: Setup</h3>
+<p>Distribution via setuptools. If setuptools is not installed, run:</p>
+<pre><code>pip install setuptools
+</code></pre>
+<p>Use the setup.py provided inside, I.e. run:</p>
+<pre><code>sudo ./setup.py install
+(or ./setup.py install --user to install only for the current user)
+</code></pre>
+<h2>Usage</h2>
+<h3>CLI</h3>
+<pre><code class="markdown">
+# Usage:
+
+    mdv [OPTIONS] MDFILE
+
+# Options:
+
+    MDFILE    : Path to markdown file
+    -A        : Strip all ansi (no colors then)
+    -C MODE   : Sourcecode highlighting mode
+    -H        : Print html version
+    -L        : Backwards compatible shortcut for '-u i'
+    -M DIR    : Monitor directory for markdown file changes
+    -T C_THEME: Theme for code highlight. If not set: Using THEME.
+    -X Lexer  : Default lexer name (default: python). Set -x to use it always.
+    -b TABL   : Set tab_length to sth. different than 4 [default: 4]
+    -c COLS   : Fix columns to this (default: your terminal width)
+    -f FROM   : Display FROM given substring of the file.
+    -h        : Show help
+    -i        : Show theme infos with output
+    -l        : Light background (not yet supported)
+    -m        : Monitor file for changes and redisplay FROM given substring
+    -n NRS    : Header numbering (default: off. Say e.g. -3 or 1- or 1-5
+    -t THEME  : Key within the color ansi_table.json. 'random' accepted.
+    -u STYL   : Link Style (it=inline table=default, h=hide, i=inline)
+    -x        : Do not try guess code lexer (guessing is a bit slow)
+
+
+# Notes:
+
+We use stty tool to derive terminal size. If you pipe into mdv we use 80 cols.
+
+## To use mdv.py as lib:
+
+Call the main function with markdown string at hand to get a
+formatted one back. Sorry then for no Py3 support, accepting PRs if they don't screw Py2.
+
+## FROM:
+
+FROM may contain max lines to display, seperated by colon.
+Example:
+
+    -f 'Some Head:10' -&gt; displays 10 lines after 'Some Head'
+
+If the substring is not found we set it to the *first* character of the file -
+resulting in output from the top (if your terminal height can be derived correctly through the stty cmd).
+
+## Code Highlighting
+
+Set -C &lt;all|code|doc|mod&gt; for source code highlighting of source code files.
+Mark inline markdown with a '_' following the docstring beginnings.
+
+- all: Show markdown docstrings AND code (default if you say, e.g. `-C.`)
+- code: Only Code
+- doc: Only docstrings with markdown
+- mod: Only the module level docstring
+
+
+## File Monitor:
+
+If FROM is not found we display the whole file.
+
+## Directory Monitor:
+
+We check only text file changes, monitoring their size.
+
+By default .md, .mdown, .markdown files are checked but you can change like `-M 'mydir:py,c,md,'` where the last empty substrings makes mdv also monitor any file w/o extension (like 'README').
+
+### Running actions on changes:
+
+If you append to `-M` a `'::&lt;cmd&gt;'` we run the command on any change detected (sync, in foreground).
+
+The command can contain placeholders:
+
+    _fp_     # Will be replaced with filepath
+    _raw_    # Will be replaced with the base64 encoded raw content
+               of the file
+    _pretty_ # Will be replaced with the base64 encoded prettyfied output
+
+Like: mdv -M './mydocs:py,md::open &quot;_fp_&quot;'  which calls the open
+command with argument the path to the changed file.
+
+
+## Themes
+
+### Theme Rollers
+
+
+    mdv -T all [file]:  All available code styles on the given file.
+    mdv -t all [file]:  All available md   styles on the given file.
+                        If file is not given we use a short sample file.
+
+So to see all code hilite variations with a given theme:
+
+Say C_THEME = all and fix THEME
+
+Setting both to all will probably spin your beach ball...
+
+### Environ Vars
+
+`$MDV_THEME` and `$MDV_CODE_THEME` are understood, e.g. `export
+MDV_THEME=729.8953` in your .bashrc will give you a consistent color scheme.
+
+
+</code></pre>
+
+<blockquote>
+<p>Regarding the strange theme ids: Those numbers are the calculated total luminocity of the 5 theme colors.</p>
+</blockquote>
+<h3>Inline</h3>
+<p>mdv is designed to be used well from other (Py2) programs when they have md at hand which should be displayed to the user:</p>
+<pre><code class="python">import mdv
+
+# config like this:
+mdv.term_columns = 60
+
+# calling like this (all CLI options supported, check def main
+formatted = mdv.main(my_raw_markdown, c_theme=...)  
+</code></pre>
+
+<blockquote>
+<p>Note that I set the defaultencoding to utf-8  in <code>__main__</code>. I have this as my default python2 setup and did not test inline usage w/o. Check <a href="http://stackoverflow.com/a/29832646/4583360">this</a> for risks.</p>
+</blockquote>
+<h3>Sample Inline Use Case: click module docu</h3>
+<p><a href="http://lucumr.pocoo.org/2014/5/12/everything-about-unicode/">Armin Ronacher</a>'s
+<a href="http://click.pocoo.org">click</a> is a great framework for writing larger CLI apps - but its help texts are a bit boring, intended to be customized.</p>
+<p>Here is how:</p>
+<p>Write a normal click module with a function but w/o a doc string as shown:</p>
+<pre><code class="python">@pass_context                                                                   
+def cli(ctx, action, name, host, port, user, msg):           
+    &quot;&quot;&quot; docu from module __doc__ &quot;&quot;&quot;
+</code></pre>
+
+<p>On module level you provide markdown for it, like:</p>
+<pre><code class="shell">~/axc/plugins/zodb_sub $ cat zodb.py | head
+&quot;&quot;&quot;
+# Fetch and push ZODB trees
+
+## ACTION: &lt; info | pull | push | merge | dump | serve&gt;
+
+- info:  Requests server availability information
+(...)
+</code></pre>
+
+<p>which you set at click module import time:</p>
+<pre><code>mod.cli.help = mod.__doc__
+</code></pre>
+<p>Lastly do this in your app module:</p>
+<pre><code class="python">from click.formatting import HelpFormatter
+def write_text(self, text):
+    &quot;&quot;&quot; since for markdown pretty out on cli I found no good tool
+    so I built my own &quot;&quot;&quot;
+    # poor man's md detection:
+    if not text.strip().startswith('#'):
+        return orig_write_text(self, text)
+    from axc.markdown.mdv import main as mdv
+    self.buffer.append(mdv(md=text, theme=os.environ['AXC_THEME']))
+
+HelpFormatter.orig_write_text = HelpFormatter.write_text
+HelpFormatter.write_text = write_text
+</code></pre>
+
+<p>The output has then colors:</p>
+<p><img alt="" src="samples/3.png" /></p>
+<p>and at smaller terms rewraps nicely:</p>
+<p><img alt="" src="samples/4.png" /></p>
+<p>Further, having markdown in the module <code>__doc__</code> makes it simple to add into a global project docu framework, like mkdocs.</p>
+<h2>Customization</h2>
+<p>You can supply all CLI args in <code>$HOME/.mdv</code>, in yaml format.</p>
+<p>More flex you have via <code>$HOME/.mdv.py</code>, which is execed if present, when
+running <code>main</code>.</p>
+<p>Alternatively, in <a href="mdv.py">mdv.py</a> you can change some config straight forward.</p>
+<pre><code class="python"># ---------------------------------------------------------------------- Config
+txt_block_cut, code_pref, list_pref, br_ends = '✂', '| ', '- ', '◈'
+# ansi cols (default):
+# R: Red (warnings), L: low visi, BG: background, BGL: background light, C=code
+# H1 - H5 = the theme, the numbers are the ansi color codes:
+H1,  H2,  H3,  H4,  H5, R,   L,  BG, BGL, T,   TL, C   = \
+231, 153, 117, 109, 65, 124, 59, 16, 188, 188, 59, 102
+# Code (C is fallback if we have no lexer). Default: Same theme:
+CH1, CH2, CH3, CH4, CH5 = H1, H2, H3, H4, H5
+
+code_hl = { &quot;Keyword&quot; : 'CH3', &quot;Name&quot; : 'CH1',
+            &quot;Comment&quot; : 'L',  &quot;String&quot;: 'CH4',
+            &quot;Error&quot;   : 'R',  &quot;Number&quot;: 'CH4',
+            &quot;Operator&quot;: 'CH5',
+            &quot;Generic&quot; : 'CH2'
+            }
+
+admons = {'note'     : 'H3', 'warning': 'R',
+          'attention': 'H1', 'hint'   : 'H4',
+          'summary'  : 'H1', 'hint'   : 'H4',
+          'question' : 'H5', 'danger' : 'R',
+          'caution'  : 'H2'
+         }
+
+def_lexer = 'python'
+guess_lexer = True
+# also global. but not in use, BG handling can get pretty involved...
+background = BG
+
+# normal text color:
+color = T
+
+show_links = None
+
+# could be given, otherwise read from ansi_tables.json:
+themes = {}
+
+
+# sample for the theme roller feature:
+md_sample = ''
+
+# ------------------------------------------------------------------ End Config
+</code></pre>
+
+<p>Any importing module can overwrite those module global variables as well.</p>
+<p>Should you need yet additional themes, add them to <code>ansi_tables.json</code> file by adding your ansi codes there.</p>
+<h2>Screenshots</h2>
+<p>Random results, using the theme roller feature:</p>
+<p><img alt="second" src="https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/2.png" /></p>
+<p>Note the table block splitting when the table does not fit (last picture).</p>
+<h2>TODO</h2>
+<ul>
+<li>Refactor the implementation, using a config class</li>
+<li>Lines separators not optimal (<a href="https://www.npmjs.com/package/nd">nd</a> does better)</li>
+<li>Test light colorscheme</li>
+<li>Dimming</li>
+<li>A few grey scale and 8 color themes</li>
+<li>Sorting of the json by luminance</li>
+<li>Some themes have black as darkest color, change to dark grey</li>
+<li>Common Mark instead of markdown</li>
+</ul>
+<h2>Credits</h2>
+<p><a href="http://pygments.org/">pygments</a> (using their lexer)</p>
+<p><a href="https://pypi.python.org/pypi/tabulate">tabulate</a></p>
+<p>and, naturally, the <a href="https://pythonhosted.org/Markdown/authors.html">python markdown project</a></p>
+<p>Update: Next version will be CommonMark based though...</p>
+<h2>Updates</h2>
+<h3>July 2016:</h3>
+<p>Sort of an excuse for the long long time w/o an update:
+I did actually start working on a more solid version based on CommonMark but
+that went a bit out of scope, into a general html terminal viewer, which will
+probably never be finished :-/</p>
+<p>So at least here an update containing the stuff you guys sent as PRs, thanks all!!</p>
+<ul>
+<li>installation and dependencies via a setup.py (thanks
+  <a href="https://github.com/althonos">Martin</a>)</li>
+<li>supporting <code>echo -e "# foo\n## bar" | mdv -</code> and a 'light' theme (thanks
+  <a href="https://github.com/seletskiy">Stanislav</a>)</li>
+<li>and a few other improvements regarding python2.7, file location and pyyaml, thanks all.</li>
+</ul>
+<p>Also:</p>
+<ul>
+<li>fixed the most obvious bugs with nested ordered and unordered lists</li>
+<li>fixed bold marker</li>
+<li>different color highlighting for the list markers</li>
+<li>added a source code highlighting mode, which highlights also docstrings in markdown (<code>-C &lt;mode&gt;</code>)</li>
+<li>some tests in the tests folder</li>
+<li>using <code>textwrap</code> now for the wrapping, to avoid these word breaks a few complained about</li>
+<li>you can supply the default lexer now, e.g. <code>-X javascript [-x]</code></li>
+<li>fixed but with not rendered strong texts</li>
+<li>pip install mdv</li>
+</ul>
+<h3>Nov 2016:</h3>
+<ul>
+<li>
+<p>travis</p>
+</li>
+<li>
+<p>Inline link tables</p>
+</li>
+</ul>
+<p><img alt="" src="samples/links.png" /></p>
+<h3>Sept 2018:</h3>
+<p>foo<br />
+bar ba</p>
+<ul>
+<li>Merged <br />
+  some PRs. </li>
+<li>Decent <a href="https://github.com/ambv/black">code formatter</a>. Not that this weekend hack got more readable though. Well, maybe a bit.</li>
+<li>Revised Py3 support (finally found peace with it, since they enforce UTF-8 everywhere the new features begin to outweigh the nightmares of trying to decode everything without need).</li>
+<li>Indented code in PY3 was broken, fixed that. <em>Why, PY3, are you you creating crap like "b'foo'" instead raising or auto-decoding?</em></li>
+<li>Header numbering feature added (<code>-n 2-4</code> or <code>-n 1-</code>)
+<img src="./samples/header_num.png" width="400"/></li>
+</ul>
+<p>tabletest</p>
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>foo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>User</td>
+<td>Any</td>
+</tr>
+<tr>
+<td>Campaign</td>
+<td>Any</td>
+</tr>
+<tr>
+<td>Support Portal</td>
+<td><code>[cpeid, '=', a cpeid]</code></td>
+</tr>
+</tbody>
+</table></body></html>

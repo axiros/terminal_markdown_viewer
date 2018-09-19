@@ -1,0 +1,988 @@
+<html>
+<body><?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document SYSTEM "CommonMark.dtd">
+<document xmlns="http://commonmark.org/xml/1.0">
+  <heading level="1">
+    <text>Terminal Markdown Viewer</text>
+  </heading>
+  <html_block>&lt;table&gt;
+&lt;tr&gt;&lt;td&gt;foo&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;foo&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;foo&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;foo&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+</html_block>
+  <paragraph>
+    <link destination="https://travis-ci.org/axiros/terminal_markdown_viewer" title="">
+      <image destination="https://travis-ci.org/axiros/terminal_markdown_viewer.svg?branch=master" title="">
+        <text>Build Status</text>
+      </image>
+    </link>
+    <softbreak />
+    <html_inline>&lt;a href='https://coveralls.io/github/axiros/terminal_markdown_viewer?branch=master'&gt;</html_inline>
+    <softbreak />
+    <html_inline>&lt;img src='https://coveralls.io/repos/github/axiros/terminal_markdown_viewer/badge.svg?branch=master' alt='Coverage Status' /&gt;</html_inline>
+    <html_inline>&lt;/a&gt;</html_inline>
+    <softbreak />
+    <link destination="https://badge.fury.io/py/mdv" title="">
+      <image destination="https://badge.fury.io/py/mdv.svg" title="">
+        <text>PyPI version</text>
+      </image>
+    </link>
+    <softbreak />
+    <html_inline>&lt;a href=&quot;https://github.com/ambv/black&quot;&gt;</html_inline>
+    <html_inline>&lt;img alt=&quot;Code style: black&quot; src=&quot;https://img.shields.io/badge/code%20style-black-000000.svg&quot;&gt;</html_inline>
+    <html_inline>&lt;/a&gt;</html_inline>
+  </paragraph>
+  <paragraph>
+    <text>When you edit multiple md files remotely, like in a larger</text>
+    <softbreak />
+    <link destination="http://www.mkdocs.org/" title="">
+      <text>mkdocs</text>
+    </link>
+    <text> project, context switches between editing</text>
+    <softbreak />
+    <text>terminal(s) and viewing browser may have some efficiency impact.</text>
+    <softbreak />
+    <text>Also sometimes there is just no browser, like via security gateways offering</text>
+    <softbreak />
+    <text>just a fixed set of applications on the hop in machine.</text>
+    <softbreak />
+    <text>Further, reading efficiency and convenience is often significantly improved</text>
+    <softbreak />
+    <text>by using colors.</text>
+    <softbreak />
+    <text>And lastly, using such a thing for cli applications might improve user output,</text>
+    <softbreak />
+    <text>e.g. for help texts.</text>
+  </paragraph>
+  <paragraph>
+    <text>This is where mdv, a Python based Markdown viewer for the terminal might be</text>
+    <softbreak />
+    <text>a good option.</text>
+  </paragraph>
+  <html_block>&lt;!-- toc --&gt;
+</html_block>
+  <list type="bullet" tight="true">
+    <item>
+      <paragraph>
+        <link destination="#terminal-markdown-viewer" title="">
+          <text>Terminal Markdown Viewer</text>
+        </link>
+      </paragraph>
+      <list type="bullet" tight="true">
+        <item>
+          <paragraph>
+            <link destination="#features" title="">
+              <text>Features</text>
+            </link>
+          </paragraph>
+        </item>
+        <item>
+          <paragraph>
+            <link destination="#alternatives" title="">
+              <text>Alternatives</text>
+            </link>
+          </paragraph>
+        </item>
+        <item>
+          <paragraph>
+            <link destination="#installation" title="">
+              <text>Installation</text>
+            </link>
+          </paragraph>
+        </item>
+        <item>
+          <paragraph>
+            <link destination="#usage" title="">
+              <text>Usage</text>
+            </link>
+          </paragraph>
+          <list type="bullet" tight="true">
+            <item>
+              <paragraph>
+                <link destination="#cli" title="">
+                  <text>CLI</text>
+                </link>
+              </paragraph>
+            </item>
+            <item>
+              <paragraph>
+                <link destination="#inline" title="">
+                  <text>Inline</text>
+                </link>
+              </paragraph>
+            </item>
+            <item>
+              <paragraph>
+                <link destination="#sample-inline-use-case-click-module-docu" title="">
+                  <text>Sample Inline Use Case: click module docu</text>
+                </link>
+              </paragraph>
+            </item>
+          </list>
+        </item>
+        <item>
+          <paragraph>
+            <link destination="#customization" title="">
+              <text>Customization</text>
+            </link>
+          </paragraph>
+        </item>
+        <item>
+          <paragraph>
+            <link destination="#screenshots" title="">
+              <text>Screenshots</text>
+            </link>
+          </paragraph>
+        </item>
+        <item>
+          <paragraph>
+            <link destination="#todo" title="">
+              <text>TODO</text>
+            </link>
+          </paragraph>
+        </item>
+        <item>
+          <paragraph>
+            <link destination="#credits" title="">
+              <text>Credits</text>
+            </link>
+          </paragraph>
+        </item>
+        <item>
+          <paragraph>
+            <link destination="#updates" title="">
+              <text>Updates</text>
+            </link>
+          </paragraph>
+        </item>
+      </list>
+    </item>
+  </list>
+  <html_block>&lt;!-- tocstop --&gt;
+</html_block>
+  <paragraph>
+    <text>If markdown is often &quot;simple&quot; enough to be somewhat readable on 256 color terminals (except images that is).</text>
+  </paragraph>
+  <html_block>&lt;img src=&quot;./samples/1.png&quot; width=500&gt;
+</html_block>
+  <paragraph>
+    <text>from</text>
+  </paragraph>
+  <code_block>### Source
+# Header 1
+## Header 2
+### Header 3
+#### Header 4
+##### Header 5
+###### Header 6
+```python
+&quot;&quot;&quot; Test &quot;&quot;&quot;
+# Make Py2 &gt;&gt;&gt; Py3:
+import os, sys; reload(sys); sys.setdefaultencoding('utf-8')
+# no? see http://stackoverflow.com/a/29832646/4583360 ...
+
+# code analysis for hilite:
+try:
+    from pygments import lex, token
+    from pygments.lexers import get_lexer_by_name, guess_lexer
+```
+
+| Tables | Fmt |
+| -- | -- |
+| !!! hint: wrapped | 0.1 **strong** |
+
+!!! note: title
+    this is a Note
+</code_block>
+  <paragraph>
+    <text>You can also use mdv as a </text>
+    <strong>
+      <text>source code</text>
+    </strong>
+    <text> viewer, best when you have docstrings with markdown in your code:</text>
+  </paragraph>
+  <paragraph>
+    <image destination="./samples/5.png" title="" />
+  </paragraph>
+  <paragraph>
+    <text>from</text>
+  </paragraph>
+  <code_block info="python">~/terminal_markdown_viewer $ cat setup.py
+#!/usr/bin/env python2.7
+# coding: utf-8
+
+&quot;&quot;&quot;_
+# Mdv installation
+
+## Usage
+
+    [sudo] ./setup.py install
+
+----
+&quot;&quot;&quot;
+
+from setuptools import setup, find_packages
+
+import mdv
+
+setup(
+    name='mdv',
+    version=mdv.__version__,
+
+</code_block>
+  <paragraph>
+    <text>(the '_' after the docstring telling mdv that markdown follows)</text>
+  </paragraph>
+  <thematic_break />
+  <block_quote>
+    <paragraph>
+      <text>mdv is a proof of concept hack: While for simple structures it does its job quite well, for complex markdown you want to use other tools.</text>
+      <softbreak />
+      <text>Especially for inlined html it simply fails.</text>
+    </paragraph>
+  </block_quote>
+  <thematic_break />
+  <heading level="2">
+    <text>Features</text>
+  </heading>
+  <list type="bullet" tight="true">
+    <item>
+      <paragraph>
+        <text>Tons of theme combinations: mdv ships with &gt; 200 luminocity sorted themes, converted from html themes tables to ansi. Those can be combined for code vs regular markdown output...</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>Admonitions</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>Tables, incl. wide table handling avoiding &quot;interleaving&quot;</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>Somewhat hackable, all in </text>
+        <link destination="mdv/markdownviewer.py" title="">
+          <text>one</text>
+        </link>
+        <text> module</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>Useable as lib as well</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>File change monitor</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>Text wrapping</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>Source code highlighter</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>Little directory change monitor (cames handy when working on multiple files, to get the current one always displayed)</text>
+      </paragraph>
+      <list type="bullet" tight="true">
+        <item>
+          <paragraph>
+            <text>which can run arbitrary commands on file changes</text>
+          </paragraph>
+        </item>
+        <item>
+          <paragraph>
+            <text>which passes filepath, raw and prettyfied content to the other command</text>
+            <softbreak />
+            <text>Note: Poor man's implementation, polling. Check inotify based tools if you want sth better.</text>
+          </paragraph>
+        </item>
+      </list>
+    </item>
+  </list>
+  <heading level="2">
+    <text>Alternatives</text>
+  </heading>
+  <paragraph>
+    <text>The ones I know of (and which made me write mdv ;-) ):</text>
+  </paragraph>
+  <list type="ordered" start="1" delim="period" tight="true">
+    <item>
+      <paragraph>
+        <text>There are quite a few from the js community (e.g. </text>
+        <link destination="https://www.npmjs.com/package/msee" title="">
+          <text>msee</text>
+        </link>
+        <text>, ansidown, ansimd and also nd which is great) but they require nodejs &amp; npm, which I don't have on my servers. Also I personally wanted table handling and admonition support throughout and prob. too old to hack other peoples' js (struggling enough with my own). But have a look at them, they do some things better than mdv in this early version (I try to learn from them). Also </text>
+        <link destination="https://github.com/substack/picture-tube" title="">
+          <text>this</text>
+        </link>
+        <text> would be worth a look ;-)</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>pandoc -&gt; html -&gt; elinks, lynx or pandoc -&gt; groff -&gt; man. (Heavy and hard to use from within other programs. Styling suboptimal)</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>vimcat (Also heavy and hard to use inline in other programs)</text>
+      </paragraph>
+    </item>
+  </list>
+  <paragraph>
+    <text>Summary: For production ready robust markdown viewing (e.g. for your customers) I recommend nd still, due to the early state of mdv. For playing around, especially with theming or when with Python, this one might be a valid alternative to look at.</text>
+  </paragraph>
+  <heading level="2">
+    <text>Installation</text>
+  </heading>
+  <code_block>pip install mdv
+</code_block>
+  <paragraph>
+    <text>If you get </text>
+    <code>no attribute HTML_PLACEHOLDER</code>
+    <text>: update your markdown package.</text>
+  </paragraph>
+  <paragraph>
+    <link destination="https://trac.macports.org/ticket/53591" title="">
+      <text>Here</text>
+    </link>
+    <text> is a macport (thanks Aljaž).</text>
+  </paragraph>
+  <heading level="3">
+    <text>Manual Install: Requirements</text>
+  </heading>
+  <list type="bullet" tight="true">
+    <item>
+      <paragraph>
+        <text>python == 2.7 or &gt; 3.5</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>py markdown (pip install markdown)</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>py pygments (pip install pygments)</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>py yaml (pip install pyyaml)</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>py docopt (pip install docopt)</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>py tabulate (pip install tabulate)</text>
+      </paragraph>
+    </item>
+  </list>
+  <paragraph>
+    <text>Further a 256 color terminal (for now best with dark background) and font support for a few special separator characters (which you could change via config).</text>
+  </paragraph>
+  <block_quote>
+    <paragraph>
+      <text>For light terms you'd just need to revert the 5 colors from the themes, since they are sorted by luminocity.</text>
+    </paragraph>
+  </block_quote>
+  <paragraph>
+    <text>I did not test anything on windows.</text>
+  </paragraph>
+  <heading level="3">
+    <text>Manual Install: Setup</text>
+  </heading>
+  <paragraph>
+    <text>Distribution via setuptools. If setuptools is not installed, run:</text>
+  </paragraph>
+  <code_block>pip install setuptools
+</code_block>
+  <paragraph>
+    <text>Use the setup.py provided inside, I.e. run:</text>
+  </paragraph>
+  <code_block>sudo ./setup.py install
+(or ./setup.py install --user to install only for the current user)
+</code_block>
+  <heading level="2">
+    <text>Usage</text>
+  </heading>
+  <heading level="3">
+    <text>CLI</text>
+  </heading>
+  <code_block info="markdown">
+# Usage:
+
+    mdv [OPTIONS] MDFILE
+
+# Options:
+
+    MDFILE    : Path to markdown file
+    -A        : Strip all ansi (no colors then)
+    -C MODE   : Sourcecode highlighting mode
+    -H        : Print html version
+    -L        : Backwards compatible shortcut for '-u i'
+    -M DIR    : Monitor directory for markdown file changes
+    -T C_THEME: Theme for code highlight. If not set: Using THEME.
+    -X Lexer  : Default lexer name (default: python). Set -x to use it always.
+    -b TABL   : Set tab_length to sth. different than 4 [default: 4]
+    -c COLS   : Fix columns to this (default: your terminal width)
+    -f FROM   : Display FROM given substring of the file.
+    -h        : Show help
+    -i        : Show theme infos with output
+    -l        : Light background (not yet supported)
+    -m        : Monitor file for changes and redisplay FROM given substring
+    -n NRS    : Header numbering (default: off. Say e.g. -3 or 1- or 1-5
+    -t THEME  : Key within the color ansi_table.json. 'random' accepted.
+    -u STYL   : Link Style (it=inline table=default, h=hide, i=inline)
+    -x        : Do not try guess code lexer (guessing is a bit slow)
+
+
+# Notes:
+
+We use stty tool to derive terminal size. If you pipe into mdv we use 80 cols.
+
+## To use mdv.py as lib:
+
+Call the main function with markdown string at hand to get a
+formatted one back. Sorry then for no Py3 support, accepting PRs if they don't screw Py2.
+
+## FROM:
+
+FROM may contain max lines to display, seperated by colon.
+Example:
+
+    -f 'Some Head:10' -&gt; displays 10 lines after 'Some Head'
+
+If the substring is not found we set it to the *first* character of the file -
+resulting in output from the top (if your terminal height can be derived correctly through the stty cmd).
+
+## Code Highlighting
+
+Set -C &lt;all|code|doc|mod&gt; for source code highlighting of source code files.
+Mark inline markdown with a '_' following the docstring beginnings.
+
+- all: Show markdown docstrings AND code (default if you say, e.g. `-C.`)
+- code: Only Code
+- doc: Only docstrings with markdown
+- mod: Only the module level docstring
+
+
+## File Monitor:
+
+If FROM is not found we display the whole file.
+
+## Directory Monitor:
+
+We check only text file changes, monitoring their size.
+
+By default .md, .mdown, .markdown files are checked but you can change like `-M 'mydir:py,c,md,'` where the last empty substrings makes mdv also monitor any file w/o extension (like 'README').
+
+### Running actions on changes:
+
+If you append to `-M` a `'::&lt;cmd&gt;'` we run the command on any change detected (sync, in foreground).
+
+The command can contain placeholders:
+
+    _fp_     # Will be replaced with filepath
+    _raw_    # Will be replaced with the base64 encoded raw content
+               of the file
+    _pretty_ # Will be replaced with the base64 encoded prettyfied output
+
+Like: mdv -M './mydocs:py,md::open &quot;_fp_&quot;'  which calls the open
+command with argument the path to the changed file.
+
+
+## Themes
+
+### Theme Rollers
+
+
+    mdv -T all [file]:  All available code styles on the given file.
+    mdv -t all [file]:  All available md   styles on the given file.
+                        If file is not given we use a short sample file.
+
+So to see all code hilite variations with a given theme:
+
+Say C_THEME = all and fix THEME
+
+Setting both to all will probably spin your beach ball...
+
+### Environ Vars
+
+`$MDV_THEME` and `$MDV_CODE_THEME` are understood, e.g. `export
+MDV_THEME=729.8953` in your .bashrc will give you a consistent color scheme.
+
+
+</code_block>
+  <block_quote>
+    <paragraph>
+      <text>Regarding the strange theme ids: Those numbers are the calculated total luminocity of the 5 theme colors.</text>
+    </paragraph>
+  </block_quote>
+  <heading level="3">
+    <text>Inline</text>
+  </heading>
+  <paragraph>
+    <text>mdv is designed to be used well from other (Py2) programs when they have md at hand which should be displayed to the user:</text>
+  </paragraph>
+  <code_block info="python">import mdv
+
+# config like this:
+mdv.term_columns = 60
+
+# calling like this (all CLI options supported, check def main
+formatted = mdv.main(my_raw_markdown, c_theme=...)  
+</code_block>
+  <block_quote>
+    <paragraph>
+      <text>Note that I set the defaultencoding to utf-8  in </text>
+      <code>__main__</code>
+      <text>. I have this as my default python2 setup and did not test inline usage w/o. Check </text>
+      <link destination="http://stackoverflow.com/a/29832646/4583360" title="">
+        <text>this</text>
+      </link>
+      <text> for risks.</text>
+    </paragraph>
+  </block_quote>
+  <heading level="3">
+    <text>Sample Inline Use Case: click module docu</text>
+  </heading>
+  <paragraph>
+    <link destination="http://lucumr.pocoo.org/2014/5/12/everything-about-unicode/" title="">
+      <text>Armin Ronacher</text>
+    </link>
+    <text>'s</text>
+    <softbreak />
+    <link destination="http://click.pocoo.org" title="">
+      <text>click</text>
+    </link>
+    <text> is a great framework for writing larger CLI apps - but its help texts are a bit boring, intended to be customized.</text>
+  </paragraph>
+  <paragraph>
+    <text>Here is how:</text>
+  </paragraph>
+  <paragraph>
+    <text>Write a normal click module with a function but w/o a doc string as shown:</text>
+  </paragraph>
+  <code_block info="python">@pass_context                                                                   
+def cli(ctx, action, name, host, port, user, msg):           
+	&quot;&quot;&quot; docu from module __doc__ &quot;&quot;&quot;
+</code_block>
+  <paragraph>
+    <text>On module level you provide markdown for it, like:</text>
+  </paragraph>
+  <code_block info="shell">~/axc/plugins/zodb_sub $ cat zodb.py | head
+&quot;&quot;&quot;
+# Fetch and push ZODB trees
+
+## ACTION: &lt; info | pull | push | merge | dump | serve&gt;
+
+- info:  Requests server availability information
+(...)
+</code_block>
+  <paragraph>
+    <text>which you set at click module import time:</text>
+  </paragraph>
+  <code_block>mod.cli.help = mod.__doc__
+</code_block>
+  <paragraph>
+    <text>Lastly do this in your app module:</text>
+  </paragraph>
+  <code_block info="python">from click.formatting import HelpFormatter
+def write_text(self, text):
+    &quot;&quot;&quot; since for markdown pretty out on cli I found no good tool
+	so I built my own &quot;&quot;&quot;
+    # poor man's md detection:
+    if not text.strip().startswith('#'):
+        return orig_write_text(self, text)
+    from axc.markdown.mdv import main as mdv
+    self.buffer.append(mdv(md=text, theme=os.environ['AXC_THEME']))
+
+HelpFormatter.orig_write_text = HelpFormatter.write_text
+HelpFormatter.write_text = write_text
+</code_block>
+  <paragraph>
+    <text>The output has then colors:</text>
+  </paragraph>
+  <paragraph>
+    <image destination="samples/3.png" title="" />
+  </paragraph>
+  <paragraph>
+    <text>and at smaller terms rewraps nicely:</text>
+  </paragraph>
+  <paragraph>
+    <image destination="samples/4.png" title="" />
+  </paragraph>
+  <paragraph>
+    <text>Further, having markdown in the module </text>
+    <code>__doc__</code>
+    <text> makes it simple to add into a global project docu framework, like mkdocs.</text>
+  </paragraph>
+  <heading level="2">
+    <text>Customization</text>
+  </heading>
+  <paragraph>
+    <text>You can supply all CLI args in </text>
+    <code>$HOME/.mdv</code>
+    <text>, in yaml format.</text>
+  </paragraph>
+  <paragraph>
+    <text>More flex you have via </text>
+    <code>$HOME/.mdv.py</code>
+    <text>, which is execed if present, when</text>
+    <softbreak />
+    <text>running </text>
+    <code>main</code>
+    <text>.</text>
+  </paragraph>
+  <paragraph>
+    <text>Alternatively, in </text>
+    <link destination="mdv.py" title="">
+      <text>mdv.py</text>
+    </link>
+    <text> you can change some config straight forward.</text>
+  </paragraph>
+  <code_block info="python"># ---------------------------------------------------------------------- Config
+txt_block_cut, code_pref, list_pref, br_ends = '✂', '| ', '- ', '◈'
+# ansi cols (default):
+# R: Red (warnings), L: low visi, BG: background, BGL: background light, C=code
+# H1 - H5 = the theme, the numbers are the ansi color codes:
+H1,  H2,  H3,  H4,  H5, R,   L,  BG, BGL, T,   TL, C   = \
+231, 153, 117, 109, 65, 124, 59, 16, 188, 188, 59, 102
+# Code (C is fallback if we have no lexer). Default: Same theme:
+CH1, CH2, CH3, CH4, CH5 = H1, H2, H3, H4, H5
+
+code_hl = { &quot;Keyword&quot; : 'CH3', &quot;Name&quot; : 'CH1',
+            &quot;Comment&quot; : 'L',  &quot;String&quot;: 'CH4',
+            &quot;Error&quot;   : 'R',  &quot;Number&quot;: 'CH4',
+            &quot;Operator&quot;: 'CH5',
+            &quot;Generic&quot; : 'CH2'
+            }
+
+admons = {'note'     : 'H3', 'warning': 'R',
+          'attention': 'H1', 'hint'   : 'H4',
+          'summary'  : 'H1', 'hint'   : 'H4',
+          'question' : 'H5', 'danger' : 'R',
+          'caution'  : 'H2'
+         }
+
+def_lexer = 'python'
+guess_lexer = True
+# also global. but not in use, BG handling can get pretty involved...
+background = BG
+
+# normal text color:
+color = T
+
+show_links = None
+
+# could be given, otherwise read from ansi_tables.json:
+themes = {}
+
+
+# sample for the theme roller feature:
+md_sample = ''
+
+# ------------------------------------------------------------------ End Config
+</code_block>
+  <paragraph>
+    <text>Any importing module can overwrite those module global variables as well.</text>
+  </paragraph>
+  <paragraph>
+    <text>Should you need yet additional themes, add them to </text>
+    <code>ansi_tables.json</code>
+    <text> file by adding your ansi codes there.</text>
+  </paragraph>
+  <heading level="2">
+    <text>Screenshots</text>
+  </heading>
+  <paragraph>
+    <text>Random results, using the theme roller feature:</text>
+  </paragraph>
+  <paragraph>
+    <image destination="https://github.com/axiros/terminal_markdown_viewer/blob/master/samples/2.png" title="">
+      <text>second</text>
+    </image>
+  </paragraph>
+  <paragraph>
+    <text>Note the table block splitting when the table does not fit (last picture).</text>
+  </paragraph>
+  <heading level="2">
+    <text>TODO</text>
+  </heading>
+  <list type="bullet" tight="true">
+    <item>
+      <paragraph>
+        <text>Refactor the implementation, using a config class</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>Lines separators not optimal (</text>
+        <link destination="https://www.npmjs.com/package/nd" title="">
+          <text>nd</text>
+        </link>
+        <text> does better)</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>Test light colorscheme</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>Dimming</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>A few grey scale and 8 color themes</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>Sorting of the json by luminance</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>Some themes have black as darkest color, change to dark grey</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>Common Mark instead of markdown</text>
+      </paragraph>
+    </item>
+  </list>
+  <heading level="2">
+    <text>Credits</text>
+  </heading>
+  <paragraph>
+    <link destination="http://pygments.org/" title="">
+      <text>pygments</text>
+    </link>
+    <text> (using their lexer)</text>
+  </paragraph>
+  <paragraph>
+    <link destination="https://pypi.python.org/pypi/tabulate" title="">
+      <text>tabulate</text>
+    </link>
+  </paragraph>
+  <paragraph>
+    <text>and, naturally, the </text>
+    <link destination="https://pythonhosted.org/Markdown/authors.html" title="">
+      <text>python markdown project</text>
+    </link>
+  </paragraph>
+  <paragraph>
+    <text>Update: Next version will be CommonMark based though...</text>
+  </paragraph>
+  <heading level="2">
+    <text>Updates</text>
+  </heading>
+  <heading level="3">
+    <text>July 2016:</text>
+  </heading>
+  <paragraph>
+    <text>Sort of an excuse for the long long time w/o an update:</text>
+    <softbreak />
+    <text>I did actually start working on a more solid version based on CommonMark but</text>
+    <softbreak />
+    <text>that went a bit out of scope, into a general html terminal viewer, which will</text>
+    <softbreak />
+    <text>probably never be finished :-/</text>
+  </paragraph>
+  <paragraph>
+    <text>So at least here an update containing the stuff you guys sent as PRs, thanks all!!</text>
+  </paragraph>
+  <list type="bullet" tight="true">
+    <item>
+      <paragraph>
+        <text>installation and dependencies via a setup.py (thanks</text>
+        <softbreak />
+        <link destination="https://github.com/althonos" title="">
+          <text>Martin</text>
+        </link>
+        <text>)</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>supporting </text>
+        <code>echo -e &quot;# foo\n## bar&quot; | mdv -</code>
+        <text> and a 'light' theme (thanks</text>
+        <softbreak />
+        <link destination="https://github.com/seletskiy" title="">
+          <text>Stanislav</text>
+        </link>
+        <text>)</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>and a few other improvements regarding python2.7, file location and pyyaml, thanks all.</text>
+      </paragraph>
+    </item>
+  </list>
+  <paragraph>
+    <text>Also:</text>
+  </paragraph>
+  <list type="bullet" tight="true">
+    <item>
+      <paragraph>
+        <text>fixed the most obvious bugs with nested ordered and unordered lists</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>fixed bold marker</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>different color highlighting for the list markers</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>added a source code highlighting mode, which highlights also docstrings in markdown (</text>
+        <code>-C &lt;mode&gt;</code>
+        <text>)</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>some tests in the tests folder</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>using </text>
+        <code>textwrap</code>
+        <text> now for the wrapping, to avoid these word breaks a few complained about</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>you can supply the default lexer now, e.g. </text>
+        <code>-X javascript [-x]</code>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>fixed but with not rendered strong texts</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>pip install mdv</text>
+      </paragraph>
+    </item>
+  </list>
+  <heading level="3">
+    <text>Nov 2016:</text>
+  </heading>
+  <list type="bullet" tight="false">
+    <item>
+      <paragraph>
+        <text>travis</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>Inline link tables</text>
+      </paragraph>
+    </item>
+  </list>
+  <paragraph>
+    <image destination="samples/links.png" title="" />
+  </paragraph>
+  <heading level="3">
+    <text>Sept 2018:</text>
+  </heading>
+  <paragraph>
+    <text>foo</text>
+    <linebreak />
+    <text>bar ba</text>
+  </paragraph>
+  <list type="bullet" tight="true">
+    <item>
+      <paragraph>
+        <text>Merged</text>
+        <linebreak />
+        <text>some PRs.</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>Decent </text>
+        <link destination="https://github.com/ambv/black" title="">
+          <text>code formatter</text>
+        </link>
+        <text>. Not that this weekend hack got more readable though. Well, maybe a bit.</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>Revised Py3 support (finally found peace with it, since they enforce UTF-8 everywhere the new features begin to outweigh the nightmares of trying to decode everything without need).</text>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>Indented code in PY3 was broken, fixed that. </text>
+        <emph>
+          <text>Why, PY3, are you you creating crap like &quot;b'foo'&quot; instead raising or auto-decoding?</text>
+        </emph>
+      </paragraph>
+    </item>
+    <item>
+      <paragraph>
+        <text>Header numbering feature added (</text>
+        <code>-n 2-4</code>
+        <text> or </text>
+        <code>-n 1-</code>
+        <text>)</text>
+      </paragraph>
+    </item>
+  </list>
+  <html_block>&lt;img src=&quot;./samples/header_num.png&quot; width=&quot;400&quot;/&gt;
+</html_block>
+  <paragraph>
+    <text>tabletest</text>
+  </paragraph>
+  <paragraph>
+    <text>| Date           | foo                      |</text>
+    <softbreak />
+    <text>|----------------|--------------------------|</text>
+    <softbreak />
+    <text>| User           | Any                      |</text>
+    <softbreak />
+    <text>| Campaign       | Any                      |</text>
+    <softbreak />
+    <text>| Support Portal | </text>
+    <code>[cpeid, '=', a cpeid]</code>
+    <text>  |</text>
+  </paragraph>
+</document>
+</body></html>
