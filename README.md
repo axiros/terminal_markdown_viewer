@@ -510,4 +510,4 @@ Also:
 - Revised Py3 support (finally found peace with it, since they enforce UTF-8 everywhere the new features begin to outweigh the nightmares of trying to decode everything without need).
 - Indented code in PY3 was broken, fixed that. *Why, PY3, are you you creating crap like "b'foo'" instead raising or auto-decoding?*
 - Header numbering feature added (`-n 2-4` or `-n 1-`)
-![](samples/header_num.png)
+<img src="./samples/header_num.png" width="400"/>
