@@ -11,10 +11,13 @@
 ----
 """
 
-
+import os
 from setuptools import setup, find_packages
 
 version = "1.6.3"
+
+with open(os.path.join(os.path.dirname(__file__), "README.md")) as fd:
+    long_description = fd.read()
 
 setup(
     name="mdv",
@@ -23,7 +26,8 @@ setup(
     author="Axiros GmbH",
     author_email="gk@axiros.com",
     description="Terminal Markdown Viewer",
-    long_description=open("README.rst").read(),
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     install_requires=["tabulate", "pyyaml", "pygments", "markdown", "docopt"],
     include_package_data=True,
     url="http://github.com/axiros/terminal_markdown_viewer",
