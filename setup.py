@@ -11,10 +11,13 @@
 ----
 """
 
-
+import os
 from setuptools import setup, find_packages
 
-version = "1.7.0"
+version = "1.7.1"
+
+with open(os.path.join(os.path.dirname(__file__), "README.md")) as fd:
+    long_description = fd.read()
 
 setup(
     name="mdv",
@@ -23,9 +26,10 @@ setup(
     author="Axiros GmbH",
     author_email="gk@axiros.com",
     description="Terminal Markdown Viewer",
-    long_description=open("README.rst").read(),
     install_requires=["tabulate", "pygments", "markdown"],
     extras_require={"yaml": "pyyaml"},
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     include_package_data=True,
     url="http://github.com/axiros/terminal_markdown_viewer",
     download_url="http://github.com/axiros/terminal_markdown_viewer/tarball/",
