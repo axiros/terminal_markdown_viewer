@@ -4,6 +4,8 @@
 <a href='https://coveralls.io/github/axiros/terminal_markdown_viewer?branch=master'>
 <img src='https://coveralls.io/repos/github/axiros/terminal_markdown_viewer/badge.svg?branch=master' alt='Coverage Status' /></a>
 [![PyPI version](https://badge.fury.io/py/mdv.svg)](https://badge.fury.io/py/mdv)
+<a href="https://github.com/ambv/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
+
 
 
 
@@ -26,9 +28,6 @@ a good option.
 	- [Features](#features)
 	- [Alternatives](#alternatives)
 	- [Installation](#installation)
-		- [Requirements](#requirements)
-			- [2.7 ?!](#py27)
-		- [Setup](#setup)
 	- [Usage](#usage)
 		- [CLI](#cli)
 		- [Inline](#inline)
@@ -38,8 +37,7 @@ a good option.
 	- [TODO](#todo)
 	- [Credits](#credits)
 	- [Updates](#updates)
-		- [July 2016:](#july-2016)
-		- [Lastly](#lastly)
+		
 
 <!-- tocstop -->
 
@@ -507,8 +505,9 @@ Also:
 
 ### Sept 2018:
 
-- Merged some PRs
-- Revised Py3 support (finally found peace with it, since they enforce UTF-8
-  everywhere it s usable). Indented code was broken, fixed that.
+- Merged some PRs. 
+- Decent [code formatter](https://github.com/ambv/black). Not that this weekend hack got more readable though. Well, maybe a bit.
+- Revised Py3 support (finally found peace with it, since they enforce UTF-8 everywhere the new features begin to outweigh the nightmares of trying to decode everything without need).
+- Indented code in PY3 was broken, fixed that. *Why, PY3, are you you creating crap like "b'foo'" instead raising or auto-decoding?*
 - Header numbering feature added (`-n 2-4` or `-n 1-`)
-
+![](samples/header_num.png)
