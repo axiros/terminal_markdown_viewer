@@ -9,10 +9,20 @@
 <details>
  <summary>asdf</summary>
 
-```python
+```python=
 import bar
 class Foo:
 	bar
+import bar
+class Foo:
+	bar
+import bar
+class Foo:
+	bar
+import bar
+class Foo:
+	bar
+	
 ```    
 </details>
 
