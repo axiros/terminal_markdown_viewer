@@ -7,6 +7,8 @@
 <a href="https://github.com/ambv/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 
 
+
+
 When you edit multiple md files remotely, like in a larger
 [mkdocs](http://www.mkdocs.org/) project, context switches between editing
 terminal(s) and viewing browser may have some efficiency impact.
