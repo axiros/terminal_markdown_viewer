@@ -6,11 +6,16 @@
 [![PyPI version](https://badge.fury.io/py/mdv.svg)](https://badge.fury.io/py/mdv)
 <a href="https://github.com/ambv/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 
+<details>
+ <summary>asdf</summary>
+
 ```python
 import bar
 class Foo:
 	bar
-```
+```    
+</details>
+
 
 
 When you edit multiple md files remotely, like in a larger
