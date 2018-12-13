@@ -149,6 +149,7 @@ If you get `no attribute HTML_PLACEHOLDER`: update your markdown package.
 
 [Here](https://trac.macports.org/ticket/53591) is a macport (thanks Aljaž).
 
+mdv is also available in the FreeBSD package repositories via `pkg install py36-mdv` (the Python version might change in the future).
 
 ### Manual Install: Requirements
 
