@@ -157,6 +157,7 @@ import time
 import markdown
 import re, imp
 import markdown.util
+from builtins import chr
 from markdown.util import etree
 from markdown.extensions.tables import TableExtension
 from random import randint
@@ -344,7 +345,6 @@ except ImportError:  # pragma: no cover
 
 
 if PY3:
-    unichr = chr
     from html.parser import HTMLParser
 
     string_type = str
@@ -883,10 +883,6 @@ def replace_links(el, html):
             else:  # inline table (it)
                 # we build a link list, add the number like ① :
                 try:
-                    cur += '%s ' % unichr(link_start_ord + cur_link)
-                except NameError:
-                    # fix for py3
-                    # http://stackoverflow.com/a/2352047
                     cur += '%s ' % chr(link_start_ord + cur_link)
                 links_list.append(link.get('href', ''))
         cur_link += 1
