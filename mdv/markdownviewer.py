@@ -987,7 +987,7 @@ class AnsiPrinter(Treeprocessor):
                     # not found - markup using hte first one's color:
                     if not _ad:
                         k = t[4:].split(' ', 1)[0]
-                        admons[k] = admons.values()[0]
+                        admons[k] = list(admons.values())[0]
 
                     pref = body_pref = '┃ '
                     pref += k.capitalize()
