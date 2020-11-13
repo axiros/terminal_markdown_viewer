@@ -144,18 +144,15 @@ with argument the path to the changed file.
 """
 from __future__ import absolute_import, print_function, unicode_literals
 
-import sys
-
-PY3 = sys.version_info.major > 2
-
-
 import io
-import os
-import textwrap
-import shutil
-import time
+import logging
 import markdown
-import re, imp
+import os
+import re
+import shutil
+import sys
+import textwrap
+import time
 import markdown.util
 from markdown.util import etree
 from markdown.extensions.tables import TableExtension
@@ -165,6 +162,11 @@ from json import loads
 from markdown.treeprocessors import Treeprocessor
 from markdown.extensions import Extension, fenced_code
 from functools import partial
+
+from six.moves.html_parser import unescape
+
+md_logger = logging.getLogger('MARKDOWN')
+md_logger.setLevel(logging.WARNING)
 
 errout, envget = partial(print, file=sys.stderr), os.environ.get
 
@@ -342,46 +344,11 @@ try:
 except ImportError:  # pragma: no cover
     have_pygments = False
 
-
-if PY3:
-    unichr = chr
-    from html.parser import HTMLParser
-
-    string_type = str
-else:
-    from HTMLParser import HTMLParser
-
-    string_type = basestring
-
-    def breakpoint():
-        import pdb
-
-        pdb.set_trace()
-
-
+unichr = chr
+string_type = str
 is_app = 0
 
 def_enc_set = False
-
-
-def fix_py2_default_encoding():
-    """ can be switched off when used as library"""
-    if PY3:
-        return
-    global def_enc_set
-    if not def_enc_set:
-        # Make Py2 > Py3:
-        imp.reload(sys)
-        sys.setdefaultencoding('utf-8')
-        # no? see http://stackoverflow.com/a/29832646/4583360 ...
-        def_enc_set = True
-
-
-import logging
-
-md_logger = logging.getLogger('MARKDOWN')
-md_logger.setLevel(logging.WARNING)
-
 
 # below here you have to *know* what u r doing... (since I didn't too much)
 
@@ -397,8 +364,6 @@ def read_themes():
     return themes
 
 
-# can unescape:
-html_parser = HTMLParser()
 you_like = 'You like this theme?'
 
 
@@ -742,10 +707,7 @@ class Tags:
         return code + '\n' + reset_col
 
 
-if PY3:
-    elstr = lambda el: etree.tostring(el).decode('utf-8')
-else:
-    elstr = lambda el: etree.tostring(el)
+elstr = lambda el: etree.tostring(el).decode('utf-8')
 
 
 def is_text_node(el):
@@ -952,7 +914,7 @@ class AnsiPrinter(Treeprocessor):
                 # <a attributes>foo... -> we want "foo....". Is it a sub
                 # tag or inline text?
                 if el.tag == 'code':
-                    t = html_parser.unescape(el.text)
+                    t = unescape(el.text)
                 else:
                     is_txt_and_inline_markup, html = is_text_node(el)
 
@@ -971,7 +933,7 @@ class AnsiPrinter(Treeprocessor):
                             t = t.replace('%s' % tg, start)
                             close_tag = '</%s' % tg[1:]
                             t = t.replace(close_tag, end)
-                        t = html_parser.unescape(t)
+                        t = unescape(t)
                     else:
                         t = el.text
                 t = t.strip()
@@ -987,7 +949,7 @@ class AnsiPrinter(Treeprocessor):
                     # not found - markup using hte first one's color:
                     if not _ad:
                         k = t[4:].split(' ', 1)[0]
-                        admons[k] = admons.values()[0]
+                        admons[k] = list(admons.values())[0]
 
                     pref = body_pref = '┃ '
                     pref += k.capitalize()
@@ -1273,12 +1235,6 @@ def main(
     """ md is markdown string. alternatively we use filename and read """
     # fmt: on
 
-    # if I don't do this here, then I'll get probs when being
-    # used as a lib:
-    # https://github.com/axiros/terminal_markdown_viewer/issues/39
-    # If you hate it then switch it off but don't blame me on unicode errs.
-    True if no_change_defenc else fix_py2_default_encoding()
-
     parse_header_nrs(header_nrs)
 
     tab_length = tab_length or 4
@@ -1394,7 +1350,7 @@ def main(
     tags = Tags()
     for ph in stash.rawHtmlBlocks:
         nr += 1
-        raw = html_parser.unescape(ph)
+        raw = unescape(ph)
         if raw[:3].lower() == "<br":
             raw = "\n"
         pre = "<pre><code"
@@ -1629,7 +1585,6 @@ def merge(a, b):
 def run():
     global is_app
     is_app = 1
-    fix_py2_default_encoding() if not PY3 else None
     kw = load_config(None) or {}
     kw1 = parse_env_and_cli()
     fn = kw1.get('config_file')
@@ -1651,14 +1606,14 @@ def run():
         d['header_nrs'] = '0-0'
         d['md'] = '-----' + doc.split('# Details', 1)[0]
         res += main(**d)
-        print(res if PY3 else str(res))
+        print(res)
         sys.exit(0)
     if kw.get('monitor_file'):
         monitor(kw)
     elif kw.get('monitor_dir'):
         monitor_dir(kw)
     else:
-        print(main(**kw) if PY3 else str(main(**kw)))
+        print(main(**kw))
 
 
 if __name__ == '__main__':  # pragma: no cover
