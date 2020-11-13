@@ -1,0 +1,4 @@
+markdown
+pygments
+six
+tabulate

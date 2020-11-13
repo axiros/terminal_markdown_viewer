@@ -5,37 +5,22 @@
 
 from __future__ import print_function
 from __future__ import unicode_literals
-from collections import namedtuple
-from platform import python_version_tuple
+import io
 import re
+from collections import namedtuple
+from functools import partial, reduce
+from itertools import zip_longest as izip_longest
+
+_none_type = type(None)
+_int_type = int
+_long_type = int
+_float_type = float
+_text_type = str
+_binary_type = bytes
 
 
-if python_version_tuple()[0] < "3":
-    from itertools import izip_longest
-    from functools import partial
-    _none_type = type(None)
-    _int_type = int
-    _long_type = long
-    _float_type = float
-    _text_type = unicode
-    _binary_type = str
-
-    def _is_file(f):
-        return isinstance(f, file)
-
-else:
-    from itertools import zip_longest as izip_longest
-    from functools import reduce, partial
-    _none_type = type(None)
-    _int_type = int
-    _long_type = int
-    _float_type = float
-    _text_type = str
-    _binary_type = bytes
-
-    import io
-    def _is_file(f):
-        return isinstance(f, io.IOBase)
+def _is_file(f):
+    return isinstance(f, io.IOBase)
 
 
 __all__ = ["tabulate", "tabulate_formats", "simple_separated_format"]
@@ -143,6 +128,7 @@ def _html_row_with_attrs(celltag, cell_values, colwidths, colaligns):
                              "<tbody>"])
     return rowhtml
 
+
 def _moin_row_with_attrs(celltag, cell_values, colwidths, colaligns, header=''):
     alignment = { "left":    '',
                   "right":   '<style="text-align: right;">',
@@ -154,11 +140,13 @@ def _moin_row_with_attrs(celltag, cell_values, colwidths, colaligns, header=''):
                          for c, a in zip(cell_values, colaligns)]
     return "".join(values_with_attrs)+"||"
 
+
 def _latex_line_begin_tabular(colwidths, colaligns, booktabs=False):
     alignment = { "left": "l", "right": "r", "center": "c", "decimal": "r" }
     tabular_columns_fmt = "".join([alignment.get(a, "l") for a in colaligns])
     return "\n".join(["\\begin{tabular}{" + tabular_columns_fmt + "}",
                       "\\toprule" if booktabs else "\hline"])
+
 
 LATEX_ESCAPE_RULES = {r"&": r"\&", r"%": r"\%", r"$": r"\$", r"#": r"\#",
                       r"_": r"\_", r"^": r"\^{}", r"{": r"\{", r"}": r"\}",
@@ -977,13 +965,13 @@ def tabulate(tabular_data, headers=(), tablefmt="simple",
 
 
 def _build_simple_row(padded_cells, rowfmt):
-    "Format row according to DataRow format without padding."
+    """Format row according to DataRow format without padding."""
     begin, sep, end = rowfmt
     return (begin + sep.join(padded_cells) + end).rstrip()
 
 
 def _build_row(padded_cells, colwidths, colaligns, rowfmt):
-    "Return a string which represents a row of data cells."
+    """Return a string which represents a row of data cells."""
     if not rowfmt:
         return None
     if hasattr(rowfmt, "__call__"):
@@ -993,7 +981,7 @@ def _build_row(padded_cells, colwidths, colaligns, rowfmt):
 
 
 def _build_line(colwidths, colaligns, linefmt):
-    "Return a string which represents a horizontal line."
+    """Return a string which represents a horizontal line."""
     if not linefmt:
         return None
     if hasattr(linefmt, "__call__"):
