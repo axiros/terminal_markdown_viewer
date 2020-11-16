@@ -14,29 +14,33 @@
 import os
 from setuptools import setup, find_packages
 
-version = "1.7.4"
+version = "2.0.0"
 
 with open(os.path.join(os.path.dirname(__file__), "README.md")) as fd:
     md = fd.read()
 
+with open('requirements.txt', 'r') as f:
+    install_requires = f.read().replace(' ', '').split('\n')
+
 # images hack for pypi:
-gh='https://raw.githubusercontent.com/axiros/terminal_markdown_viewer/master'
+gh = 'https://raw.githubusercontent.com/WillNye/terminal_markdown_viewer/master'
 md = md.replace('src="./', 'src="%s/' % gh)
 
 setup(
-    name="mdv",
+    name="mdv3",
     version=version,
     packages=find_packages(),
-    author="Axiros GmbH",
-    author_email="gk@axiros.com",
+    author="Will Beasley",
+    author_email='willbeas88@gmail.com',
     description="Terminal Markdown Viewer",
-    install_requires=["tabulate", "pygments", "markdown"],
+    python_requires='>=3.7',
+    install_requires=install_requires,
     extras_require={"yaml": "pyyaml"},
     long_description=md,
     long_description_content_type="text/markdown",
     include_package_data=True,
-    url="http://github.com/axiros/terminal_markdown_viewer",
-    download_url="http://github.com/axiros/terminal_markdown_viewer/tarball/",
+    url="http://github.com/WillNye/terminal_markdown_viewer",
+    download_url="http://github.com/WillNye/terminal_markdown_viewer/tarball/",
     keywords=[
         "markdown",
         "markup",
@@ -53,9 +57,9 @@ setup(
         "Operating System :: POSIX",
         "Topic :: Text Processing :: Markup",
         "License :: OSI Approved :: BSD License",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     entry_points={"console_scripts": ["mdv = mdv:run"]},
 )

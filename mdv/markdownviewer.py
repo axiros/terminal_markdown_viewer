@@ -1017,8 +1017,8 @@ class AnsiPrinter(Treeprocessor):
 
                 if links_list:
                     i = 1
-                    for l in links_list:
-                        out.append(low('%s[%s] %s' % (ind, i, l)))
+                    for link in links_list:
+                        out.append(low('%s[%s] %s' % (ind, i, link)))
                         i += 1
 
             # have children?
