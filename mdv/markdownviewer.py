@@ -817,7 +817,7 @@ def replace_links(el, html):
     if len(parts) == 1:
         return None, html
     links_list, cur_link = [], 0
-    links = [l for l in el.getchildren() if 'href' in l.keys()]
+    links = [l for l in list(el) if 'href' in l.keys()]
     if not len(parts) == len(links) + 1:
         # there is an html element within which we don't support,
         # e.g. blockquote
@@ -878,7 +878,7 @@ class AnsiPrinter(Treeprocessor):
                 import pdb
 
                 pdb.set_trace()
-                # for c in el.getchildren()[0].getchildren(): print c.text, c
+                # for c in list(list(el)[0]): print c.text, c
             print('---------')
             print(el, el.text)
             print('---------')
@@ -886,10 +886,10 @@ class AnsiPrinter(Treeprocessor):
             if el.tag == 'br':
                 out.append('\n')
                 return
-            # for c in el.getchildren(): print c.text, c
+            # for c in list(el): print c.text, c
             links_list, is_txt_and_inline_markup = None, 0
             if el.tag == 'blockquote':
-                for el1 in el.getchildren():
+                for el1 in list(el):
                     iout = []
                     formatter(el1, iout, hir + 2, parent=el)
                     pr = col(bquote_pref, H1)
@@ -1025,7 +1025,7 @@ class AnsiPrinter(Treeprocessor):
             #    nr for ols:
             if is_txt_and_inline_markup:
                 if el.tag == 'li':
-                    childs = el.getchildren()
+                    childs = list(el)
                     for nested in 'ul', 'ol':
                         if childs and childs[-1].tag == nested:
                             ul = childs[-1]
@@ -1055,10 +1055,10 @@ class AnsiPrinter(Treeprocessor):
 
                 t = []
                 for he_bo in 0, 1:
-                    for Row in el[he_bo].getchildren():
+                    for Row in list(el[he_bo]):
                         row = []
                         t.append(row)
-                        for cell in Row.getchildren():
+                        for cell in list(Row):
                             row.append(fmt(cell, row))
                 cols = term_columns
                 # good ansi handling:
