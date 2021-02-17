@@ -43,15 +43,15 @@ Happens like:
 
 #### File Formats
 
-We try yaml.  
-If not installed we try json.  
-If it is the custom config file we fail if not parsable.  
+We try yaml.
+If not installed we try json.
+If it is the custom config file we fail if not parsable.
 If you prefer shell style config then source and export so you have it as environ.
 
 ### **-c COLS**: Columns
 
 We use stty tool to derive terminal size. If you pipe into mdv we use 80 cols.
-You can force the columns used via `-c`.  
+You can force the columns used via `-c`.
 If you export `$width`, this has precedence over `$COLUMNS`.
 
 ### **-b TABL**: Tablength
@@ -358,6 +358,10 @@ else:
 
         pdb.set_trace()
 
+if getattr(HTMLParser, 'unescape', None) is None:
+    from html import unescape
+else:
+    unescape = HTMLParser().unescape()
 
 is_app = 0
 
@@ -397,8 +401,6 @@ def read_themes():
     return themes
 
 
-# can unescape:
-html_parser = HTMLParser()
 you_like = 'You like this theme?'
 
 
@@ -952,7 +954,7 @@ class AnsiPrinter(Treeprocessor):
                 # <a attributes>foo... -> we want "foo....". Is it a sub
                 # tag or inline text?
                 if el.tag == 'code':
-                    t = html_parser.unescape(el.text)
+                    t = unescape(el.text)
                 else:
                     is_txt_and_inline_markup, html = is_text_node(el)
 
@@ -971,7 +973,7 @@ class AnsiPrinter(Treeprocessor):
                             t = t.replace('%s' % tg, start)
                             close_tag = '</%s' % tg[1:]
                             t = t.replace(close_tag, end)
-                        t = html_parser.unescape(t)
+                        t = unescape(t)
                     else:
                         t = el.text
                 t = t.strip()
@@ -1394,7 +1396,7 @@ def main(
     tags = Tags()
     for ph in stash.rawHtmlBlocks:
         nr += 1
-        raw = html_parser.unescape(ph)
+        raw = unescape(ph)
         if raw[:3].lower() == "<br":
             raw = "\n"
         pre = "<pre><code"
