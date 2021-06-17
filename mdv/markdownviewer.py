@@ -43,15 +43,15 @@ Happens like:
 
 #### File Formats
 
-We try yaml.  
-If not installed we try json.  
-If it is the custom config file we fail if not parsable.  
+We try yaml.
+If not installed we try json.
+If it is the custom config file we fail if not parsable.
 If you prefer shell style config then source and export so you have it as environ.
 
 ### **-c COLS**: Columns
 
 We use stty tool to derive terminal size. If you pipe into mdv we use 80 cols.
-You can force the columns used via `-c`.  
+You can force the columns used via `-c`.
 If you export `$width`, this has precedence over `$COLUMNS`.
 
 ### **-b TABL**: Tablength
@@ -358,6 +358,18 @@ else:
 
         pdb.set_trace()
 
+if getattr(HTMLParser, 'unescape', None) is None:
+    from html import unescape
+else:
+    unescape = HTMLParser().unescape()
+
+
+from xml.etree.ElementTree import Element
+
+if getattr(Element, 'getchildren', None) is None:
+    get_element_children = lambda el: el
+else:
+    get_element_children = lambda el: el.getchildren()
 
 is_app = 0
 
@@ -397,8 +409,6 @@ def read_themes():
     return themes
 
 
-# can unescape:
-html_parser = HTMLParser()
 you_like = 'You like this theme?'
 
 
@@ -855,7 +865,7 @@ def replace_links(el, html):
     if len(parts) == 1:
         return None, html
     links_list, cur_link = [], 0
-    links = [l for l in el.getchildren() if 'href' in l.keys()]
+    links = [l for l in get_element_children(el) if 'href' in l.keys()]
     if not len(parts) == len(links) + 1:
         # there is an html element within which we don't support,
         # e.g. blockquote
@@ -916,7 +926,7 @@ class AnsiPrinter(Treeprocessor):
                 import pdb
 
                 pdb.set_trace()
-                # for c in el.getchildren()[0].getchildren(): print c.text, c
+                # for c in get_element_children(get_element_children(el)[0]): print c.text, c
             print('---------')
             print(el, el.text)
             print('---------')
@@ -924,10 +934,10 @@ class AnsiPrinter(Treeprocessor):
             if el.tag == 'br':
                 out.append('\n')
                 return
-            # for c in el.getchildren(): print c.text, c
+            # for c in get_element_children(el): print c.text, c
             links_list, is_txt_and_inline_markup = None, 0
             if el.tag == 'blockquote':
-                for el1 in el.getchildren():
+                for el1 in get_element_children(el):
                     iout = []
                     formatter(el1, iout, hir + 2, parent=el)
                     pr = col(bquote_pref, H1)
@@ -952,7 +962,7 @@ class AnsiPrinter(Treeprocessor):
                 # <a attributes>foo... -> we want "foo....". Is it a sub
                 # tag or inline text?
                 if el.tag == 'code':
-                    t = html_parser.unescape(el.text)
+                    t = unescape(el.text)
                 else:
                     is_txt_and_inline_markup, html = is_text_node(el)
 
@@ -971,7 +981,7 @@ class AnsiPrinter(Treeprocessor):
                             t = t.replace('%s' % tg, start)
                             close_tag = '</%s' % tg[1:]
                             t = t.replace(close_tag, end)
-                        t = html_parser.unescape(t)
+                        t = unescape(t)
                     else:
                         t = el.text
                 t = t.strip()
@@ -1063,7 +1073,7 @@ class AnsiPrinter(Treeprocessor):
             #    nr for ols:
             if is_txt_and_inline_markup:
                 if el.tag == 'li':
-                    childs = el.getchildren()
+                    childs = get_element_children(el)
                     for nested in 'ul', 'ol':
                         if childs and childs[-1].tag == nested:
                             ul = childs[-1]
@@ -1093,10 +1103,10 @@ class AnsiPrinter(Treeprocessor):
 
                 t = []
                 for he_bo in 0, 1:
-                    for Row in el[he_bo].getchildren():
+                    for Row in get_element_children(el[he_bo]):
                         row = []
                         t.append(row)
-                        for cell in Row.getchildren():
+                        for cell in get_element_children(Row):
                             row.append(fmt(cell, row))
                 cols = term_columns
                 # good ansi handling:
@@ -1394,7 +1404,7 @@ def main(
     tags = Tags()
     for ph in stash.rawHtmlBlocks:
         nr += 1
-        raw = html_parser.unescape(ph)
+        raw = unescape(ph)
         if raw[:3].lower() == "<br":
             raw = "\n"
         pre = "<pre><code"
