@@ -1,5 +1,7 @@
 from unittest import TestCase, main
+import pdb
 
+breakpoint = pdb.set_trace
 try:
     import sys
 
@@ -51,10 +53,9 @@ class TestFiles(TestCase):
                 with open('%s/result.%s/%s.expected' % (df, col, f)) as fd:
                     tgt = fd.read()
 
-                print(res)
+                # print(res)
                 if not unicode(tgt).strip() == unicode(res).strip():
                     print('error')
-                    breakpoint()
                     print('got:\n', res)
                     print('should:\n', unicode(tgt))
                     raise Exception('Error %s col %s' % (f, col))

@@ -148,6 +148,13 @@ import sys
 
 PY3 = sys.version_info.major > 2
 
+if not PY3:
+
+    def breakpoint():
+        import pdb
+
+        pdb.set_trace()
+
 
 import io
 import os
@@ -158,10 +165,12 @@ import markdown
 import re
 import markdown.util
 
-if PY3:
+try:
+    # in py3 not done automatically:
+    import xml.etree.cElementTree as etree
+except:
     import xml.etree.ElementTree as etree
-else:
-    from markdown.util import etree
+
 from markdown.extensions.tables import TableExtension
 from random import randint
 from .tabulate import tabulate
@@ -542,6 +551,9 @@ def style_ansi(raw_code, lang=None):
     """ actual code hilite """
 
     def lexer_alias(n):
+        # markdown lib now creates "language-python" (pygments still wants "python")
+        if n.startswith('language-'):
+            n = n[9:]
         # not found:
         if n == 'markdown':
             return 'md'
@@ -1195,7 +1207,7 @@ def set_hr_widths(result):
 class AnsiPrintExtension(Extension):
     def extendMarkdown(self, md):
         ansi_print_ext = AnsiPrinter(md)
-        md.treeprocessors.register(ansi_print_ext, 'ansi_print_ext', 40)
+        md.treeprocessors.register(ansi_print_ext, 'ansi_print_ext', 15)
 
 
 def do_code_hilite(md, what='all'):

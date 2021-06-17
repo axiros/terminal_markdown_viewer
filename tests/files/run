@@ -3,13 +3,14 @@ export MDV_THEME=729.8953
 export MDV_CODE_THEME=729.8953
 export d="`dirname "${BASH_SOURCE[0]}"`"
 cd "$d"
-MDV='../../../mdv/markdownviewer.py'
+#MDV='../../mdv/markdownviewer.py'
+MDV=mdv # pip install -e .
 #MDV="`which mdv`"
 res='/tmp/mdv_expected'
 
 for col in 20 40 80 200; do
     echo "Setting Columns to $col"
-    export COLUMNS=$col
+    export width=$col
     rd="result.$col"
     mkdir -p "$rd"
     for f in *.md; do
