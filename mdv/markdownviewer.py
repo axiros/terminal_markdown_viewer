@@ -155,12 +155,16 @@ import textwrap
 import shutil
 import time
 import markdown
-import re, imp
+import re
 import markdown.util
-from markdown.util import etree
+
+if PY3:
+    import xml.etree.ElementTree as etree
+else:
+    from markdown.util import etree
 from markdown.extensions.tables import TableExtension
 from random import randint
-from tabulate import tabulate
+from .tabulate import tabulate
 from json import loads
 from markdown.treeprocessors import Treeprocessor
 from markdown.extensions import Extension, fenced_code
@@ -275,9 +279,7 @@ def get_terminal_size():
 term_columns, term_rows = envget('width', envget('COLUMNS')), envget('LINES')
 if not term_columns and not '-c' in sys.argv:
     try:
-        term_rows, term_columns = (
-            os.popen('stty size 2>/dev/null', 'r').read().split()
-        )
+        term_rows, term_columns = os.popen('stty size 2>/dev/null', 'r').read().split()
         term_columns, term_rows = int(term_columns), int(term_rows)
     except:  # pragma: no cover
         term_columns, term_rows = get_terminal_size()
@@ -358,10 +360,11 @@ else:
 
         pdb.set_trace()
 
+
 if getattr(HTMLParser, 'unescape', None) is None:
     from html import unescape
 else:
-    unescape = HTMLParser().unescape()
+    unescape = HTMLParser().unescape
 
 
 from xml.etree.ElementTree import Element
@@ -383,6 +386,8 @@ def fix_py2_default_encoding():
     global def_enc_set
     if not def_enc_set:
         # Make Py2 > Py3:
+        import imp
+
         imp.reload(sys)
         sys.setdefaultencoding('utf-8')
         # no? see http://stackoverflow.com/a/29832646/4583360 ...
@@ -402,10 +407,14 @@ dir_mon_content_raw = '_raw_'
 dir_mon_content_pretty = '_pretty_'
 
 
+def readfile(fn, kw={'encoding': 'utf-8'} if PY3 else {}):
+    with open(fn, **kw) as fd:
+        return fd.read()
+
+
 def read_themes():
     if not themes:
-        with open(j(mydir, 'ansi_tables.json')) as f:
-            themes.update(loads(f.read()))
+        themes.update(loads(readfile(j(mydir, 'ansi_tables.json'))))
     return themes
 
 
@@ -420,23 +429,21 @@ def make_sample():
     _md = []
     for hl in range(1, 7):
         _md.append('#' * hl + ' ' + 'Header %s' % hl)
-    sample_code = """class Foo:
+    sample_code = '''class Foo:
     bar = 'baz'
-    """
+    '''
     _md.append('```python\n""" Doc String """\n%s\n```' % sample_code)
     _md.append(
-        """
+        '''
 | Tables        | Fmt |
 | -- | -- |
 | !!! hint: wrapped | 0.1 **strong** |
-    """
+    '''
     )
     for ad in list(admons.keys())[:1]:
         _md.append('!!! %s: title\n    this is a %s\n' % (ad, ad.capitalize()))
     # 'this theme' replaced in the roller (but not at mdv w/o args):
-    globals()['md_sample'] = (
-        '\n'.join(_md) + '\n----\n!!! question: %s' % you_like
-    )
+    globals()['md_sample'] = '\n'.join(_md) + '\n----\n!!! question: %s' % you_like
 
 
 code_hl_tokens = {}
@@ -480,11 +487,7 @@ def set_theme(theme=None, for_code=None, theme_info=None):
     # for code the default is 'default' and should return the default theme.
     # historical reasons...
     dec = {
-        False: {
-            'dflt': None,
-            'on_dflt': 'random',
-            'env': ('MDV_THEME', 'AXC_THEME'),
-        },
+        False: {'dflt': None, 'on_dflt': 'random', 'env': ('MDV_THEME', 'AXC_THEME'),},
         True: {
             'dflt': 'default',
             'on_dflt': None,
@@ -549,7 +552,7 @@ def style_ansi(raw_code, lang=None):
         try:
             lexer = get_lexer_by_name(lexer_alias(lang))
         except ValueError:
-            print(col(R, 'Lexer for %s not found' % lang))
+            print(col('Lexer for %s not found' % lang, R))
 
     if not lexer:
         try:
@@ -597,13 +600,12 @@ def col(s, c, bg=0, no_reset=0):
         (link_start, link_end, H2),
         (emph_start, emph_end, H3),
     ):
+
         if _strt in s:
             uon, uoff = '', ''
             if _strt == link_start:
                 uon, uoff = '\033[4m', '\033[24m'
-            s = s.replace(
-                _strt, col('', _col, bg=background, no_reset=1) + uon
-            )
+            s = s.replace(_strt, col('', _col, bg=background, no_reset=1) + uon)
             s = s.replace(_end, uoff + col('', c, no_reset=1))
 
     s = '\033[38;5;%sm%s%s' % (c, s, reset)
@@ -690,9 +692,7 @@ class Tags:
         ret = ''
         f, t = header_nr['from'], header_nr['to']
         if level >= f and level <= t:
-            ret = '.'.join(
-                [str(cur[i]) for i in range(f, t + 1) if cur[i] > 0]
-            )
+            ret = '.'.join([str(cur[i]) for i in range(f, t + 1) if cur[i] > 0])
         return ret
 
     # @staticmethod everywhere is eye cancer, so we instantiate it later
@@ -952,12 +952,7 @@ class AnsiPrinter(Treeprocessor):
             if el.tag == 'hr':
                 return out.append(tags.hr('', hir=hir))
 
-            if (
-                el.text
-                or el.tag == 'p'
-                or el.tag == 'li'
-                or el.tag.startswith('h')
-            ):
+            if el.text or el.tag == 'p' or el.tag == 'li' or el.tag.startswith('h'):
                 el.text = el.text or ''
                 # <a attributes>foo... -> we want "foo....". Is it a sub
                 # tag or inline text?
@@ -997,7 +992,7 @@ class AnsiPrinter(Treeprocessor):
                     # not found - markup using hte first one's color:
                     if not _ad:
                         k = t[4:].split(' ', 1)[0]
-                        admons[k] = admons.values()[0]
+                        admons[k] = list(admons.values())[0]
 
                     pref = body_pref = '┃ '
                     pref += k.capitalize()
@@ -1142,9 +1137,7 @@ class AnsiPrinter(Treeprocessor):
                     # again sam:
                     # note: we had to patch it, it inserted '\n' within cells!
                     table = tabulate(tc)
-                    out.append(
-                        split_blocks(table, w, cols, part_fmter=borders)
-                    )
+                    out.append(split_blocks(table, w, cols, part_fmter=borders))
                 return
 
             nr = 0
@@ -1162,7 +1155,7 @@ class AnsiPrinter(Treeprocessor):
 
         out = []
         formatter(doc, out)
-        self.markdown.ansi = '\n'.join(out)
+        self.md.ansi = '\n'.join(out)
 
 
 def set_hr_widths(result):
@@ -1200,9 +1193,9 @@ def set_hr_widths(result):
 
 # Then tell markdown about it
 class AnsiPrintExtension(Extension):
-    def extendMarkdown(self, md, md_globals):
+    def extendMarkdown(self, md):
         ansi_print_ext = AnsiPrinter(md)
-        md.treeprocessors.add('ansi_print_ext', ansi_print_ext, '>inline')
+        md.treeprocessors.register(ansi_print_ext, 'ansi_print_ext', 40)
 
 
 def do_code_hilite(md, what='all'):
