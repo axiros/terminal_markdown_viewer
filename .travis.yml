@@ -3,8 +3,6 @@ python:
     - 2.7
     - 3.6
     - 3.9
-virtualenv:
-  system_site_packages: true
 
 before_install:
     - pip install pytest pygments markdown coveralls
