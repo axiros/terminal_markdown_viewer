@@ -166,20 +166,6 @@ Further a 256 color terminal (for now best with dark background) and font suppor
 
 I did not test anything on windows.
 
-### Manual Install: Setup
-
-Distribution via setuptools. If setuptools is not installed, run:
-
-    pip install setuptools
-
-
-Use the setup.py provided inside, I.e. run:
-
-	sudo ./setup.py install
-    (or ./setup.py install --user to install only for the current user)
-
-
-
 ## Usage
 
 ### CLI

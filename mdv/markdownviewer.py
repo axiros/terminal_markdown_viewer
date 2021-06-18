@@ -1535,7 +1535,7 @@ def monitor_dir(args):
     d, args["change_cmd"] = d.split("::")[:2]
     args.pop("monitor_dir")
     # collides:
-    args.pop("monitor_file")
+    args.pop("monitor_file", 0)
     d, exts = (d + ":md,mdown,markdown").split(":")[:2]
     exts = exts.split(",")
     if not os.path.exists(d):
