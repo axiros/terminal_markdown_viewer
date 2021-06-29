@@ -163,7 +163,8 @@ from markdown.treeprocessors import Treeprocessor
 from markdown.extensions import Extension, fenced_code
 from functools import partial
 
-from six.moves.html_parser import unescape
+from html import unescape
+from pygments.util import ClassNotFound
 
 md_logger = logging.getLogger('MARKDOWN')
 md_logger.setLevel(logging.WARNING)
@@ -503,8 +504,8 @@ def style_ansi(raw_code, lang=None):
     if lang:
         try:
             lexer = get_lexer_by_name(lexer_alias(lang))
-        except ValueError:
-            print(col(R, 'Lexer for %s not found' % lang))
+        except (ValueError, ClassNotFound):
+            print(col('Lexer for {} not found'.format(lang), R))
 
     if not lexer:
         try:
@@ -515,7 +516,7 @@ def style_ansi(raw_code, lang=None):
             pass
 
     if not lexer:
-        for l in def_lexer, 'yaml', 'python', 'c':
+        for l in (def_lexer, 'yaml', 'python', 'c'):
             try:
                 lexer = get_lexer_by_name(lexer_alias(l))
                 break
@@ -552,6 +553,7 @@ def col(s, c, bg=0, no_reset=0):
         (link_start, link_end, H2),
         (emph_start, emph_end, H3),
     ):
+        s = str(s)
         if _strt in s:
             uon, uoff = '', ''
             if _strt == link_start:
@@ -1114,7 +1116,7 @@ class AnsiPrinter(Treeprocessor):
 
         out = []
         formatter(doc, out)
-        self.markdown.ansi = '\n'.join(out)
+        self.md.ansi = '\n'.join(out)
 
 
 def set_hr_widths(result):
