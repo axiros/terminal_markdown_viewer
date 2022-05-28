@@ -424,7 +424,7 @@ dir_mon_content_pretty = '_pretty_'
 
 
 def readfile(fn, kw={'encoding': 'utf-8'} if PY3 else {}):
-    with open(fn, **kw) as fd:
+    with io.open(fn, **kw) as fd:
         return fd.read()
 
 
@@ -1327,7 +1327,7 @@ def main(
             if filename == "-":
                 md = sys.stdin.read()
             else:
-                with open(filename, encoding=encoding) as f:
+                with io.open(filename, encoding=encoding) as f:
                     md = f.read()
 
     # style rolers requested?
@@ -1500,7 +1500,7 @@ def run_changed_file_cmd(cmd, fp, pretty):
     """ running commands on changes.
         pretty the parsed file
     """
-    with open(fp, encoding="utf-8") as f:
+    with io.open(fp, encoding="utf-8") as f:
         raw = f.read()
     # go sure regarding quotes:
     for ph in (
@@ -1620,7 +1620,7 @@ def load_config(filename, s=None, yaml=None):
                 die('Not found: %s' % filename)
             else:
                 continue
-        with open(fn, encoding="utf-8") as fd:
+        with io.open(fn, encoding="utf-8") as fd:
             s = fd.read()
             break
     if not s:
