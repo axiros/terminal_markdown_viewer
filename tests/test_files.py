@@ -16,7 +16,7 @@ import sys
 if sys.version_info[0] > 2:
     unicode = str
 
-here = os.path.abspath(__file__).rsplit('/', 1)[0]
+here = os.path.split(os.path.abspath(__file__))[0]
 
 
 class TestNose(TestCase):
@@ -31,7 +31,7 @@ class TestFiles(TestCase):
     version"""
 
     def test_all(self):
-        df = here + '/files'
+        df = os.path.join(here, 'files')
         for f in os.listdir(df):
             if not f.endswith('.md'):
                 continue
@@ -50,7 +50,7 @@ class TestFiles(TestCase):
                     c_def_lexer='python',
                 )
 
-                with open('%s/result.%s/%s.expected' % (df, col, f)) as fd:
+                with open('%s/result.%s/%s.expected' % (df, col, f), encoding='utf-8') as fd:
                     tgt = fd.read()
 
                 # print(res)
