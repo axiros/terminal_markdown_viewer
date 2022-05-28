@@ -1,3 +1,4 @@
+import io
 from unittest import TestCase, main
 import pdb
 
@@ -50,7 +51,7 @@ class TestFiles(TestCase):
                     c_def_lexer='python',
                 )
 
-                with open('%s/result.%s/%s.expected' % (df, col, f), encoding='utf-8') as fd:
+                with io.open('%s/result.%s/%s.expected' % (df, col, f), encoding='utf-8') as fd:
                     tgt = fd.read()
 
                 # print(res)
