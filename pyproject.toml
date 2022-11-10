@@ -1,10 +1,9 @@
 [build-system]
-requires = ["setuptools>=61.2"]
+requires = ["setuptools>=61.2", "setuptools_scm[toml]>=3.4.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "mdv"
-version = "1.7.4"
 authors = [{name = "Axiros GmbH", email = "gk@axiros.com"}]
 description = "Terminal Markdown Viewer"
 keywords = [
@@ -26,6 +25,7 @@ classifiers = [
     "Programming Language :: Python :: 3.7",
 ]
 dependencies = ["pygments", "markdown"]
+dynamic = ["version"]
 
 [project.readme]
 file = "README.md"
@@ -48,4 +48,6 @@ include-package-data = true
 [tool.setuptools.packages.find]
 include = ["mdv", "mdv.*"]
 namespaces = false
+
+[tool.setuptools_scm]
 
