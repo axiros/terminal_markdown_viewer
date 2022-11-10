@@ -209,7 +209,7 @@ try:
   <paragraph>
     <text>from</text>
   </paragraph>
-  <code_block info="python">~/terminal_markdown_viewer $ cat setup.py
+  <code_block info="python">
 #!/usr/bin/env python2.7
 # coding: utf-8
 
@@ -218,7 +218,7 @@ try:
 
 ## Usage
 
-    [sudo] ./setup.py install
+    [sudo] pip install --upgrade .
 
 ----
 &quot;&quot;&quot;
@@ -417,10 +417,10 @@ setup(
   <code_block>pip install setuptools
 </code_block>
   <paragraph>
-    <text>Use the setup.py provided inside, I.e. run:</text>
+    <text>Use pip, I.e. run:</text>
   </paragraph>
-  <code_block>sudo ./setup.py install
-(or ./setup.py install --user to install only for the current user)
+  <code_block>sudo pip install --upgrade .
+(or just pip install --upgrade . to install only for the current user)
 </code_block>
   <heading level="2">
     <text>Usage</text>

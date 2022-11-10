@@ -83,7 +83,6 @@ You can also use mdv as a **source code** viewer, best when you have docstrings 
 from
 
 ```python
-~/terminal_markdown_viewer $ cat setup.py
 #!/usr/bin/env python2.7
 # coding: utf-8
 
@@ -92,7 +91,7 @@ from
 
 ## Usage
 
-    [sudo] ./setup.py install
+    pip install --upgrade .
 
 ----
 """
