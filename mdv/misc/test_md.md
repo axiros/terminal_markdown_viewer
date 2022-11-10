@@ -90,7 +90,6 @@ You can also use mdv as a **source code** viewer, best when you have docstrings 
 from
 
 ```python
-~/terminal_markdown_viewer $ cat setup.py
 #!/usr/bin/env python2.7
 # coding: utf-8
 
@@ -99,7 +98,7 @@ from
 
 ## Usage
 
-    [sudo] ./setup.py install
+    [sudo] pip install --upgrade .
 
 ----
 """
@@ -179,10 +178,10 @@ Distribution via setuptools. If setuptools is not installed, run:
     pip install setuptools
 
 
-Use the setup.py provided inside, I.e. run:
+Use pip, I.e. run:
 
-	sudo ./setup.py install
-    (or ./setup.py install --user to install only for the current user)
+	sudo pip install --upgrade .
+    (or just pip install --upgrade . to install only for the current user)
 
 
 

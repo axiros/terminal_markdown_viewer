@@ -77,7 +77,7 @@ try:
 <p>You can also use mdv as a <strong>source code</strong> viewer, best when you have docstrings with markdown in your code:</p>
 <p><img src="./samples/5.png" alt="" /></p>
 <p>from</p>
-<pre><code class="language-python">~/terminal_markdown_viewer $ cat setup.py
+<pre><code class="language-python">
 #!/usr/bin/env python2.7
 # coding: utf-8
 
@@ -86,7 +86,7 @@ try:
 
 ## Usage
 
-    [sudo] ./setup.py install
+    [sudo] pip install --upgrade .
 
 ----
 &quot;&quot;&quot;
@@ -156,9 +156,9 @@ Note: Poor man's implementation, polling. Check inotify based tools if you want 
 <p>Distribution via setuptools. If setuptools is not installed, run:</p>
 <pre><code>pip install setuptools
 </code></pre>
-<p>Use the setup.py provided inside, I.e. run:</p>
-<pre><code>sudo ./setup.py install
-(or ./setup.py install --user to install only for the current user)
+<p>Use pip, I.e. run:</p>
+<pre><code>sudo pip install --upgrade .
+(or just pip install --upgrade . to install only for the current user)
 </code></pre>
 <h2>Usage</h2>
 <h3>CLI</h3>
