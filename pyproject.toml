@@ -1,3 +1,51 @@
 [build-system]
-requires = ["setuptools>=42.2"]
+requires = ["setuptools>=61.2"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "mdv"
+version = "1.7.4"
+authors = [{name = "Axiros GmbH", email = "gk@axiros.com"}]
+description = "Terminal Markdown Viewer"
+keywords = [
+    "markdown",
+    "markup",
+    "terminal",
+    "hilighting",
+    "syntax",
+    "source code",
+]
+classifiers = [
+    "Programming Language :: Python",
+    "Natural Language :: English",
+    "Operating System :: POSIX",
+    "Topic :: Text Processing :: Markup",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 2.7",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+]
+dependencies = ["pygments", "markdown"]
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.urls]
+Homepage = "http://github.com/axiros/terminal_markdown_viewer"
+Download = "http://github.com/axiros/terminal_markdown_viewer/tarball/"
+
+[project.optional-dependencies]
+yaml = ["pyyaml"]
+testing = ["pytest"]
+
+[project.scripts]
+mdv = "mdv:run"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["mdv", "mdv.*"]
+namespaces = false
+
