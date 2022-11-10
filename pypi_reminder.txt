@@ -1,9 +1,9 @@
 # thats the only way to get md into pypi:
 
 git push (for the images)
-vi setup.py -> add new version.
-rm -rf dist/
-python setup.py sdist
+vi setup.cfg -> add new version.
+rm -rf build/ dist/
+python3 -m build -nwsx .
 twine upload dist/*
 
 
