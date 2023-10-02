@@ -278,6 +278,9 @@ def get_terminal_size():
     """
     error_terminal_size = (0, 0)
     if hasattr(shutil, 'get_terminal_size'):
+        # The following statement will return 0, 0 if running by PyCharm in Windows,
+        # resulting in printing "!! Could not derive your terminal width !!" later.
+        # if raise error, it will cause "OSError: [WinError 6] The handle is invalid."
         terminal_size = shutil.get_terminal_size(fallback=error_terminal_size)
         return terminal_size.columns, terminal_size.lines
     else:
@@ -288,7 +291,11 @@ def get_terminal_size():
 term_columns, term_rows = envget('width', envget('COLUMNS')), envget('LINES')
 if not term_columns and not '-c' in sys.argv:
     try:
-        term_rows, term_columns = os.popen('stty size 2>/dev/null', 'r').read().split()
+        if sys.platform != "win32":
+            # The following statement will print "the system cannot find the path specified" in Windows, so omitting
+            term_rows, term_columns = os.popen('stty size 2>/dev/null', 'r').read().split()
+        else:
+            raise Warning('OS is win32, entering expect statement...')
         term_columns, term_rows = int(term_columns), int(term_rows)
     except:  # pragma: no cover
         term_columns, term_rows = get_terminal_size()
@@ -417,7 +424,7 @@ dir_mon_content_pretty = '_pretty_'
 
 
 def readfile(fn, kw={'encoding': 'utf-8'} if PY3 else {}):
-    with open(fn, **kw) as fd:
+    with io.open(fn, **kw) as fd:
         return fd.read()
 
 
@@ -1267,6 +1274,7 @@ def do_code_hilite(md, what='all'):
 def main(
     md               = None,
     filename         = None,
+    encoding         = 'utf-8',
     cols             = None,
     theme            = None,
     c_theme          = None,
@@ -1319,7 +1327,7 @@ def main(
             if filename == "-":
                 md = sys.stdin.read()
             else:
-                with open(filename) as f:
+                with io.open(filename, encoding=encoding) as f:
                     md = f.read()
 
     # style rolers requested?
@@ -1492,7 +1500,7 @@ def run_changed_file_cmd(cmd, fp, pretty):
     """ running commands on changes.
         pretty the parsed file
     """
-    with open(fp) as f:
+    with io.open(fp, encoding="utf-8") as f:
         raw = f.read()
     # go sure regarding quotes:
     for ph in (
@@ -1612,7 +1620,7 @@ def load_config(filename, s=None, yaml=None):
                 die('Not found: %s' % filename)
             else:
                 continue
-        with open(fn) as fd:
+        with io.open(fn, encoding="utf-8") as fd:
             s = fd.read()
             break
     if not s:
