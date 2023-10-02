@@ -570,8 +570,8 @@ def style_ansi(raw_code, lang=None):
     if lang:
         try:
             lexer = get_lexer_by_name(lexer_alias(lang))
-        except ValueError:
-            print(col('Lexer for %s not found' % lang, R), file=sys.stderr)
+        except Exception as ex:
+            print(col(str(ex), R), file=sys.stderr)
 
     if not lexer:
         try:
