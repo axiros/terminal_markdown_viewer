@@ -26,5 +26,8 @@
   [38;5;74mformatting[38;5;188m and
   [38;5;74mcode[38;5;188m[24m[38;5;188m①[0m
 [38;5;59m  [1] http://foo.bar[0m
+[38;5;188m  mailto (#64)
+  [38;5;74m[4mname@domain.com[24m[38;5;188m①[0m
+[38;5;59m  [1] mailto:name@domain.com[0m
 
 

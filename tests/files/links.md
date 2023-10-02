@@ -11,3 +11,6 @@ And [this](http://foo.com) is also [a](http://foo.bar) link
 ---
 
 [link *with* **formatting** and `code`](http://foo.bar)
+
+
+mailto (#64) <name@domain.com>

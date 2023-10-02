@@ -667,7 +667,7 @@ def reset_cur_header_state():
 
 
 def parse_header_nrs(nrs):
-    'nrs e.g. "4-10" or "1-"'
+    '''nrs e.g. 4-10 or 1-  '''
     if not nrs:
         return
     if isinstance(nrs, dict):
@@ -877,6 +877,12 @@ def split_blocks(text_block, w, cols, part_fmter=None):
 
 
 # ---------------------------------------------------- Create the treeprocessor
+def to_unescaped(raw):
+        if raw.startswith('\x02amp'):
+            #https://github.com/axiros/terminal_markdown_viewer/issues/64
+            raw = raw.replace('\x02amp', '&').replace('\x03', '')
+            raw = unescape(raw) 
+        return raw
 def replace_links(el, html):
     """digging through inline "<a href=..."
     """
@@ -904,7 +910,8 @@ def replace_links(el, html):
         # bug in the markdown api? link el is not providing inlines!!
         # -> get them from the html:
         # cur += link.text or ''
-        cur += parts[0].split('>', 1)[1].split('</a', 1)[0] or ''
+        _ =  parts[0].split('>', 1)[1].split('</a', 1)[0] or ''
+        cur += to_unescaped(_)
         cur += link_end
         if show_links != 'h':
             if show_links == 'i':
@@ -917,7 +924,7 @@ def replace_links(el, html):
                     # fix for py3
                     # http://stackoverflow.com/a/2352047
                     cur += '%s ' % chr(link_start_ord + cur_link)
-                links_list.append(link.get('href', ''))
+                links_list.append(to_unescaped(link.get('href', '')))
         cur_link += 1
     return links_list, cur
 
