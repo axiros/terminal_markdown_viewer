@@ -15,7 +15,7 @@ import os
 import io
 from setuptools import setup, find_packages
 
-version = '1.7.4'
+version = '1.7.5'
 
 with io.open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding='utf-8') as fd:
     md = fd.read()
@@ -49,6 +49,9 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
     entry_points={'console_scripts': ['mdv = mdv:run']},
 )
