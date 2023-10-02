@@ -139,8 +139,6 @@ The command can contain placeholders:
 Like: `mdv -M './mydocs:py,md::open "_fp_"'` which calls the open command
 with argument the path to the changed file.
 
-
-
 """
 from __future__ import absolute_import, print_function, unicode_literals
 
@@ -192,7 +190,7 @@ hr_sep, txt_block_cut, code_pref, list_pref, bquote_pref, hr_ends = (
 )
 # ansi cols (default):
 # R: Red (warnings), L: low visi, BG: background, BGL: background light, C=code
-# H1 - H5 = the theme, the numbers are the ansi color codes:
+# H1 - H5 = the theme, the numbers are the ansi 256 color codes:
 H1, H2, H3, H4, H5, R, L, BG, BGL, T, TL, C = (
     231,
     153,
@@ -291,9 +289,11 @@ def get_terminal_size():
 term_columns, term_rows = envget('width', envget('COLUMNS')), envget('LINES')
 if not term_columns and not '-c' in sys.argv:
     try:
-        if sys.platform != "win32":
+        if sys.platform != 'win32':
             # The following statement will print "the system cannot find the path specified" in Windows, so omitting
-            term_rows, term_columns = os.popen('stty size 2>/dev/null', 'r').read().split()
+            term_rows, term_columns = (
+                os.popen('stty size 2>/dev/null', 'r').read().split()
+            )
         else:
             raise Warning('OS is win32, entering expect statement...')
         term_columns, term_rows = int(term_columns), int(term_rows)
@@ -396,7 +396,7 @@ def_enc_set = False
 
 
 def fix_py2_default_encoding():
-    """ can be switched off when used as library"""
+    """can be switched off when used as library"""
     if PY3:
         return
     global def_enc_set
@@ -438,28 +438,30 @@ you_like = 'You like this theme?'
 
 
 def make_sample():
-    """ Generate the theme roller sample markdown """
+    """Generate the theme roller sample markdown"""
     if md_sample:
         # user has set another:
         return md_sample
     _md = []
     for hl in range(1, 7):
         _md.append('#' * hl + ' ' + 'Header %s' % hl)
-    sample_code = '''class Foo:
+    sample_code = """class Foo:
     bar = 'baz'
-    '''
+    """
     _md.append('```python\n""" Doc String """\n%s\n```' % sample_code)
     _md.append(
-        '''
+        """
 | Tables        | Fmt |
 | -- | -- |
 | !!! hint: wrapped | 0.1 **strong** |
-    '''
+    """
     )
     for ad in list(admons.keys())[:1]:
         _md.append('!!! %s: title\n    this is a %s\n' % (ad, ad.capitalize()))
     # 'this theme' replaced in the roller (but not at mdv w/o args):
-    globals()['md_sample'] = '\n'.join(_md) + '\n----\n!!! question: %s' % you_like
+    globals()['md_sample'] = (
+        '\n'.join(_md) + '\n----\n!!! question: %s' % you_like
+    )
 
 
 code_hl_tokens = {}
@@ -498,12 +500,16 @@ mydir = os.path.realpath(__file__).rsplit(os.path.sep, 1)[0]
 
 
 def set_theme(theme=None, for_code=None, theme_info=None):
-    """ set md and code theme """
+    """set md and code theme"""
     # for md the default is None and should return the 'random' theme
     # for code the default is 'default' and should return the default theme.
     # historical reasons...
     dec = {
-        False: {'dflt': None, 'on_dflt': 'random', 'env': ('MDV_THEME', 'AXC_THEME'),},
+        False: {
+            'dflt': None,
+            'on_dflt': 'random',
+            'env': ('MDV_THEME', 'AXC_THEME'),
+        },
         True: {
             'dflt': 'default',
             'on_dflt': None,
@@ -555,7 +561,7 @@ def set_theme(theme=None, for_code=None, theme_info=None):
 
 
 def style_ansi(raw_code, lang=None):
-    """ actual code hilite """
+    """actual code hilite"""
 
     def lexer_alias(n):
         # markdown lib now creates "language-python" (pygments still wants "python")
@@ -601,42 +607,6 @@ def style_ansi(raw_code, lang=None):
     return ''.join(cod)
 
 
-def col_bg(c):
-    """ colorize background """
-    return '\033[48;5;%sm' % c
-
-
-def col(s, c, bg=0, no_reset=0):
-    """
-    print col('foo', 124) -> red 'foo' on the terminal
-    c = color, s the value to colorize """
-    reset = reset_col
-    if no_reset:
-        reset = ''
-    for _strt, _end, _col in (
-        (code_start, code_end, H2),
-        (stng_start, stng_end, H2),
-        (link_start, link_end, H2),
-        (emph_start, emph_end, H3),
-    ):
-
-        if _strt in s:
-            uon, uoff = '', ''
-            if _strt == link_start:
-                uon, uoff = '\033[4m', '\033[24m'
-            s = s.replace(_strt, col('', _col, bg=background, no_reset=1) + uon)
-            s = s.replace(_end, uoff + col('', c, no_reset=1))
-
-    s = '\033[38;5;%sm%s%s' % (c, s, reset)
-    if bg:
-        pass
-        # s = col_bg(bg) + s
-    return s
-
-
-reset_col = '\033[0m'
-
-
 def low(s):
     # shorthand
     return col(s, L)
@@ -648,7 +618,7 @@ def plain(s, **kw):
 
 
 def sh(out):
-    """ debug tool"""
+    """debug tool"""
     for l in out:
         print(l)
 
@@ -667,7 +637,7 @@ def reset_cur_header_state():
 
 
 def parse_header_nrs(nrs):
-    '''nrs e.g. 4-10 or 1-  '''
+    """nrs e.g. 4-10 or 1-"""
     if not nrs:
         return
     if isinstance(nrs, dict):
@@ -711,7 +681,9 @@ class Tags:
         ret = ''
         f, t = header_nr['from'], header_nr['to']
         if level >= f and level <= t:
-            ret = '.'.join([str(cur[i]) for i in range(f, t + 1) if cur[i] > 0])
+            ret = '.'.join(
+                [str(cur[i]) for i in range(f, t + 1) if cur[i] > 0]
+            )
         return ret
 
     # @staticmethod everywhere is eye cancer, so we instantiate it later
@@ -743,7 +715,7 @@ class Tags:
         return low('\n%s%s%s%s%s\n' % (ind, s, hr_marker, e, ind))
 
     def code(_, s, from_fenced_block=None, **kw):
-        """ md code AND ``` style fenced raw code ends here"""
+        """md code AND ``` style fenced raw code ends here"""
         lang = kw.get('lang')
         if not from_fenced_block:
             s = ('\n' + s).replace('\n    ', '\n')[1:]
@@ -793,7 +765,7 @@ def is_text_node(el):
 
 # ----------------------------------------------------- Text Termcols Adaptions
 def rewrap(el, t, ind, pref):
-    """ Reasonably smart rewrapping checking punctuations """
+    """Reasonably smart rewrapping checking punctuations"""
     cols = max(term_columns - len(ind + pref), 5)
     if el.tag == 'code' or len(t) <= cols:
         return t
@@ -843,7 +815,7 @@ def rewrap(el, t, ind, pref):
 
 
 def split_blocks(text_block, w, cols, part_fmter=None):
-    """ splits while multiline blocks vertically (for large tables) """
+    """splits while multiline blocks vertically (for large tables)"""
     ts = []
     for line in text_block.splitlines():
         parts = []
@@ -878,14 +850,15 @@ def split_blocks(text_block, w, cols, part_fmter=None):
 
 # ---------------------------------------------------- Create the treeprocessor
 def to_unescaped(raw):
-        if raw.startswith('\x02amp'):
-            #https://github.com/axiros/terminal_markdown_viewer/issues/64
-            raw = raw.replace('\x02amp', '&').replace('\x03', '')
-            raw = unescape(raw) 
-        return raw
+    if raw.startswith('\x02amp'):
+        # https://github.com/axiros/terminal_markdown_viewer/issues/64
+        raw = raw.replace('\x02amp', '&').replace('\x03', '')
+        raw = unescape(raw)
+    return raw
+
+
 def replace_links(el, html):
-    """digging through inline "<a href=..."
-    """
+    """digging through inline "<a href=..." """
     parts = html.split('<a ')
     if len(parts) == 1:
         return None, html
@@ -910,7 +883,7 @@ def replace_links(el, html):
         # bug in the markdown api? link el is not providing inlines!!
         # -> get them from the html:
         # cur += link.text or ''
-        _ =  parts[0].split('>', 1)[1].split('</a', 1)[0] or ''
+        _ = parts[0].split('>', 1)[1].split('</a', 1)[0] or ''
         cur += to_unescaped(_)
         cur += link_end
         if show_links != 'h':
@@ -978,7 +951,12 @@ class AnsiPrinter(Treeprocessor):
             if el.tag == 'hr':
                 return out.append(tags.hr('', hir=hir))
 
-            if el.text or el.tag == 'p' or el.tag == 'li' or el.tag.startswith('h'):
+            if (
+                el.text
+                or el.tag == 'p'
+                or el.tag == 'li'
+                or el.tag.startswith('h')
+            ):
                 el.text = el.text or ''
                 # <a attributes>foo... -> we want "foo....". Is it a sub
                 # tag or inline text?
@@ -1116,8 +1094,8 @@ class AnsiPrinter(Treeprocessor):
                     t[0] = t[-1] = low(t[0].replace('-', '─'))
 
                 def fmt(cell, parent):
-                    """ we just run the whole formatter - just with a fresh new
-                    result list so that our 'out' is untouched """
+                    """we just run the whole formatter - just with a fresh new
+                    result list so that our 'out' is untouched"""
                     _cell = []
                     formatter(cell, out=_cell, hir=0, parent=parent)
                     return '\n'.join(_cell)
@@ -1163,7 +1141,9 @@ class AnsiPrinter(Treeprocessor):
                     # again sam:
                     # note: we had to patch it, it inserted '\n' within cells!
                     table = tabulate(tc)
-                    out.append(split_blocks(table, w, cols, part_fmter=borders))
+                    out.append(
+                        split_blocks(table, w, cols, part_fmter=borders)
+                    )
                 return
 
             nr = 0
@@ -1689,6 +1669,44 @@ def run():
         monitor_dir(kw)
     else:
         print(main(**kw) if PY3 else str(main(**kw)))
+
+
+# at the end, due the treesitter bug with [... - grrr
+def col_bg(c):
+    """colorize background"""
+    return '\033[48;5;%sm' % c
+
+
+def col(s, c, bg=0, no_reset=0):
+    """
+    print col('foo', 124) -> red 'foo' on the terminal
+    c = color, s the value to colorize"""
+    reset = reset_col
+    if no_reset:
+        reset = ''
+    for _strt, _end, _col in (
+        (code_start, code_end, H2),
+        (stng_start, stng_end, H2),
+        (link_start, link_end, H2),
+        (emph_start, emph_end, H3),
+    ):
+        if _strt in s:
+            uon, uoff = '', ''
+            if _strt == link_start:
+                uon, uoff = '\033[4m', '\033[24m'
+            s = s.replace(
+                _strt, col('', _col, bg=background, no_reset=1) + uon
+            )
+            s = s.replace(_end, uoff + col('', c, no_reset=1))
+
+    s = '\033[38;5;%sm%s%s' % (c, s, reset)
+    if bg:
+        pass
+        # s = col_bg(bg) + s
+    return s
+
+
+reset_col = '\033[0m'
 
 
 if __name__ == '__main__':  # pragma: no cover

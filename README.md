@@ -530,5 +530,5 @@ Also:
 ### Sept 2023:
 
 - Merged some PRs, released 1.7.5
-- Fixed `<user@domain.com>` etree problem
+- Fixed nasty mailto link problem (#64)
 

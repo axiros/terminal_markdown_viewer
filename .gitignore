@@ -56,3 +56,4 @@ docs/_build/
 # PyBuilder
 target/
 venv
+foo.md
