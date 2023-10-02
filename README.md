@@ -253,6 +253,10 @@ The command can contain placeholders:
 Like: mdv -M './mydocs:py,md::open "_fp_"'  which calls the open
 command with argument the path to the changed file.
 
+## Docker
+
+Should work w/o problems. See e.g. [here](https://github.com/axiros/terminal_markdown_viewer/issues/60) regarding how.
+
 
 ## Themes
 
@@ -465,7 +469,6 @@ mistletoe downside: py2 only via a fork.
 
 and, naturally, the [python markdown project](https://pythonhosted.org/Markdown/authors.html)
 
-Update: Next version will be CommonMark based though...
 
 
 ## Updates
@@ -523,3 +526,9 @@ Also:
 <img src="./samples/header_num.png" width="400"/>
 - docopt and pyyaml install requirement removed, better config file handling.
 - pypi markdown rendering for the readme, finally.
+
+### Sept 2023:
+
+- Merged some PRs, released 1.7.5
+- Fixed `<user@domain.com>` etree problem
+
