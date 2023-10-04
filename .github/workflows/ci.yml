@@ -29,4 +29,6 @@ jobs:
         run: coverage run --include="mdv/markdownviewer.py"  setup.py test
       - name: Report
         run: coverage report
+      - name: Coverage
+        run: coveralls
 
