@@ -1671,10 +1671,10 @@ def run():
         print(main(**kw) if PY3 else str(main(**kw)))
 
 
-# at the end, due the treesitter bug with [... - grrr
+# at the end, due the treesitter bug with sq brackets... - grrr
 def col_bg(c):
     """colorize background"""
-    return '\033[48;5;%sm' % c
+    return esc + '48;5;%sm' % c
 
 
 def col(s, c, bg=0, no_reset=0):
@@ -1693,20 +1693,38 @@ def col(s, c, bg=0, no_reset=0):
         if _strt in s:
             uon, uoff = '', ''
             if _strt == link_start:
-                uon, uoff = '\033[4m', '\033[24m'
+                uon, uoff = esc + '4m', esc + '24m'
             s = s.replace(
                 _strt, col('', _col, bg=background, no_reset=1) + uon
             )
             s = s.replace(_end, uoff + col('', c, no_reset=1))
-
-    s = '\033[38;5;%sm%s%s' % (c, s, reset)
-    if bg:
-        pass
-        # s = col_bg(bg) + s
+    if isinstance(c, tuple):
+        if len(c) == 2:
+            # 1,124 -> bold and fg
+            c = '%s;%s' % (c[0], to_col(c[1]))
+        elif len(c) == 3:
+            c = '%s;%s;%s' % (c[0], to_col(c[1]), to_bg_col(c[2]))
+    else:
+        c = to_col(c)
+    s = '%s%sm%s%s' % (esc, c, s, reset)
     return s
 
 
-reset_col = '\033[0m'
+def to_col(c, fb='3'):
+    if isinstance(c, int):
+        return fb + '8;5;%s' % c
+    elif c and c[0] == '#':
+        return fb + '8;2;%s;%s;%s' % hex_to_rgb(c[1:])
+    return c   # given as ansi
+
+
+def to_bg_col(c):
+    return to_col(c, fb='4')
+
+
+hex_to_rgb = lambda h: tuple(int(h[i : i + 2], 16) for i in (0, 2, 4))
+esc = '\033['
+reset_col = esc + '0m'
 
 
 if __name__ == '__main__':  # pragma: no cover
