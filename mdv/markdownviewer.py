@@ -1031,11 +1031,13 @@ class AnsiPrinter(Treeprocessor):
                     hir += hl
 
                 t = rewrap(el, t, ind, pref)
-                # for hl > 6 the lib delivers "## h6" -> drop the ##:
-                if hl is not None:
+                # for hl > 6, e.g. 8, the lib stops at h6, with "## title" -> drop the ##, count up the h6 to h8:
+                if el.tag == 'h6':
                     ll = t.split(' ', 1)
+                    lvl = len(ll[0])
                     if len(ll[0].replace('#', '')) == 0:
                         t = ll[1]
+                        el.tag = 'h%s' % (6 + lvl)
 
                 # breakpoint() # FIXME BREAKPOINT
                 # indent. can color the prefixes now, no more len checks:
