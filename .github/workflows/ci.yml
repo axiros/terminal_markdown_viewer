@@ -21,5 +21,12 @@ jobs:
       # You can test your matrix by printing the current Python version
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
-
+      - name: Install Deps
+        run: pip install pytest pygments markdown coveralls
+      - name: Install mdv
+        run: pip install -e .
+      - name: Test
+        run: coverage run --include="mdv/markdownviewer.py"  setup.py test
+      - name: Report
+        run: coverage report
 
