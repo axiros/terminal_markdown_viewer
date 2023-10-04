@@ -189,24 +189,37 @@ hr_sep, txt_block_cut, code_pref, list_pref, bquote_pref, hr_ends = (
 # ansi cols (default):
 # R: Red (warnings), L: low visi, BG: background, BGL: background light, C=code
 # H1 - H5 = the theme, the numbers are the ansi 256 color codes:
-H1, H2, H3, H4, H5, R, L, BG, BGL, T, TL, C = (
-    231,
-    153,
-    117,
-    109,
-    65,
-    124,
-    59,
-    16,
-    188,
-    188,
-    59,
-    102,
-)
+# https://github.com/chriskempson/base16/blob/main/styling.md
+# H1, H2, H3, H4, H5, R, L, BG, BGL, T, TL, C = (
+#     231,
+#     153,
+#     117,
+#     109,
+#     65,
+#     124,
+#     59,
+#     16,
+#     188,
+#     188,
+#     59,
+#     102,
+# )
 # a few more header levels defined. Backwards compat, where we did not have >5 Code (C is fallback if we have no lexer).
-H6 = H7 = H8 = H9 = H10 = H5
+# H6 = H7 = H8 = H9 = H10 = H5
 # Default: Same theme:
-CH1, CH2, CH3, CH4, CH5 = H1, H2, H3, H4, H5
+
+H1 = (1, 'base09')
+H2 = (1, 'base0A')
+H3 = (1, 'base0B')
+H4 = (1, 'base0C')
+H5 = (1, 'base0D')
+H6 = (1, 'base0E')
+H7 = (1, 'base0F')
+H8 = 'base09'
+H9 = 'base0A'
+H10 = 'base0B'
+R, L, BG, BGL, T, TL, C = 124, 59, 16, 188, 188, 59, 102
+CH1, CH2, CH3, CH4, CH5 = H1[1], H2[1], H3[1], H4[1], H5[1]
 
 code_hl = {
     'Keyword': 'CH3',
@@ -537,7 +550,7 @@ def set_theme(theme=None, for_code=None, theme_info=None):
         return
 
     theme = str(theme)
-    # all the themes from here:
+
     themes = read_themes()
     if theme == 'random':
         rand = randint(0, len(themes) - 1)
@@ -919,6 +932,7 @@ class AnsiPrinter(Treeprocessor):
 
     def run(self, doc):
         tags = Tags()
+        # define tag handlers for all header levels, based on def h:
         for h in cur_header_state:
             setattr(tags, 'h%s' % h, partial(tags.h, level=h))
 
@@ -1039,7 +1053,6 @@ class AnsiPrinter(Treeprocessor):
                         t = ll[1]
                         el.tag = 'h%s' % (6 + lvl)
 
-                # breakpoint() # FIXME BREAKPOINT
                 # indent. can color the prefixes now, no more len checks:
                 if admon:
                     out.append('\n')
@@ -1314,19 +1327,6 @@ def main(
     if c_def_lexer:
         def_lexer = c_def_lexer
 
-    # Do we have python configs?
-    for p in '~/.mdv.py', '~/.config/mdv/mdv.py':
-        py_config_file = os.path.expanduser(p)
-        if os.path.exists(py_config_file):
-            with io.open(py_config_file, encoding='utf-8') as fd:
-                s = fd.read()
-            exec_globals = {}
-            exec(s, exec_globals)
-            globals().update(exec_globals)
-            # when no theme is given on CLI we won't override definitions in config
-            if theme == None:
-                theme = False
-
     args = locals()
     if not md:
         if not filename:
@@ -1382,6 +1382,7 @@ def main(
 
     global guess_lexer
     guess_lexer = not c_no_guess
+
     if not theme == False:
         set_theme(theme, theme_info=theme_info)
 
@@ -1665,6 +1666,7 @@ def merge(a, b):
     return c
 
 
+B16 = {}
 # fmt: on
 def run():
     global is_app
@@ -1676,6 +1678,27 @@ def run():
     if fn:
         kw.update(load_config(filename=fn))
     kw.update(kw1)
+
+    # all the themes from here:
+    theme = kw.get('theme')
+    if theme:
+        fnb = mydir + '/b16/%s.json' % theme
+        if os.path.exists(fnb):
+            with open(fnb) as fd:
+                B16.update(loads(fd.read()))
+            kw['theme'] = False
+
+    # Do we have python configs?
+    for p in '~/.mdv.py', '~/.config/mdv/mdv.py':
+        py_config_file = os.path.expanduser(p)
+        if os.path.exists(py_config_file):
+            with io.open(py_config_file, encoding='utf-8') as fd:
+                s = fd.read()
+            exec(s, globals())
+            # when no theme is given on CLI we won't override definitions in config
+            if theme == None:
+                kw['theme'] = False
+
     doc = __doc__[1:]
     if kw.get('sh_help'):
         d = dict(
@@ -1743,8 +1766,10 @@ def col(s, c, bg=0, no_reset=0):
 def to_col(c, fb='3'):
     if isinstance(c, int):
         return fb + '8;5;%s' % c
-    elif c and c[0] == '#':
+    if c[0] == '#':
         return fb + '8;2;%s;%s;%s' % hex_to_rgb(c[1:])
+    if c[0:4] == 'base':
+        return fb + '8;2;%s;%s;%s' % hex_to_rgb(B16[c])
     return c   # given as ansi
 
 
