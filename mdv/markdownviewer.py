@@ -356,7 +356,7 @@ def parse_env_and_cli():
             reqv, n = opts[k][:2]
             kw[n] = argv.pop(0) if reqv else True
         except:
-            if not argv:
+            if not argv or os.path.exists(k):
                 kw['filename'] = k
             else:
                 die('Not understood: %s' % k)
