@@ -19,7 +19,6 @@
     -f FROM    : from_txt      : Display FROM given substring of the file.
     -h         : sh_help       : Show help
     -i         : theme_info    : Show theme infos with output
-    -l         : bg_light      : Light background (not yet supported)
     -m         : monitor_file  : Monitor file for changes and redisplay FROM given substring
     -n NRS     : header_nrs    : Header numbering (default off. Say e.g. -3 or 1- or 1-5)
     -t THEME   : theme         : Key within the color ansi_table.json. 'random' accepted.
@@ -138,7 +137,6 @@ The command can contain placeholders:
 
 Like: `mdv -M './mydocs:py,md::open "_fp_"'` which calls the open command
 with argument the path to the changed file.
-
 """
 from __future__ import absolute_import, print_function, unicode_literals
 
@@ -205,7 +203,9 @@ H1, H2, H3, H4, H5, R, L, BG, BGL, T, TL, C = (
     59,
     102,
 )
-# Code (C is fallback if we have no lexer). Default: Same theme:
+# a few more header levels defined. Backwards compat, where we did not have >5 Code (C is fallback if we have no lexer).
+H6 = H7 = H8 = H9 = H10 = H5
+# Default: Same theme:
 CH1, CH2, CH3, CH4, CH5 = H1, H2, H3, H4, H5
 
 code_hl = {
@@ -499,8 +499,16 @@ def j(p, f):
 mydir = os.path.realpath(__file__).rsplit(os.path.sep, 1)[0]
 
 
+def err(msg):
+    print(col('ERR', (1, 255, 124)) + ' %s' % msg, file=sys.stderr)
+
+
 def set_theme(theme=None, for_code=None, theme_info=None):
-    """set md and code theme"""
+    """set md and code theme
+
+    This solely works with the old 5 color only themes.
+    For more expressivity use the python config format overriding our globals.
+    """
     # for md the default is None and should return the 'random' theme
     # for code the default is 'default' and should return the default theme.
     # historical reasons...
@@ -517,47 +525,54 @@ def set_theme(theme=None, for_code=None, theme_info=None):
         },
     }
     dec = dec[bool(for_code)]
-    try:
-        if theme == dec['dflt']:
-            for k in dec['env']:
-                ek = envget(k)
-                if ek:
-                    theme = ek
-                    break
-        if theme == dec['dflt']:
-            theme = dec['on_dflt']
-        if not theme:
-            return
+    if theme == dec['dflt']:
+        for k in dec['env']:
+            ek = envget(k)
+            if ek:
+                theme = ek
+                break
+    if theme == dec['dflt']:
+        theme = dec['on_dflt']
+    if not theme:
+        return
 
-        theme = str(theme)
-        # all the themes from here:
-        themes = read_themes()
-        if theme == 'random':
-            rand = randint(0, len(themes) - 1)
-            theme = list(themes.keys())[rand]
-        t = themes.get(theme)
-        if not t or len(t.get('ct')) != 5:
-            # leave defaults:
-            return
-        _for = ''
-        if for_code:
-            _for = ' (code)'
+    theme = str(theme)
+    # all the themes from here:
+    themes = read_themes()
+    if theme == 'random':
+        rand = randint(0, len(themes) - 1)
+        theme = list(themes.keys())[rand]
+    t = themes.get(theme)
+    if not t or len(t.get('ct')) != 5:
+        # leave defaults:
+        err('Theme not found: %s' % theme)
+        return
+    _for = ''
+    if for_code:
+        _for = ' (code)'
 
-        if theme_info:
-            print(low('theme%s: %s (%s)' % (_for, theme, t.get('name'))))
+    if theme_info:
+        n = t.get('name')
+        n = ' (' + n + ')' if n else ''
+        print(low('theme%s: %s%s' % (_for, theme, n)))
 
-        t = t['ct']
-        cols = (t[0], t[1], t[2], t[3], t[4])
-        if for_code:
-            global CH1, CH2, CH3, CH4, CH5
-            CH1, CH2, CH3, CH4, CH5 = cols
-        else:
-            global H1, H2, H3, H4, H5
-            # set the colors now from the ansi codes in the theme:
-            H1, H2, H3, H4, H5 = cols
-    finally:
-        if for_code:
-            build_hl_by_token()
+    t = t['ct']
+    cols = (t[0], t[1], t[2], t[3], t[4])
+
+    def cast(i):
+        try:
+            return int(i)
+        except:
+            return i
+
+    cols = [cast(i) for i in cols]
+    if for_code:
+        global CH1, CH2, CH3, CH4, CH5
+        CH1, CH2, CH3, CH4, CH5 = cols
+    else:
+        global H1, H2, H3, H4, H5
+        # set the colors now from the ansi codes in the theme:
+        H1, H2, H3, H4, H5 = cols
 
 
 def style_ansi(raw_code, lang=None):
@@ -577,7 +592,7 @@ def style_ansi(raw_code, lang=None):
         try:
             lexer = get_lexer_by_name(lexer_alias(lang))
         except Exception as ex:
-            print(col(str(ex), R), file=sys.stderr)
+            err(ex)
 
     if not lexer:
         try:
@@ -694,12 +709,9 @@ class Tags:
             # if we have header numbers we don't indent the text yet more:
             s = ' ' + s.lstrip()
         # have not more colors:
-        header_col = min(level, 5)
-        return '\n%s%s%s' % (
-            low('#' * 0),
-            nrstr,
-            col(s, globals()['H%s' % header_col]),
-        )
+        header_col = min(level, 10)
+        _ = '\n%s%s%s'
+        return _ % (low('#' * 0), nrstr, col(s, globals()['H%s' % header_col]))
 
     def p(_, s, **kw):
         return col(s, T)
@@ -903,7 +915,7 @@ def replace_links(el, html):
 
 
 class AnsiPrinter(Treeprocessor):
-    header_tags = ('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8')
+    header_tags = ('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'h7', 'h8', 'h9', 'h10')
 
     def run(self, doc):
         tags = Tags()
@@ -1012,14 +1024,20 @@ class AnsiPrinter(Treeprocessor):
                     el.set('pref', '')
 
                 ind = left_indent * hir
+                hl = None
                 if el.tag in self.header_tags:
-                    # header level:
                     hl = int(el.tag[1:])
                     ind = ' ' * (hl - 1)
                     hir += hl
 
                 t = rewrap(el, t, ind, pref)
+                # for hl > 6 the lib delivers "## h6" -> drop the ##:
+                if hl is not None:
+                    ll = t.split(' ', 1)
+                    if len(ll[0].replace('#', '')) == 0:
+                        t = ll[1]
 
+                # breakpoint() # FIXME BREAKPOINT
                 # indent. can color the prefixes now, no more len checks:
                 if admon:
                     out.append('\n')
@@ -1257,31 +1275,29 @@ def do_code_hilite(md, what='all'):
     return '\n'.join(out)
 
 
-# fmt: off
 def main(
-    md               = None,
-    filename         = None,
-    encoding         = 'utf-8',
-    cols             = None,
-    theme            = None,
-    c_theme          = None,
-    bg               = None,
-    c_no_guess       = None,
-    display_links    = None,
-    link_style       = None,
-    from_txt         = None,
-    do_html          = None,
-    code_hilite      = None,
-    c_def_lexer      = None,
-    theme_info       = None,
-    no_colors        = None,
-    tab_length       = 4,
-    no_change_defenc = False,
-    header_nrs       = False,
-    **kw
+    md=None,
+    filename=None,
+    encoding='utf-8',
+    cols=None,
+    theme=None,
+    c_theme=None,
+    bg=None,
+    c_no_guess=None,
+    display_links=None,
+    link_style=None,
+    from_txt=None,
+    do_html=None,
+    code_hilite=None,
+    c_def_lexer=None,
+    theme_info=None,
+    no_colors=None,
+    tab_length=4,
+    no_change_defenc=False,
+    header_nrs=False,
+    **kw,
 ):
-    """ md is markdown string. alternatively we use filename and read """
-    # fmt: on
+    """md is markdown string. alternatively we use filename and read"""
 
     # if I don't do this here, then I'll get probs when being
     # used as a lib:
@@ -1295,23 +1311,31 @@ def main(
     global def_lexer
     if c_def_lexer:
         def_lexer = c_def_lexer
-    py_config_file = os.path.expanduser("~/.mdv.py")
-    if os.path.exists(py_config_file):
-        exec_globals = {}
-        exec(io.open(py_config_file, encoding="utf-8").read(), exec_globals)
-        globals().update(exec_globals)
+
+    # Do we have python configs?
+    for p in '~/.mdv.py', '~/.config/mdv/mdv.py':
+        py_config_file = os.path.expanduser(p)
+        if os.path.exists(py_config_file):
+            with io.open(py_config_file, encoding='utf-8') as fd:
+                s = fd.read()
+            exec_globals = {}
+            exec(s, exec_globals)
+            globals().update(exec_globals)
+            # when no theme is given on CLI we won't override definitions in config
+            if theme == None:
+                theme = False
 
     args = locals()
     if not md:
         if not filename:
-            print("Using sample markdown:")
+            print('Using sample markdown:')
             make_sample()
-            md = args["md"] = md_sample
+            md = args['md'] = md_sample
             print(md)
-            print
-            print("Styling Result")
+            print()
+            print('Styling Result')
         else:
-            if filename == "-":
+            if filename == '-':
                 md = sys.stdin.read()
             else:
                 with io.open(filename, encoding=encoding) as f:
@@ -1322,57 +1346,58 @@ def main(
     if cols:
         term_columns = int(cols)
 
-    if c_theme == "all" or theme == "all":
-        if c_theme == "all":
-            os.environ["AXC_CODE_THEME"] = os.environ["MDV_CODE_THEME"] = ""
-        if theme == "all":
-            os.environ["AXC_THEME"] = os.environ["MDV_THEME"] = ""
-        args.pop("kw")
+    if c_theme == 'all' or theme == 'all':
+        if c_theme == 'all':
+            os.environ['AXC_CODE_THEME'] = os.environ['MDV_CODE_THEME'] = ''
+        if theme == 'all':
+            os.environ['AXC_THEME'] = os.environ['MDV_THEME'] = ''
+        args.pop('kw')
         themes = read_themes()
         for k, v in list(themes.items()):
             if not filename:
-                yl = "You like *%s*, *%s*?" % (k, v["name"])
-                args["md"] = md_sample.replace(you_like, yl)
-            print(col("%s%s%s" % ("\n\n", "=" * term_columns, "\n"), L))
+                yl = 'You like *%s*, *%s*?' % (k, v['name'])
+                args['md'] = md_sample.replace(you_like, yl)
+            print(col('%s%s%s' % ('\n\n', '=' * term_columns, '\n'), L))
             # should really create an iterator here:
-            if theme == "all":
-                args["theme"] = k
+            if theme == 'all':
+                args['theme'] = k
             else:
-                args["c_theme"] = k
+                args['c_theme'] = k
             print(main(**args))
-        return ""
+        return ''
 
     global show_links
     if display_links:
-        show_links = "i"
+        show_links = 'i'
     if link_style:  # rules
         show_links = link_style
 
-    if bg and bg == "light":
+    if bg and bg == 'light':
         # not in use rite now:
         global background, color
         background = BGL
         color = T
 
-    set_theme(theme, theme_info=theme_info)
-
     global guess_lexer
     guess_lexer = not c_no_guess
+    if not theme == False:
+        set_theme(theme, theme_info=theme_info)
 
-    if not c_theme:
-        c_theme = theme or "default"
+        if not c_theme:
+            c_theme = theme or 'default'
 
-    if c_theme == "None":
-        c_theme = None
+        if c_theme == 'None':
+            c_theme = None
 
-    if c_theme:
-        set_theme(c_theme, for_code=1, theme_info=theme_info)
+        if c_theme:
+            set_theme(c_theme, for_code=1, theme_info=theme_info)
 
-    if c_theme:
-        # info:
-        if not have_pygments:
-            errout(col("No pygments, can not analyze code for hilite", R))
+        if c_theme:
+            # info:
+            if not have_pygments:
+                errout(col('No pygments, can not analyze code for hilite', R))
 
+    build_hl_by_token()
     # Create an instance of the Markdown class with the new extension
     MD = markdown.Markdown(
         tab_length=int(tab_length),
@@ -1382,7 +1407,6 @@ def main(
             fenced_code.FencedCodeExtension(),
         ],
     )
-
 
     if code_hilite:
         md = do_code_hilite(md, code_hilite)
@@ -1405,17 +1429,17 @@ def main(
     for ph in stash.rawHtmlBlocks:
         nr += 1
         raw = unescape(ph)
-        if raw[:3].lower() == "<br":
-            raw = "\n"
-        pre = "<pre><code"
+        if raw[:3].lower() == '<br':
+            raw = '\n'
+        pre = '<pre><code'
         if raw.startswith(pre):
             _, raw = raw.split(pre, 1)
             if 'class="' in raw:
                 # language:
                 lang = raw.split('class="', 1)[1].split('"')[0]
             else:
-                lang = ""
-            raw = raw.split(">", 1)[1].rsplit("</code>", 1)[0]
+                lang = ''
+            raw = raw.split('>', 1)[1].rsplit('</code>', 1)[0]
             raw = tags.code(raw.strip(), from_fenced_block=1, lang=lang)
         ansi = ansi.replace(PH % nr, raw)
 
@@ -1424,41 +1448,41 @@ def main(
 
     # sub part display (the -f feature)
     if from_txt:
-        if not from_txt.split(":", 1)[0] in ansi:
+        if not from_txt.split(':', 1)[0] in ansi:
             # display from top then:
             from_txt = ansi.strip()[1]
-        from_txt, mon_lines = (from_txt + ":%s" % (term_rows - 6)).split(":")[
+        from_txt, mon_lines = (from_txt + ':%s' % (term_rows - 6)).split(':')[
             :2
         ]
         mon_lines = int(mon_lines)
         pre, post = ansi.split(from_txt, 1)
-        post = "\n".join(post.split("\n")[:mon_lines])
-        ansi = "\n(...)%s%s%s" % (
-            "\n".join(pre.rsplit("\n", 2)[-2:]),
+        post = '\n'.join(post.split('\n')[:mon_lines])
+        ansi = '\n(...)%s%s%s' % (
+            '\n'.join(pre.rsplit('\n', 2)[-2:]),
             from_txt,
             post,
         )
 
-    ansi = set_hr_widths(ansi) + "\n"
+    ansi = set_hr_widths(ansi) + '\n'
     if no_colors:
         return clean_ansi(ansi)
-    return ansi + "\n"
+    return ansi + '\n'
 
 
 # Following just file monitors, not really core feature so the prettyfier:
 # but sometimes good to have at hand:
 # ---------------------------------------------------------------- File Monitor
 def monitor(args):
-    """ file monitor mode """
-    filename = args.get("filename")
+    """file monitor mode"""
+    filename = args.get('filename')
     if not filename:
-        print(col("Need file argument", 2))
+        print(col('Need file argument', 2))
         raise SystemExit
-    last_err = ""
+    last_err = ''
     last_stat = 0
     while True:
         if not os.path.exists(filename):
-            last_err = "File %s not found. Will continue trying." % filename
+            last_err = 'File %s not found. Will continue trying.' % filename
         else:
             try:
                 stat = os.stat(filename)[8]
@@ -1466,11 +1490,11 @@ def monitor(args):
                     parsed = main(**args)
                     print(str(parsed))
                     last_stat = stat
-                last_err = ""
+                last_err = ''
             except Exception as ex:
                 last_err = str(ex)
         if last_err:
-            errout("Error: %s" % last_err)
+            errout('Error: %s' % last_err)
         sleep()
 
 
@@ -1478,16 +1502,16 @@ def sleep():
     try:
         time.sleep(1)
     except KeyboardInterrupt:
-        errout("Have a nice day!")
+        errout('Have a nice day!')
         raise SystemExit
 
 
 # ----------------------------------------------------------- Directory Monitor
 def run_changed_file_cmd(cmd, fp, pretty):
-    """ running commands on changes.
-        pretty the parsed file
+    """running commands on changes.
+    pretty the parsed file
     """
-    with io.open(fp, encoding="utf-8") as f:
+    with io.open(fp, encoding='utf-8') as f:
         raw = f.read()
     # go sure regarding quotes:
     for ph in (
@@ -1499,79 +1523,79 @@ def run_changed_file_cmd(cmd, fp, pretty):
             cmd = cmd.replace(ph, '"%s"' % ph)
 
     cmd = cmd.replace(dir_mon_filepath_ph, fp)
-    errout(col("Running %s" % cmd, H1))
+    errout(col('Running %s' % cmd, H1))
     for r, what in (
         (dir_mon_content_raw, raw),
         (dir_mon_content_pretty, pretty),
     ):
-        cmd = cmd.replace(r, what.encode("base64"))
+        cmd = cmd.replace(r, what.encode('base64'))
 
     # yeah, i know, sub bla bla...
     if os.system(cmd):
-        errout(col("(the command failed)", R))
+        errout(col('(the command failed)', R))
 
 
 def monitor_dir(args):
-    """ displaying the changed files """
+    """displaying the changed files"""
 
     def show_fp(fp):
-        args["filename"] = fp
+        args['filename'] = fp
         pretty = main(**args)
         print(pretty)
-        print("(%s)" % col(fp, L))
-        cmd = args.get("change_cmd")
+        print('(%s)' % col(fp, L))
+        cmd = args.get('change_cmd')
         if cmd:
             run_changed_file_cmd(cmd, fp=fp, pretty=pretty)
 
     ftree = {}
-    d = args.get("monitor_dir")
+    d = args.get('monitor_dir')
     # was a change command given?
-    d += "::"
-    d, args["change_cmd"] = d.split("::")[:2]
-    args.pop("monitor_dir")
+    d += '::'
+    d, args['change_cmd'] = d.split('::')[:2]
+    args.pop('monitor_dir')
     # collides:
-    args.pop("monitor_file", 0)
-    d, exts = (d + ":md,mdown,markdown").split(":")[:2]
-    exts = exts.split(",")
+    args.pop('monitor_file', 0)
+    d, exts = (d + ':md,mdown,markdown').split(':')[:2]
+    exts = exts.split(',')
     if not os.path.exists(d):
-        print(col("Does not exist: %s" % d, R))
+        print(col('Does not exist: %s' % d, R))
         sys.exit(2)
 
-    dir_black_list = [".", ".."]
+    dir_black_list = ['.', '..']
 
     def check_dir(d, ftree):
-        check_latest = ftree.get("latest_ts")
+        check_latest = ftree.get('latest_ts')
         d = os.path.abspath(d)
         if d in dir_black_list:
             return
 
         if len(ftree) > mon_max_files:
             # too deep:
-            print(col("Max files (%s) reached" % col(mon_max_files, R)))
+            print(col('Max files (%s) reached' % col(mon_max_files, R)))
             dir_black_list.append(d)
             return
         try:
             files = os.listdir(d)
         except Exception as ex:
-            print("%s when scanning dir %s" % (col(ex, R), d))
+            print('%s when scanning dir %s' % (col(ex, R), d))
             dir_black_list.append(d)
             return
 
         for f in files:
             fp = j(d, f)
             if os.path.isfile(fp):
-                f_ext = f.rsplit(".", 1)[-1]
+                f_ext = f.rsplit('.', 1)[-1]
                 if f_ext == f:
-                    f_ext == ""
+                    f_ext == ''
                 if f_ext not in exts:
                     continue
                 old = ftree.get(fp)
                 # size:
                 now = os.stat(fp)[6]
                 if check_latest:
-                    if os.stat(fp)[7] > ftree["latest_ts"]:
-                        ftree["latest"] = fp
-                        ftree["latest_ts"] = os.stat(fp)[8]
+                    if os.stat(fp)[7] > ftree['latest_ts']:
+                        ftree['latest'] = fp
+                        ftree['latest_ts'] = os.stat(fp)[8]
                 if now == old:
                     continue
                 # change:
@@ -1580,21 +1604,21 @@ def monitor_dir(args):
                     # At first time we don't display ALL the files...:
                     continue
                 # no binary. make sure:
-                if "text" in os.popen('file "%s"' % fp).read():
+                if 'text' in os.popen('file "%s"' % fp).read():
                     show_fp(fp)
             elif os.path.isdir(fp):
                 check_dir(j(d, fp), ftree)
 
-    ftree["latest_ts"] = 1
+    ftree['latest_ts'] = 1
     while True:
         check_dir(d, ftree)
-        if "latest_ts" in ftree:
-            ftree.pop("latest_ts")
-            fp = ftree.get("latest")
+        if 'latest_ts' in ftree:
+            ftree.pop('latest_ts')
+            fp = ftree.get('latest')
             if fp:
                 show_fp(fp)
             else:
-                print("sth went wrong, no file found")
+                print('sth went wrong, no file found')
         sleep()
 
 
@@ -1602,21 +1626,23 @@ def load_config(filename, s=None, yaml=None):
     fns = (filename,) if filename else ('.mdv', '.config/mdv')
     for f in fns:
         fn = os.path.expanduser('~/' + f) if f[0] == '.' else f
-        if not os.path.exists(fn):
+        if not os.path.exists(fn) or os.path.isdir(fn):
             if filename:
                 die('Not found: %s' % filename)
             else:
                 continue
-        with io.open(fn, encoding="utf-8") as fd:
+        with io.open(fn, encoding='utf-8') as fd:
             s = fd.read()
             break
     if not s:
         return {}
     try:
         import yaml
+
         m = yaml.safe_load(s)
     except:
         import json
+
         try:
             m = json.loads(s)
         except:
@@ -1626,8 +1652,10 @@ def load_config(filename, s=None, yaml=None):
             m = {}
     return m
 
+
 # backwards compat - this was there before:
 load_yaml_config = load_config
+
 
 def merge(a, b):
     c = a.copy()
