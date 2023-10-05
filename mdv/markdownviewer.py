@@ -12,6 +12,7 @@
     -H         : do_html       : Print html version
     -L         : display_links : Backwards compatible shortcut for '-u i'
     -M DIR     : monitor_dir   : Monitor directory for markdown file changes
+    -S         : theme_browser : Open fzf theme browser. Requires fzf.
     -T C_THEME : c_theme       : Theme for code highlight. If not set we use THEME.
     -X Lexer   : c_def_lexer   : Default lexer name (default python). Set -x to use it always.
     -b TABL    : tab_length    : Set tab_length to sth. different than 4 [default 4]
@@ -19,19 +20,21 @@
     -f FROM    : from_txt      : Display FROM given substring of the file.
     -h         : sh_help       : Show help
     -i         : theme_info    : Show theme infos with output
+    -k         : keep_bg       : Leave background color of terminal unchanged
     -m         : monitor_file  : Monitor file for changes and redisplay FROM given substring
     -n NRS     : header_nrs    : Header numbering (default off. Say e.g. -3 or 1- or 1-5)
+    -s style   : style_rules   : Set style rules via CLI (py format. e.g. 'BG=false;H1=(2,124,255)'
     -t THEME   : theme         : Key within the color ansi_table.json. 'random' accepted.
     -u STYL    : link_style    : Link Style (it=inline table=default, h=hide, i=inline)
     -x         : c_no_guess    : Do not try guess code lexer (guessing is a bit slow)
 
 # Details
 
-### **MDFILE**
+## **MDFILE**
 
 Filename to markdownfile or '-' for pipe mode (no termwidth auto dedection then)
 
-### Configuration
+## Configuration
 
 Happens like:
 
@@ -40,7 +43,7 @@ Happens like:
     3. overlay with environ vars (e.g. `$MDV_THEME`)
     4. overlay with CLI vars
 
-#### File Formats
+### File Formats
 
 We try yaml.
 If not installed we try json.
@@ -92,6 +95,7 @@ Say `C_THEME=all` and fix `THEME`
 
 Setting both to all will probably spin your beach ball...
 
+See also -S
 
 ## Inline Usage (mdv as lib)
 
@@ -115,7 +119,7 @@ Mark inline markdown with a '_' following the docstring beginnings.
 
 If FROM is not found we display the whole file.
 
-## Directory Monitor:
+### Directory Monitor:
 
 We check only text file changes, monitoring their size.
 
@@ -123,7 +127,7 @@ By default .md, .mdown, .markdown files are checked but you can change like
 `-M 'mydir:py,c,md,'` where the last empty substrings makes mdv also monitor
 any file w/o extension (like 'README').
 
-### Running actions on changes:
+#### Running actions on changes:
 
 If you append to `-M` a `'::<cmd>'` we run the command on any change detected
 (sync, in foreground).
@@ -176,7 +180,9 @@ from markdown.extensions import Extension, fenced_code
 from functools import partial
 
 errout, envget = partial(print, file=sys.stderr), os.environ.get
-
+err = lambda msg: errout(col(' ERR ', (1, 255, 124)) + ' %s' % msg)
+die = lambda msg: err(msg) or sys.exit(1)
+exists = os.path.exists
 # ---------------------------------------------------------------------- Config
 hr_sep, txt_block_cut, code_pref, list_pref, bquote_pref, hr_ends = (
     '─',
@@ -189,7 +195,6 @@ hr_sep, txt_block_cut, code_pref, list_pref, bquote_pref, hr_ends = (
 # ansi cols (default):
 # R: Red (warnings), L: low visi, BG: background, BGL: background light, C=code
 # H1 - H5 = the theme, the numbers are the ansi 256 color codes:
-# https://github.com/chriskempson/base16/blob/main/styling.md
 # H1, H2, H3, H4, H5, R, L, BG, BGL, T, TL, C = (
 #     231,
 #     153,
@@ -208,19 +213,22 @@ hr_sep, txt_block_cut, code_pref, list_pref, bquote_pref, hr_ends = (
 # H6 = H7 = H8 = H9 = H10 = H5
 # Default: Same theme:
 
+# https://github.com/chriskempson/base16/blob/main/styling.md
+BG = 'base00'
 H1 = (1, 'base09')
 H2 = (1, 'base0A')
 H3 = (1, 'base0B')
 H4 = (1, 'base0C')
 H5 = (1, 'base0D')
 H6 = (1, 'base0E')
-H7 = (1, 'base0F')
+H7 = 'base0F'
 H8 = 'base09'
 H9 = 'base0A'
 H10 = 'base0B'
-R, L, BG, BGL, T, TL, C = 124, 59, 16, 188, 188, 59, 102
-CH1, CH2, CH3, CH4, CH5 = H1[1], H2[1], H3[1], H4[1], H5[1]
+R, L, T, TL, C = 124, 59, 188, 59, 102
+CH1, CH2, CH3, CH4, CH5 = H1[1], H2[1], H3[1], H4[1], H5[1]   # no bold
 
+# next indirection:
 code_hl = {
     'Keyword': 'CH3',
     'Name': 'CH1',
@@ -253,7 +261,6 @@ def_lexer = 'python'
 guess_lexer = True
 # also global. but not in use, BG handling can get pretty involved, to do with
 # taste, since we don't know the term backg....:
-background = BG
 
 # hirarchical indentation by:
 left_indent = '  '
@@ -317,11 +324,6 @@ if not term_columns and not '-c' in sys.argv:
 term_columns, term_rows = int(term_columns or 80), int(term_rows or 200)
 
 
-def die(msg):
-    errout(msg)
-    sys.exit(1)
-
-
 def parse_env_and_cli():
     """replacing docopt"""
     kw, argv = {}, list(sys.argv[1:])
@@ -334,8 +336,7 @@ def parse_env_and_cli():
             if len(l) > 2
         ]
     )
-
-    # check environ:
+    # check environ (a lot - but all in all takes 0.00003s):
     aliases = {
         'MDV_C_THEME': ['AXC_CODE_THEME', 'MDV_CODE_THEME'],
         'MDV_THEME': ['AXC_THEME'],
@@ -356,7 +357,7 @@ def parse_env_and_cli():
             reqv, n = opts[k][:2]
             kw[n] = argv.pop(0) if reqv else True
         except:
-            if not argv or os.path.exists(k):
+            if not argv or exists(k):
                 kw['filename'] = k
             else:
                 die('Not understood: %s' % k)
@@ -414,7 +415,7 @@ def fix_py2_default_encoding():
         return
     global def_enc_set
     if not def_enc_set:
-        # Make Py2 > Py3:
+        # utf-8 saved PY3. This in PY2 would have avoided 10years of transition mess:
         import imp
 
         imp.reload(sys)
@@ -436,15 +437,13 @@ dir_mon_content_raw = '_raw_'
 dir_mon_content_pretty = '_pretty_'
 
 
-def readfile(fn, kw={'encoding': 'utf-8'} if PY3 else {}):
-    with io.open(fn, **kw) as fd:
-        return fd.read()
-
-
-def read_themes():
-    if not themes:
-        themes.update(loads(readfile(j(mydir, 'ansi_tables.json'))))
-    return themes
+def readfile(fn, encoding='utf-8'):
+    try:
+        with io.open(fn, encoding=encoding) as fd:
+            s = fd.read()
+        return s if PY3 else str(s)
+    except:
+        return ''
 
 
 you_like = 'You like this theme?'
@@ -462,19 +461,19 @@ def make_sample():
     bar = 'baz'
     """
     _md.append('```python\n""" Doc String """\n%s\n```' % sample_code)
-    _md.append(
-        """
+    _ = """
+**Bold** and *italics*...and `inline code`.
+
 | Tables        | Fmt |
 | -- | -- |
 | !!! hint: wrapped | 0.1 **strong** |
     """
-    )
+    _md.append(_)
     for ad in list(admons.keys())[:1]:
         _md.append('!!! %s: title\n    this is a %s\n' % (ad, ad.capitalize()))
     # 'this theme' replaced in the roller (but not at mdv w/o args):
-    globals()['md_sample'] = (
-        '\n'.join(_md) + '\n----\n!!! question: %s' % you_like
-    )
+    _ = '\n'.join(_md) + '\n----\n!!! question: %s' % you_like
+    globals()['md_sample'] = _
 
 
 code_hl_tokens = {}
@@ -512,80 +511,78 @@ def j(p, f):
 mydir = os.path.realpath(__file__).rsplit(os.path.sep, 1)[0]
 
 
-def err(msg):
-    print(col('ERR', (1, 255, 124)) + ' %s' % msg, file=sys.stderr)
-
-
-def set_theme(theme=None, for_code=None, theme_info=None):
-    """set md and code theme
-
-    This solely works with the old 5 color only themes.
-    For more expressivity use the python config format overriding our globals.
-    """
-    # for md the default is None and should return the 'random' theme
-    # for code the default is 'default' and should return the default theme.
-    # historical reasons...
-    dec = {
-        False: {
-            'dflt': None,
-            'on_dflt': 'random',
-            'env': ('MDV_THEME', 'AXC_THEME'),
-        },
-        True: {
-            'dflt': 'default',
-            'on_dflt': None,
-            'env': ('MDV_CODE_THEME', 'AXC_CODE_THEME'),
-        },
-    }
-    dec = dec[bool(for_code)]
-    if theme == dec['dflt']:
-        for k in dec['env']:
-            ek = envget(k)
-            if ek:
-                theme = ek
-                break
-    if theme == dec['dflt']:
-        theme = dec['on_dflt']
-    if not theme:
-        return
-
-    theme = str(theme)
-
-    themes = read_themes()
-    if theme == 'random':
-        rand = randint(0, len(themes) - 1)
-        theme = list(themes.keys())[rand]
-    t = themes.get(theme)
-    if not t or len(t.get('ct')) != 5:
-        # leave defaults:
-        err('Theme not found: %s' % theme)
-        return
-    _for = ''
-    if for_code:
-        _for = ' (code)'
-
-    if theme_info:
-        n = t.get('name')
-        n = ' (' + n + ')' if n else ''
-        print(low('theme%s: %s%s' % (_for, theme, n)))
-
-    t = t['ct']
-    cols = (t[0], t[1], t[2], t[3], t[4])
-
-    def cast(i):
-        try:
-            return int(i)
-        except:
-            return i
-
-    cols = [cast(i) for i in cols]
-    if for_code:
-        global CH1, CH2, CH3, CH4, CH5
-        CH1, CH2, CH3, CH4, CH5 = cols
-    else:
-        global H1, H2, H3, H4, H5
-        # set the colors now from the ansi codes in the theme:
-        H1, H2, H3, H4, H5 = cols
+# def set_theme(theme=None, for_code=None, theme_info=None):
+#     """set md and code theme
+#
+#     This solely works with the old 5 color only themes, intended for unchanged BG.
+#     For more expressivity use the python config format overriding our globals.
+#     """
+#     # for md the default is None and should return the 'random' theme
+#     # for code the default is 'default' and should return the default theme.
+#     # historical reasons...
+#     dec = {
+#         False: {
+#             'dflt': None,
+#             'on_dflt': 'random',
+#             'env': ('MDV_THEME', 'AXC_THEME'),
+#         },
+#         True: {
+#             'dflt': 'default',
+#             'on_dflt': None,
+#             'env': ('MDV_CODE_THEME', 'AXC_CODE_THEME'),
+#         },
+#     }
+#     dec = dec[bool(for_code)]
+#     if theme == dec['dflt']:
+#         for k in dec['env']:
+#             ek = envget(k)
+#             if ek:
+#                 theme = ek
+#                 break
+#     if theme == dec['dflt']:
+#         theme = dec['on_dflt']
+#     if not theme:
+#         return
+#
+#     theme = str(theme)
+#
+#     themes = read_themes()
+#     if theme == 'random':
+#         rand = randint(0, len(themes) - 1)
+#         theme = list(themes.keys())[rand]
+#     t = themes.get(theme)
+#     if not t or len(t.get('ct')) != 5:
+#         # leave defaults:
+#         err('Theme not found: %s' % theme)
+#         return
+#     _for = ''
+#     if for_code:
+#         _for = ' (code)'
+#
+#     if theme_info:
+#         n = t.get('name')
+#         n = ' (' + n + ')' if n else ''
+#         print(low('theme%s: %s%s' % (_for, theme, n)))
+#
+#     t = t['ct']
+#     cols = (t[0], t[1], t[2], t[3], t[4])
+#
+#     def cast(i):
+#         try:
+#             return int(i)
+#         except:
+#             return i
+#
+#     # set the colors now from the ansi codes in the theme:
+#     cols = [cast(i) for i in cols]
+#     if for_code:
+#         global CH1, CH2, CH3, CH4, CH5
+#         CH1, CH2, CH3, CH4, CH5 = cols
+#     else:
+#         global H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, BG
+#         BG = None
+#         H1, H2, H3, H4, H5 = cols
+#         H6 = H7 = H8 = H9 = H10 = H5
 
 
 def style_ansi(raw_code, lang=None):
@@ -1290,26 +1287,75 @@ def do_code_hilite(md, what='all'):
     return '\n'.join(out)
 
 
+def set_bw_compat_rules(d, theme, c_theme):
+    if (  # we need to stay backwards compat to when only the 5color jsons where avail:
+        theme
+        and c_theme
+        and exists('%s/%s.json' % (d, theme))
+        and exists('%s/%s.json' % (d, c_theme))
+    ):
+        return 'BG=false;H1="base09";H2="base0A";H3="base0B";H4="base0C";H5="base0D";H6=H7=H8=H9=H5'
+
+
+def exec_py_config_file(added_style_rules):
+    s = readfile(py_config_file) + '\n' + added_style_rules
+    if not s.strip():
+        return
+    exec('false=False; true=True\n' + s, globals())
+
+
+def random_theme(dirs):
+    r = []
+    [r.extend([k for k in os.listdir(d) if k.endswith('.json')]) for d in dirs]
+    return r[randint(0, len(r))].rsplit('.json')[0]
+
+
+def load_theme(dirs, theme):
+    f = ['%s/%s.json' % (d, theme) for d in dirs]
+    f = [fn for fn in f if exists(fn)]
+    if not f:
+        die('Theme not found %s. Searched %s' % (theme, dirs))
+    B16.update(loads(readfile(f[0])))
+
+
+def read_md(filename, encoding):
+    if not filename:
+        print('Using sample markdown:')
+        make_sample()
+        md = md_sample
+        print(md)
+        print()
+        print('Styling Result')
+        return md
+    if filename == '-':
+        return sys.stdin.read()
+    else:
+        if not exists(filename):
+            die('Not found: %s' % filename)
+        return readfile(filename, encoding=encoding)
+
+
 def main(
     md=None,
     filename=None,
-    encoding='utf-8',
-    cols=None,
-    theme=None,
-    c_theme=None,
-    bg=None,
-    c_no_guess=None,
-    display_links=None,
-    link_style=None,
-    from_txt=None,
-    do_html=None,
-    code_hilite=None,
     c_def_lexer=None,
-    theme_info=None,
-    no_colors=None,
-    tab_length=4,
-    no_change_defenc=False,
+    c_no_guess=None,
+    c_theme=None,
+    code_hilite=None,
+    cols=None,
+    display_links=None,
+    do_html=None,
+    encoding='utf-8',
+    from_txt=None,
     header_nrs=False,
+    keep_bg=None,
+    link_style=None,
+    no_change_defenc=False,
+    no_colors=None,
+    style_rules=None,
+    tab_length=4,
+    theme=None,
+    theme_info=None,
     **kw,
 ):
     """md is markdown string. alternatively we use filename and read"""
@@ -1319,54 +1365,26 @@ def main(
     # https://github.com/axiros/terminal_markdown_viewer/issues/39
     # If you hate it then switch it off but don't blame me on unicode errs.
     True if no_change_defenc else fix_py2_default_encoding()
+    theme_dirs = _ = mydir + '/b16', mydir + '/5color'
+    style_rules = style_rules or set_bw_compat_rules(_[1], theme, c_theme)
+    exec_py_config_file(style_rules or '')
+    theme = theme or THEME
+    if not theme:
+        theme = random_theme(theme_dirs)
 
+    load_theme(theme_dirs, theme)
     parse_header_nrs(header_nrs)
 
     tab_length = tab_length or 4
     global def_lexer
     if c_def_lexer:
         def_lexer = c_def_lexer
-
+    md = md or read_md(filename, encoding)
     args = locals()
-    if not md:
-        if not filename:
-            print('Using sample markdown:')
-            make_sample()
-            md = args['md'] = md_sample
-            print(md)
-            print()
-            print('Styling Result')
-        else:
-            if filename == '-':
-                md = sys.stdin.read()
-            else:
-                with io.open(filename, encoding=encoding) as f:
-                    md = f.read()
-
     # style rolers requested?
     global term_columns
     if cols:
         term_columns = int(cols)
-
-    if c_theme == 'all' or theme == 'all':
-        if c_theme == 'all':
-            os.environ['AXC_CODE_THEME'] = os.environ['MDV_CODE_THEME'] = ''
-        if theme == 'all':
-            os.environ['AXC_THEME'] = os.environ['MDV_THEME'] = ''
-        args.pop('kw')
-        themes = read_themes()
-        for k, v in list(themes.items()):
-            if not filename:
-                yl = 'You like *%s*, *%s*?' % (k, v['name'])
-                args['md'] = md_sample.replace(you_like, yl)
-            print(col('%s%s%s' % ('\n\n', '=' * term_columns, '\n'), L))
-            # should really create an iterator here:
-            if theme == 'all':
-                args['theme'] = k
-            else:
-                args['c_theme'] = k
-            print(main(**args))
-        return ''
 
     global show_links
     if display_links:
@@ -1374,32 +1392,29 @@ def main(
     if link_style:  # rules
         show_links = link_style
 
-    if bg and bg == 'light':
-        # not in use rite now:
-        global background, color
-        background = BGL
-        color = T
-
     global guess_lexer
     guess_lexer = not c_no_guess
 
-    if not theme == False:
-        set_theme(theme, theme_info=theme_info)
-
-        if not c_theme:
-            c_theme = theme or 'default'
-
-        if c_theme == 'None':
-            c_theme = None
-
-        if c_theme:
-            set_theme(c_theme, for_code=1, theme_info=theme_info)
-
-        if c_theme:
-            # info:
-            if not have_pygments:
-                errout(col('No pygments, can not analyze code for hilite', R))
-
+    # if not theme == False:
+    #     set_theme(theme, theme_info=theme_info)
+    #
+    #     if not c_theme:
+    #         c_theme = theme or 'default'
+    #
+    #     if c_theme == 'None':
+    #         c_theme = None
+    #
+    #     if c_theme:
+    #         set_theme(c_theme, for_code=1, theme_info=theme_info)
+    #
+    #     if c_theme:
+    #         # info:
+    #         if not have_pygments:
+    #             errout(col('No pygments, can not analyze code for hilite', R))
+    if not keep_bg:
+        if to_bg_col(BG):
+            global reset_col
+            reset_col = esc + '0;%sm' % to_bg_col(BG)
     build_hl_by_token()
     # Create an instance of the Markdown class with the new extension
     MD = markdown.Markdown(
@@ -1469,7 +1484,7 @@ def main(
     ansi = set_hr_widths(ansi) + '\n'
     if no_colors:
         return clean_ansi(ansi)
-    return ansi + '\n'
+    return reset_col + ansi + '\n'
 
 
 # Following just file monitors, not really core feature so the prettyfier:
@@ -1484,7 +1499,7 @@ def monitor(args):
     last_err = ''
     last_stat = 0
     while True:
-        if not os.path.exists(filename):
+        if not exists(filename):
             last_err = 'File %s not found. Will continue trying.' % filename
         else:
             try:
@@ -1560,7 +1575,7 @@ def monitor_dir(args):
     args.pop('monitor_file', 0)
     d, exts = (d + ':md,mdown,markdown').split(':')[:2]
     exts = exts.split(',')
-    if not os.path.exists(d):
+    if not exists(d):
         print(col('Does not exist: %s' % d, R))
         sys.exit(2)
 
@@ -1626,10 +1641,13 @@ def monitor_dir(args):
 
 
 def load_config(filename, s=None, yaml=None):
+    """deprecated kv style config. Newer is the .config/mdv.py format,
+    which can actually configure the globals"""
+    # legacy .config/mdv as file. Can't break bw compat..:
     fns = (filename,) if filename else ('.mdv', '.config/mdv')
     for f in fns:
         fn = os.path.expanduser('~/' + f) if f[0] == '.' else f
-        if not os.path.exists(fn) or os.path.isdir(fn):
+        if not exists(fn) or os.path.isdir(fn):
             if filename:
                 die('Not found: %s' % filename)
             else:
@@ -1667,10 +1685,68 @@ def merge(a, b):
 
 
 B16 = {}
-# fmt: on
+
+
+def ensure_fzf():
+    if os.system('hash fzf'):
+        err('Sorry, require the fzf utility.')
+
+
+def write_file(fn, s):
+    os.makedirs(os.path.dirname(fn), exist_ok=True)
+    with open(fn, 'w') as fd:
+        fd.write(s)
+
+
+# def theme_browser(filename=None, **kw):
+#     ensure_fzf()
+#     if not filename:
+#         make_sample()
+#         filename = f'/tmp/{os.environ["USER"]}.mdvsample.md'
+#         write_file(filename, md_sample)
+#     cmd = f'(cd  "{mydir}/b16"; ls *.json) | cut -d "." -f1 '
+#     _ = """| fzf  --preview-window=right,80%% --preview "mdv -t {} '%s'" """
+#     cmd += _ % filename
+#     theme = os.popen(cmd).read().strip()
+#     if theme:
+#         s = readfile(py_config_file).splitlines()
+#         s = '\n'.join([l for l in s if not l.startswith('THEME =')])
+#         s += f'\nTHEME = "{theme}"\n'
+#         write_file(py_config_file, s)
+#     return theme
+
+
+# have to respect the old order of checking. but when created we take the one in .config/mdv/mdv.py
+for _ in ['~/.mdv.py', '~/.config/mdv/mdv.py']:
+    py_config_file = os.path.expanduser(_)
+    if exists(py_config_file):
+        break
+THEME = None
+
+
+def exit_help():
+    doc = __doc__[1:]
+    d = dict(
+        theme=671.1616,
+        ctheme=526.9416,
+        c_no_guess=True,
+        c_def_lexer='md',
+        header_nrs='1-',
+        md=doc,
+    )
+    res = main(**d)
+    d['header_nrs'] = '0-0'
+    d['md'] = '-----' + doc.split('# Details', 1)[0]
+    res += main(**d)
+    print(res if PY3 else str(res))
+    sys.exit(0)
+
+
 def run():
     global is_app
     is_app = 1
+    if '-h' in sys.argv:
+        exit_help()
     fix_py2_default_encoding() if not PY3 else None
     kw = load_config(None) or {}
     kw1 = parse_env_and_cli()
@@ -1679,43 +1755,33 @@ def run():
         kw.update(load_config(filename=fn))
     kw.update(kw1)
 
-    # all the themes from here:
-    theme = kw.get('theme')
-    if theme:
-        fnb = mydir + '/b16/%s.json' % theme
-        if os.path.exists(fnb):
-            with open(fnb) as fd:
-                B16.update(loads(fd.read()))
-            kw['theme'] = False
+    if (
+        kw.get('theme_browser')
+        or kw.get('theme') == 'all'
+        or kw.get('c_theme') == 'all'
+    ):
+        from . import theme_browser
 
-    # Do we have python configs?
-    for p in '~/.mdv.py', '~/.config/mdv/mdv.py':
-        py_config_file = os.path.expanduser(p)
-        if os.path.exists(py_config_file):
-            with io.open(py_config_file, encoding='utf-8') as fd:
-                s = fd.read()
-            exec(s, globals())
-            # when no theme is given on CLI we won't override definitions in config
-            if theme == None:
-                kw['theme'] = False
-
-    doc = __doc__[1:]
-    if kw.get('sh_help'):
-        d = dict(
-            theme=671.1616,
-            ctheme=526.9416,
-            c_no_guess=True,
-            c_def_lexer='md',
-            header_nrs='1-',
-            md=doc,
-        )
-        d.update(kw)
-        res = main(**d)
-        d['header_nrs'] = '0-0'
-        d['md'] = '-----' + doc.split('# Details', 1)[0]
-        res += main(**d)
-        print(res if PY3 else str(res))
-        sys.exit(0)
+        theme = theme_browser.run(**kw)
+    #
+    # # Do we have python configs?
+    # s = readfile(py_config_file)
+    # if s:
+    #     exec(s, globals())
+    #
+    # # all the themes from here:
+    # theme = kw.get('theme', THEME)
+    # breakpoint()   # FIXME BREAKPOINT
+    # db16 = mydir + '/b16'
+    # if theme is None:
+    #     all = os.listdir(db16)
+    #     breakpoint()   # FIXME BREAKPOINT
+    #     theme = all[randint(0, len(all))]
+    # if theme:
+    #     fnb = db16 + '/%s.json' % theme
+    #     if exists(fnb):
+    #         B16.update(loads(readfile(fnb)))
+    #         kw['theme'] = False
     if kw.get('monitor_file'):
         monitor(kw)
     elif kw.get('monitor_dir'):
@@ -1724,13 +1790,7 @@ def run():
         print(main(**kw) if PY3 else str(main(**kw)))
 
 
-# at the end, due the treesitter bug with sq brackets... - grrr
-def col_bg(c):
-    """colorize background"""
-    return esc + '48;5;%sm' % c
-
-
-def col(s, c, bg=0, no_reset=0):
+def col(s, c, no_reset=0):
     """
     print col('foo', 124) -> red 'foo' on the terminal
     c = color, s the value to colorize"""
@@ -1747,9 +1807,7 @@ def col(s, c, bg=0, no_reset=0):
             uon, uoff = '', ''
             if _strt == link_start:
                 uon, uoff = esc + '4m', esc + '24m'
-            s = s.replace(
-                _strt, col('', _col, bg=background, no_reset=1) + uon
-            )
+            s = s.replace(_strt, col('', _col, no_reset=1) + uon)
             s = s.replace(_end, uoff + col('', c, no_reset=1))
     if isinstance(c, tuple):
         if len(c) == 2:
@@ -1763,18 +1821,26 @@ def col(s, c, bg=0, no_reset=0):
     return s
 
 
-def to_col(c, fb='3'):
+def to_col(c, _fb='3'):
     if isinstance(c, int):
-        return fb + '8;5;%s' % c
+        if not c:
+            return ''
+        return _fb + '8;5;%s' % c
     if c[0] == '#':
-        return fb + '8;2;%s;%s;%s' % hex_to_rgb(c[1:])
+        return _fb + '8;2;%s;%s;%s' % hex_to_rgb(c[1:])
     if c[0:4] == 'base':
-        return fb + '8;2;%s;%s;%s' % hex_to_rgb(B16[c])
+        c = B16[c]
+        if not c:
+            return ''
+        try:
+            return _fb + '8;2;%s;%s;%s' % hex_to_rgb(c)
+        except:
+            return _fb + '8;5;%s' % c
     return c   # given as ansi
 
 
 def to_bg_col(c):
-    return to_col(c, fb='4')
+    return to_col(c, _fb='4')
 
 
 hex_to_rgb = lambda h: tuple(int(h[i : i + 2], 16) for i in (0, 2, 4))

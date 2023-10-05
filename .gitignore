@@ -57,4 +57,5 @@ docs/_build/
 target/
 venv
 foo.md
+1.7.5
 mdv/b16/base16-*

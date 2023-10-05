@@ -1,0 +1,19 @@
+{
+        "scheme": "b16",
+        "base00": false,
+        "base01": false,
+        "base02": false,
+        "base03": false,
+        "base04": false,
+        "base05": false,
+        "base06": false,
+        "base07": false,
+        "base08": false,
+        "base09": 2,
+        "base0A": 3,
+        "base0B": 4,
+        "base0C": 5,
+        "base0D": 6,
+        "base0E": 6,
+        "base0F": 6
+}
