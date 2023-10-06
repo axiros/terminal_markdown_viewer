@@ -1041,7 +1041,6 @@ class AnsiPrinter(Treeprocessor):
                     ind = ' ' * (hl - 1)
                     hir += hl
 
-                t = rewrap(el, t, ind, pref)
                 # for hl > 6, e.g. 8, the lib stops at h6, with "## title" -> drop the ##, count up the h6 to h8:
                 if el.tag == 'h6':
                     ll = t.split(' ', 1)
@@ -1049,6 +1048,12 @@ class AnsiPrinter(Treeprocessor):
                     if len(ll[0].replace('#', '')) == 0:
                         t = ll[1]
                         el.tag = 'h%s' % (6 + lvl)
+
+                if el.tag in self.header_tags:
+                    hl = int(el.tag[1:])
+                    ind = ' ' * (hl - 1)
+                    hir += hl
+                t = rewrap(el, t, ind, pref)
 
                 # indent. can color the prefixes now, no more len checks:
                 if admon:
