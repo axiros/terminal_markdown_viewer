@@ -15,7 +15,7 @@ T = """{
         "base02": false,
         "base03": false,
         "base04": false,
-        "base05": false,
+        "base05": 188,
         "base06": false,
         "base07": false,
         "base08": false,
