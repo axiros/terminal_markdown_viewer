@@ -1,11 +1,9 @@
-import io
+import io, sys
 from unittest import TestCase, main
 import pdb
 
 breakpoint = pdb.set_trace
 try:
-    import sys
-
     reload(sys)
     sys.setdefaultencoding('utf-8')
 except:
@@ -39,7 +37,7 @@ class TestFiles(TestCase):
                 continue
             print('testfile: ', f)
             src = readfile(df + '/' + f)
-            for col in 20, 40, 80, 200:
+            for col in 200, 80, 40, 20:
                 print('columns: ', col)
 
                 res = mdv.main(
@@ -61,8 +59,13 @@ class TestFiles(TestCase):
                 # print(res)
                 if not tgt == res:
                     print('error')
+                    mdv.markdownviewer.write_file('/tmp/got', res)
+                    mdv.markdownviewer.write_file('/tmp/should', tgt)
+                    os.system('diff /tmp/got /tmp/should')
                     print('got:\n', res)
                     print('should:\n', unicode(tgt))
+                    if sys.stdin.isatty() and sys.stdout.isatty():
+                        os.system('vi -d /tmp/got /tmp/should')
                     raise Exception('Error %s col %s' % (f, col))
 
 
