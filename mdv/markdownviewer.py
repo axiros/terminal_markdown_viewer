@@ -1747,6 +1747,25 @@ def exit_help():
     sys.exit(0)
 
 
+def list_themes():
+    def show(fn):
+        spec = loads(readfile(fn))
+        n = fn.rsplit('/', 1)[1].split('.json')[0]
+        B16.clear()
+        B16.update(spec)
+        set_background()
+        s = reset_col
+        for l in range(1, 8):
+            t = 'H%s' % l
+            s += col(t, globals()[t]) + ' '
+        print(reset_col)
+        print(s + '   ' + n)
+
+    for D in 'b16', '5color', 'b16':
+        d = mydir + '/' + D
+        for f in sorted([i for i in os.listdir(d) if i.endswith('.json')]):
+            show(d + '/' + f)
+
 def run():
     global is_app
     is_app = 1
