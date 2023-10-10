@@ -2,3 +2,5 @@ include README.md
 include LICENSE
 include licenses/*
 include mdv/ansi_tables.json
+include mdv/5color/*.json
+include mdv/b16/*.json
